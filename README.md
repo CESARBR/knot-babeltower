@@ -33,6 +33,26 @@ make deps
 make run
 ```
 
+## Local (Development)
+
+### Build and run (Docker)
+
+A container is specified at `docker/Dockerfile`. To use it, execute the following steps:
+
+01. Build the image:
+
+    ```bash
+    docker build . -f docker/Dockerfile -t cesarbr/knot-babeltower
+    ```
+
+01. Create a file containing the configuration as environment variables.
+
+01. Run the container:
+
+    ```bash
+    docker run --env-file knot-babeltower.env -ti cesarbr/knot-babeltower
+    ```
+
 ### Verify
 
 ```bash
