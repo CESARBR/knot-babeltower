@@ -19,10 +19,17 @@ type Logger struct {
 	Level string
 }
 
+// Users represents the users service to proxy request
+type Users struct {
+	Hostname string
+	Port     uint16
+}
+
 // Config represents the service configuration
 type Config struct {
 	Server
 	Logger
+	Users
 }
 
 func readFile(name string) {

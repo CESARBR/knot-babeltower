@@ -3,3 +3,7 @@ server:
 
 logger:
   level: info
+
+users:
+  hostname: localhost
+  port: 8180
