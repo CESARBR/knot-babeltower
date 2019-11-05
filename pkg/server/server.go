@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/CESARBR/knot-babeltower/pkg/controllers"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 
 	"github.com/gorilla/mux"
@@ -17,13 +18,14 @@ type Health struct {
 
 // Server represents the HTTP server
 type Server struct {
-	port   int
-	logger logging.Logger
+	port           int
+	logger         logging.Logger
+	userController *controllers.UserController
 }
 
 // NewServer creates a new server instance
-func NewServer(port int, logger logging.Logger) Server {
-	return Server{port: port, logger: logger}
+func NewServer(port int, logger logging.Logger, userController *controllers.UserController) Server {
+	return Server{port, logger, userController}
 }
 
 // Start starts the http server
@@ -39,6 +41,7 @@ func (s *Server) Start() {
 func (s *Server) createRouters() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck", s.healthcheckHandler)
+	r.HandleFunc("/users", s.userController.Create).Methods("POST")
 	return r
 }
 
