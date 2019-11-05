@@ -1,6 +1,9 @@
 package interactors
 
-import "github.com/CESARBR/knot-babeltower/pkg/logging"
+import (
+	"github.com/CESARBR/knot-babeltower/pkg/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/logging"
+)
 
 // CreateUser to interact to user
 type CreateUser struct {
@@ -13,7 +16,9 @@ func NewCreateUser(logger logging.Logger) *CreateUser {
 }
 
 // Execute runs the use case
-func (cu *CreateUser) Execute() {
+func (cu *CreateUser) Execute(user entities.User) error {
 	// TODO: proxy message to user service
 	cu.logger.Debug("Executing Create User interactor")
+
+	return nil
 }
