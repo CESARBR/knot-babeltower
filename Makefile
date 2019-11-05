@@ -20,12 +20,17 @@ tools:
 	go get github.com/ahmetb/govvv
 	go get github.com/golang/dep/cmd/dep
 	go get github.com/mitchellh/gox
+	go get github.com/cespare/reflex
 	pip install pre-commit
 	pre-commit install
 
 .PHONY: run
 run: bin
 	./$(BINARY)-$(OS)-$(GOARCH) # Execute the binary
+
+.PHONY: watch
+watch:
+	reflex -s -r '\.go$$' go run cmd/main.go
 
 .PHONY: bin
 bin:
