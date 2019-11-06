@@ -19,18 +19,10 @@ type Logger struct {
 	Level string
 }
 
-// MongoDB represents the database configuration properties
-type MongoDB struct {
-	Host string
-	Port int
-	Name string
-}
-
 // Config represents the service configuration
 type Config struct {
 	Server
 	Logger
-	MongoDB
 }
 
 func readFile(name string) {
