@@ -3,22 +3,28 @@ package interactors
 import (
 	"github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 )
 
 // CreateUser to interact to user
 type CreateUser struct {
-	logger logging.Logger
+	logger    logging.Logger
+	userProxy network.UserProxy
 }
 
 // NewCreateUser contructs the interactor
-func NewCreateUser(logger logging.Logger) *CreateUser {
-	return &CreateUser{logger}
+func NewCreateUser(logger logging.Logger, userProxy network.UserProxy) *CreateUser {
+	return &CreateUser{logger, userProxy}
 }
 
 // Execute runs the use case
-func (cu *CreateUser) Execute(user entities.User) error {
-	// TODO: proxy message to user service
+func (cu *CreateUser) Execute(user entities.User) (err error) {
 	cu.logger.Debug("Executing Create User interactor")
 
-	return nil
+	err = cu.userProxy.Create(user)
+	if err != nil {
+		cu.logger.Errorf("Send request error: %s", err.Error())
+	}
+
+	return err
 }
