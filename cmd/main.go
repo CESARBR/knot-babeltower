@@ -18,7 +18,7 @@ func main() {
 	logger.Info("Starting KNoT Babeltower")
 
 	// AMQP
-	amqp := network.NewAmqp(logrus.Get("Amqp"))
+	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
 
 	// Services
 	userProxy := network.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)

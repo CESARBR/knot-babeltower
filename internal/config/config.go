@@ -25,11 +25,17 @@ type Users struct {
 	Port     uint16
 }
 
+// RabbitMQ represents the rabbitmq configuration properties
+type RabbitMQ struct {
+	URL string
+}
+
 // Config represents the service configuration
 type Config struct {
 	Server
 	Logger
 	Users
+	RabbitMQ
 }
 
 func readFile(name string) {

@@ -4,12 +4,13 @@ import "github.com/CESARBR/knot-babeltower/pkg/logging"
 
 // Amqp handles the connection, queues and exchanges declared
 type Amqp struct {
+	url    string
 	logger logging.Logger
 }
 
 // NewAmqp constructs the AMQP connection handler
-func NewAmqp(logger logging.Logger) *Amqp {
-	return &Amqp{logger}
+func NewAmqp(url string, logger logging.Logger) *Amqp {
+	return &Amqp{url, logger}
 }
 
 // Start starts the handler
