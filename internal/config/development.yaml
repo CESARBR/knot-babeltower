@@ -7,3 +7,6 @@ logger:
 users:
   hostname: localhost
   port: 8180
+
+rabbitmq:
+  url: amqp://localhost/
