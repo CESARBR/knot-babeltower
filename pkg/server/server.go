@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -21,11 +22,12 @@ type Server struct {
 	port           int
 	logger         logging.Logger
 	userController *controllers.UserController
+	srv            *http.Server
 }
 
 // NewServer creates a new server instance
 func NewServer(port int, logger logging.Logger, userController *controllers.UserController) Server {
-	return Server{port, logger, userController}
+	return Server{port, logger, userController, nil}
 }
 
 // Start starts the http server
@@ -33,10 +35,19 @@ func (s *Server) Start(started chan bool) {
 	routers := s.createRouters()
 	s.logger.Infof("Listening on %d", s.port)
 	started <- true
-	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.logRequest(routers))
+	s.srv = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: s.logRequest(routers)}
+	err := s.srv.ListenAndServe()
 	if err != nil {
 		s.logger.Error(err)
 		started <- false
+	}
+}
+
+// Stop stops the server
+func (s *Server) Stop() {
+	err := s.srv.Shutdown(context.TODO())
+	if err != nil {
+		s.logger.Error(err)
 	}
 }
 
