@@ -1,7 +1,7 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test ./...
+GOTEST=$(GOCMD) test -v ./...
 GOGET=$(GOCMD) get -u -v
 
 OS := $(shell uname -s | awk '{print tolower($$0)}')
