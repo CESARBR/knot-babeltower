@@ -29,12 +29,14 @@ func NewServer(port int, logger logging.Logger, userController *controllers.User
 }
 
 // Start starts the http server
-func (s *Server) Start() {
+func (s *Server) Start(started chan bool) {
 	routers := s.createRouters()
 	s.logger.Infof("Listening on %d", s.port)
+	started <- true
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.logRequest(routers))
 	if err != nil {
 		s.logger.Error(err)
+		started <- false
 	}
 }
 
