@@ -14,9 +14,10 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 )
 
-func monitorSignals(sigs chan os.Signal, logger logging.Logger) {
+func monitorSignals(sigs chan os.Signal, quit chan bool, logger logging.Logger) {
 	signal := <-sigs
 	logger.Infof("Signal %s received", signal)
+	quit <- true
 }
 
 func main() {
@@ -28,9 +29,10 @@ func main() {
 
 	// Signal Handler
 	sigs := make(chan os.Signal, 1)
+	quit := make(chan bool, 1)
 	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 
-	go monitorSignals(sigs, logger)
+	go monitorSignals(sigs, quit, logger)
 
 	// AMQP
 	amqpChan := make(chan bool, 1)
@@ -64,6 +66,8 @@ func main() {
 			if started {
 				logger.Info("AMQP connection started")
 			}
+		case <-quit:
+			amqp.Stop()
 		}
 	}
 }
