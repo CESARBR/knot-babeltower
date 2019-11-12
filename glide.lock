@@ -1,5 +1,5 @@
-hash: 2b8429412e0fe0899e09b5a039f49c09594f21d9f304e490a897f6d27484c813
-updated: 2019-10-29T23:49:58.395344-03:00
+hash: a021e440281e0cd75c90c54a889f624d794ad6f1af4f6bb0dc67e382e1627458
+updated: 2019-11-12T07:27:37.920539744-03:00
 imports:
 - name: github.com/fsnotify/fsnotify
   version: 1485a34d5d5723fea214f5710708e19a831720e4
@@ -26,7 +26,7 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 84da2c4a25c585816f2c4211b699228d111d18ab
 - name: github.com/sirupsen/logrus
-  version: 67a7fdcf741f4d5cee82cb9800994ccfd4393ad0
+  version: de736cf91b921d56253b4010270681d33fdf7cb5
 - name: github.com/spf13/afero
   version: 588a75ec4f32903aa5e39a2619ba6a4631e28424
   subpackages:
@@ -39,6 +39,8 @@ imports:
   version: 24fa6976df40757dce6aea913e7b81ade90530e1
 - name: github.com/spf13/viper
   version: b5bf975e5823809fb22c7644d008757f78a4259e
+- name: github.com/streadway/amqp
+  version: edfb9018d2714e4ec54dbaba37dbfef2bdadf0e4
 - name: golang.org/x/sys
   version: 51ab0e2deafac1f46c46ad59cf0921be2f180c3d
   subpackages:
