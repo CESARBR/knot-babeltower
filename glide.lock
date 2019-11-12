@@ -1,5 +1,5 @@
-hash: a021e440281e0cd75c90c54a889f624d794ad6f1af4f6bb0dc67e382e1627458
-updated: 2019-11-12T07:27:37.920539744-03:00
+hash: 001ebe3ff899f467cc6a86638cb177369fe840dbf08dba884ece8e5d9813a618
+updated: 2019-11-12T17:04:27.635160099-03:00
 imports:
 - name: github.com/fsnotify/fsnotify
   version: 1485a34d5d5723fea214f5710708e19a831720e4
@@ -26,7 +26,7 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 84da2c4a25c585816f2c4211b699228d111d18ab
 - name: github.com/sirupsen/logrus
-  version: de736cf91b921d56253b4010270681d33fdf7cb5
+  version: 67a7fdcf741f4d5cee82cb9800994ccfd4393ad0
 - name: github.com/spf13/afero
   version: 588a75ec4f32903aa5e39a2619ba6a4631e28424
   subpackages:
@@ -50,6 +50,8 @@ imports:
   subpackages:
   - transform
   - unicode/norm
+- name: gopkg.in/cenkalti/backoff.v3
+  version: 4cc3abfa92889dbd8e2271a1398ba5a935e6a35a
 - name: gopkg.in/yaml.v2
   version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 testImports: []
