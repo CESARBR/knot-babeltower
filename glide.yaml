@@ -9,3 +9,4 @@ import:
   - unix
 - package: github.com/spf13/viper
   version: v1.4.0
+- package: github.com/streadway/amqp
