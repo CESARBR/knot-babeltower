@@ -1,6 +1,10 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/CESARBR/knot-babeltower/internal/config"
 	"github.com/CESARBR/knot-babeltower/pkg/controllers"
 	"github.com/CESARBR/knot-babeltower/pkg/interactors"
@@ -10,12 +14,23 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 )
 
+func monitorSignals(sigs chan os.Signal, logger logging.Logger) {
+	signal := <-sigs
+	logger.Infof("Signal %s received", signal)
+}
+
 func main() {
 	config := config.Load()
 	logrus := logging.NewLogrus(config.Logger.Level)
 
 	logger := logrus.Get("Main")
 	logger.Info("Starting KNoT Babeltower")
+
+	// Signal Handler
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
+
+	go monitorSignals(sigs, logger)
 
 	// AMQP
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
