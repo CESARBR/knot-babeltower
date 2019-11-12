@@ -25,12 +25,12 @@ func NewAmqp(url string, logger logging.Logger) *Amqp {
 }
 
 // Start starts the handler
-func (a *Amqp) Start() {
-	a.logger.Debug("AMQP handler started")
+func (a *Amqp) Start(started chan bool) {
 	conn, err := amqp.Dial(a.url)
 	if err != nil {
 		// TODO: try to reconnect
 		a.logger.Error(err)
+		started <- false
 		return
 	}
 
@@ -41,9 +41,11 @@ func (a *Amqp) Start() {
 	if err != nil {
 		// TODO: try to create channel again
 		a.logger.Error(err)
+		started <- false
 		return
 	}
 
 	a.logger.Debug("AMQP handler connected")
 	a.channel = channel
+	started <- true
 }
