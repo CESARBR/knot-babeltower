@@ -38,6 +38,10 @@ func main() {
 	amqpChan := make(chan bool, 1)
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
 
+	// AMQP Handler
+	msgChan := make(chan bool, 1)
+	msgHandler := network.NewMsgHandler(logrus.Get("MsgHandler"), amqp)
+
 	// Services
 	userProxy := network.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
 
@@ -66,8 +70,16 @@ func main() {
 		case started := <-amqpChan:
 			if started {
 				logger.Info("AMQP connection started")
+				go msgHandler.Start(msgChan)
+			}
+		case started := <-msgChan:
+			if started {
+				logger.Info("Msg handler started")
+			} else {
+				quit <- true
 			}
 		case <-quit:
+			msgHandler.Stop()
 			amqp.Stop()
 			server.Stop()
 		}
