@@ -13,6 +13,7 @@ type Amqp struct {
 	logger  logging.Logger
 	conn    *amqp.Connection
 	channel *amqp.Channel
+	queue   *amqp.Queue
 }
 
 func (a *Amqp) notifyWhenClosed(started chan bool) {
@@ -53,9 +54,41 @@ func (a *Amqp) connect() error {
 	return nil
 }
 
+func (a *Amqp) declareExchange(name string) error {
+	return a.channel.ExchangeDeclare(
+		name,
+		amqp.ExchangeTopic, // type
+		true,               // durable
+		false,              // delete when complete
+		false,              // internal
+		false,              // noWait
+		nil,                // arguments
+	)
+}
+
+func (a *Amqp) declareQueue(name string) error {
+	queue, err := a.channel.QueueDeclare(
+		name,
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // noWait
+		nil,   // arguments
+	)
+
+	a.queue = &queue
+	return err
+}
+
+func convertDeliveryToInMsg(deliveries <-chan amqp.Delivery, outMsg chan InMsg) {
+	for d := range deliveries {
+		outMsg <- InMsg{d.Exchange, d.RoutingKey, d.Body}
+	}
+}
+
 // NewAmqp constructs the AMQP connection handler
 func NewAmqp(url string, logger logging.Logger) *Amqp {
-	return &Amqp{url, logger, nil, nil}
+	return &Amqp{url, logger, nil, nil, nil}
 }
 
 // Start starts the handler
@@ -69,6 +102,51 @@ func (a *Amqp) Start(started chan bool) {
 
 	go a.notifyWhenClosed(started)
 	started <- true
+}
+
+// OnMessage receive messages and put them on channel
+func (a *Amqp) OnMessage(msgChan chan InMsg, queueName, exchangeName, key string) error {
+	err := a.declareExchange(exchangeName)
+	if err != nil {
+		a.logger.Error(err)
+		return err
+	}
+
+	err = a.declareQueue(queueName)
+	if err != nil {
+		a.logger.Error(err)
+		return err
+	}
+
+	err = a.channel.QueueBind(
+		queueName,
+		key,
+		exchangeName,
+		false, // noWait
+		nil,   // arguments
+	)
+	if err != nil {
+		a.logger.Error(err)
+		return err
+	}
+
+	deliveries, err := a.channel.Consume(
+		queueName,
+		"",    // consumerTag
+		true,  // noAck
+		false, // exclusive
+		false, // noLocal
+		false, // noWait
+		nil,   // arguments
+	)
+	if err != nil {
+		a.logger.Error(err)
+		return err
+	}
+
+	go convertDeliveryToInMsg(deliveries, msgChan)
+
+	return nil
 }
 
 // Stop closes the connection started
