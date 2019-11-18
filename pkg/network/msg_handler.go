@@ -1,6 +1,10 @@
 package network
 
-import "github.com/CESARBR/knot-babeltower/pkg/logging"
+import (
+	"encoding/json"
+
+	"github.com/CESARBR/knot-babeltower/pkg/logging"
+)
 
 const (
 	queueNameFogIn  = "fogIn-messages"
@@ -10,8 +14,20 @@ const (
 
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
-	logger logging.Logger
-	amqp   *Amqp
+	logger       logging.Logger
+	amqp         *Amqp
+	msgPublisher *MsgPublisher
+}
+
+func (mc *MsgHandler) handleRegisterMsg(body []byte) error {
+	msgParsed := RegisterRequestMsg{}
+	err := json.Unmarshal(body, &msgParsed)
+	if err != nil {
+		return err
+	}
+
+	response := RegisterResponseMsg{ID: msgParsed.ID, Token: "secret", Error: nil}
+	return mc.msgPublisher.SendRegisterDevice(response)
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
@@ -19,12 +35,21 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
 		msg := <-msgChan
 		mc.logger.Infof("Exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
 		mc.logger.Infof("Message received: %s", string(msg.Body))
+
+		switch msg.RoutingKey {
+		case "device.register":
+			err := mc.handleRegisterMsg(msg.Body)
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
+		}
 	}
 }
 
 // NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *Amqp) *MsgHandler {
-	return &MsgHandler{logger, amqp}
+func NewMsgHandler(logger logging.Logger, amqp *Amqp, msgPublisher *MsgPublisher) *MsgHandler {
+	return &MsgHandler{logger, amqp, msgPublisher}
 }
 
 // Start starts to listen for messages
