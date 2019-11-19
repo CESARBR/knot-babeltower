@@ -82,7 +82,7 @@ func (a *Amqp) declareQueue(name string) error {
 
 func convertDeliveryToInMsg(deliveries <-chan amqp.Delivery, outMsg chan InMsg) {
 	for d := range deliveries {
-		outMsg <- InMsg{d.Exchange, d.RoutingKey, d.Body}
+		outMsg <- InMsg{d.Exchange, d.RoutingKey, d.Headers, d.Body}
 	}
 }
 
