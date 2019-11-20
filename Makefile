@@ -18,8 +18,6 @@ tools:
 	go get github.com/axw/gocov/gocov
 	go get github.com/matm/gocov-html
 	go get github.com/ahmetb/govvv
-	go get github.com/golang/dep/cmd/dep
-	go get github.com/mitchellh/gox
 	go get github.com/cespare/reflex
 	pip install pre-commit
 	pre-commit install
