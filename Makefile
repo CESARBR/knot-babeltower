@@ -56,5 +56,4 @@ clean:
 
 .PHONY: deps
 deps:
-	glide install
 	glide up
