@@ -14,7 +14,7 @@ RUN apk add --update --no-cache --virtual .build-deps \
 RUN curl https://glide.sh/get | sh
 
 # Install project development tools and dependencies
-RUN make tools
+RUN go get github.com/ahmetb/govvv
 RUN make deps
 
 # Build the application
