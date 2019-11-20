@@ -52,6 +52,7 @@ clean:
 	$(GOCLEAN)
 	@rm -f ${BINARY}-$(OS)-${GOARCH}
 	@rm -f coverage.out
+	@rm -rf vendor
 
 .PHONY: deps
 deps:
