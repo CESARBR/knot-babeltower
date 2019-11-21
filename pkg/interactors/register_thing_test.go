@@ -71,6 +71,16 @@ func TestRegisterThing(t *testing.T) {
 			&FakeProxy{},
 			errors.New("mock publisher error"),
 		},
+		"TestProxyError": {
+			false,
+			"123",
+			"test",
+			"authorization token",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{token: "", sendError: errors.New("mock proxy error")},
+			&FakeProxy{returnError: errors.New("mock proxy error")},
+			errors.New("mock proxy error"),
+		},
 		"TestIDLenght": {
 			false,
 			"01234567890123456789",
