@@ -23,8 +23,14 @@ type ErrorIDInvalid struct{}
 // ErrorNameNotFound is raised when Name is empty
 type ErrorNameNotFound struct{}
 
-// ErrorArgument is raised when Name is empty
-type ErrorArgument struct{ msg string }
+// ErrorUnauthorized is raised when authorization token is empty
+type ErrorUnauthorized struct{}
+
+// ErrorMissingArgument is raised there is some argument missing
+type ErrorMissingArgument struct{}
+
+// ErrorInvalidTypeArgument is raised when the type is the expected
+type ErrorInvalidTypeArgument struct{ msg string }
 
 func (err ErrorIDLenght) Error() string {
 	return "ID length error"
@@ -38,7 +44,15 @@ func (err ErrorNameNotFound) Error() string {
 	return "Name not found"
 }
 
-func (err ErrorArgument) Error() string {
+func (err ErrorUnauthorized) Error() string {
+	return "Authorization token not found"
+}
+
+func (err ErrorMissingArgument) Error() string {
+	return "Missing arguments"
+}
+
+func (err ErrorInvalidTypeArgument) Error() string {
 	return err.msg
 }
 
@@ -81,27 +95,36 @@ func (rt *RegisterThing) verifyThingID(id string) error {
 	return nil
 }
 
-func (rt *RegisterThing) verifyArguments(args ...interface{}) error {
-	if len(args) < 1 {
-		return ErrorArgument{"Missing argument name"}
+func (rt *RegisterThing) getArguments(args ...interface{}) (string, string, error) {
+	if len(args) < 2 {
+		return "", "", ErrorMissingArgument{}
 	}
 
 	name, ok := args[0].(string)
 	if !ok {
-		return ErrorArgument{msg: "Name is not string"}
+		return "", "", ErrorInvalidTypeArgument{msg: "Name is not string"}
 	}
 
 	if len(name) == 0 {
-		return ErrorNameNotFound{}
+		return "", "", ErrorNameNotFound{}
 	}
 
-	return nil
+	authorizationToken, ok := args[1].(string)
+	if !ok {
+		return "", "", ErrorInvalidTypeArgument{msg: "Authorization token is not string"}
+	}
+
+	if len(authorizationToken) == 0 {
+		return "", "", ErrorUnauthorized{}
+	}
+
+	return name, authorizationToken, nil
 }
 
 // Execute runs the use case
 func (rt *RegisterThing) Execute(id string, args ...interface{}) error {
 	rt.logger.Debug("Executing register thing use case")
-	err := rt.verifyArguments(args...)
+	name, authorizationToken, err := rt.getArguments(args...)
 	if err != nil {
 		errReply := rt.reply(id, "", err)
 		if errReply != nil {
@@ -113,13 +136,22 @@ func (rt *RegisterThing) Execute(id string, args ...interface{}) error {
 	}
 
 	err = rt.verifyThingID(id)
-	errReply := rt.reply(id, "", err)
+	if err != nil {
+		errReply := rt.reply(id, "", err)
+		if errReply != nil {
+			rt.logger.Error(errReply)
+		}
+
+		return err
+	}
+
+	// Get the id generated as a token and send in the response
+	token, err := rt.thingProxy.Create(id, name, authorizationToken)
+	errReply := rt.reply(id, token, err)
 	if errReply != nil {
 		rt.logger.Error(errReply)
 		return errReply
 	}
-
-	// TODO: add proxy request to token
 
 	return nil
 }
