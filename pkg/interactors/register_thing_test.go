@@ -27,10 +27,12 @@ type FakeMsgPublisher struct {
 	mock.Mock
 	sendError error
 	returnErr error
+	token     string
 }
 
 type FakeProxy struct {
 	mock.Mock
+	returnError error
 }
 
 func (fl *FakeRegisterThingLogger) Info(...interface{}) {}
@@ -75,7 +77,7 @@ func TestRegisterThing(t *testing.T) {
 			"test",
 			"authorization token",
 			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{sendError: ErrorIDLenght{}},
+			&FakeMsgPublisher{token: "", sendError: ErrorIDLenght{}},
 			&FakeProxy{},
 			ErrorIDLenght{},
 		},
@@ -85,7 +87,7 @@ func TestRegisterThing(t *testing.T) {
 			"",
 			"authorization token",
 			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{sendError: ErrorNameNotFound{}},
+			&FakeMsgPublisher{token: "", sendError: ErrorNameNotFound{}},
 			&FakeProxy{},
 			ErrorNameNotFound{},
 		},
@@ -95,9 +97,49 @@ func TestRegisterThing(t *testing.T) {
 			"test",
 			"authorization token",
 			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{sendError: ErrorIDInvalid{}},
+			&FakeMsgPublisher{token: "", sendError: ErrorIDInvalid{}},
 			&FakeProxy{},
 			ErrorIDInvalid{},
+		},
+		"TestMissingArgument": {
+			true,
+			"123",
+			"",
+			"",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{token: "", sendError: ErrorMissingArgument{}},
+			&FakeProxy{},
+			ErrorMissingArgument{},
+		},
+		"TestInvalidTypeName": {
+			false,
+			"123",
+			123,
+			"",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Name is not string"}},
+			&FakeProxy{},
+			ErrorInvalidTypeArgument{"Name is not string"},
+		},
+		"TestInvalidTypeToken": {
+			false,
+			"123",
+			"test",
+			123,
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Authorization token is not string"}},
+			&FakeProxy{},
+			ErrorInvalidTypeArgument{"Authorization token is not string"},
+		},
+		"TestTokenUnauthorized": {
+			false,
+			"123",
+			"test",
+			"",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{token: "", sendError: ErrorUnauthorized{}},
+			&FakeProxy{},
+			ErrorUnauthorized{},
 		},
 	}
 
@@ -112,9 +154,12 @@ func TestRegisterThing(t *testing.T) {
 				*tmp = tc.fakePublisher.sendError.Error()
 			}
 
-			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: "", Error: tmp}
+			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: tc.fakePublisher.token, Error: tmp}
 			tc.fakePublisher.On("SendRegisterDevice", msg).
 				Return(tc.fakePublisher.returnErr)
+			tc.fakeProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
+				Return(tc.fakePublisher.token, tc.fakeProxy.returnError).Maybe()
+
 			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy)
 			if tc.testArguments {
 				err = createThingInteractor.Execute(tc.thingID)
@@ -128,6 +173,7 @@ func TestRegisterThing(t *testing.T) {
 			}
 
 			tc.fakePublisher.AssertExpectations(t)
+			tc.fakeProxy.AssertExpectations(t)
 			t.Log("Create thing ok")
 		})
 	}

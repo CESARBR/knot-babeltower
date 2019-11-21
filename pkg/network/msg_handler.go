@@ -24,14 +24,14 @@ type Interactor interface {
 	Execute(id string, args ...interface{}) error
 }
 
-func (mc *MsgHandler) handleRegisterMsg(body []byte) error {
+func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
 	msgParsed := RegisterRequestMsg{}
 	err := json.Unmarshal(body, &msgParsed)
 	if err != nil {
 		return err
 	}
 
-	return mc.registerThing.Execute(msgParsed.ID, msgParsed.Name)
+	return mc.registerThing.Execute(msgParsed.ID, msgParsed.Name, authorizationHeader)
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
@@ -40,9 +40,11 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
 		mc.logger.Infof("Exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
 		mc.logger.Infof("Message received: %s", string(msg.Body))
 
+		authorizationHeader := msg.Headers["Authorization"]
+
 		switch msg.RoutingKey {
 		case "device.register":
-			err := mc.handleRegisterMsg(msg.Body)
+			err := mc.handleRegisterMsg(msg.Body, authorizationHeader.(string))
 			if err != nil {
 				mc.logger.Error(err)
 				continue
