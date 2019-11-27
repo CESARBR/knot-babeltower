@@ -43,9 +43,10 @@ func main() {
 
 	// Interactors
 	createUser := interactors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
+	createToken := interactors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
 
 	// Controllers
-	userController := controllers.NewUserController(logrus.Get("Controller"), createUser)
+	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
 
 	// Server
 	serverChan := make(chan bool, 1)

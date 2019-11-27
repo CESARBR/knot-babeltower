@@ -1,6 +1,11 @@
 basePath: /
 definitions:
-  controllers.StatusResponse:
+  controllers.CreateTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  controllers.DetailedErrorResponse:
     properties:
       message:
         type: string
@@ -37,6 +42,25 @@ paths:
           schema:
             $ref: '#/definitions/server.Health'
       summary: Verify the service health
+  /tokens:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User e-mail and password
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entities.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User's token
+          schema:
+            $ref: '#/definitions/controllers.CreateTokenResponse'
+      summary: Generate a new user's token
   /users:
     post:
       consumes:
