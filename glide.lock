@@ -1,5 +1,5 @@
-hash: 6657618d592d020e1db098f86cd955873cf0cb6dfb40375f0158786ad7ad3984
-updated: 2019-12-09T18:44:00.286606-03:00
+hash: 465234515d8d4d58797d120e18899a83c3b660fc031cca78bbd93ec4ace4dd3a
+updated: 2019-12-12T10:28:48.579109-03:00
 imports:
 - name: github.com/alecthomas/template
   version: fb15b899a75114aa79cc930e33c46b577cc664b1
@@ -65,6 +65,11 @@ imports:
   version: b5bf975e5823809fb22c7644d008757f78a4259e
 - name: github.com/streadway/amqp
   version: edfb9018d2714e4ec54dbaba37dbfef2bdadf0e4
+- name: github.com/stretchr/testify
+  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
+  subpackages:
+  - assert
+  - mock
 - name: github.com/swaggo/files
   version: 630677cd5c140664e2ff6b53e75c289877268c69
 - name: github.com/swaggo/http-swagger
@@ -90,7 +95,7 @@ imports:
   - unicode/norm
   - width
 - name: golang.org/x/tools
-  version: 115af5e89bf7a8d9b991baffd7b86ec92ee403ab
+  version: 825cb0626375eeecd4d401e7f1653c1ec405d2c8
   subpackages:
   - go/ast/astutil
   - go/buildutil
@@ -111,8 +116,3 @@ testImports:
   - difflib
 - name: github.com/stretchr/objx
   version: 35313a95ee26395aa17d366c71a2ccf788fa69b6
-- name: github.com/stretchr/testify
-  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
-  subpackages:
-  - assert
-  - mock

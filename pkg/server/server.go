@@ -66,6 +66,7 @@ func (s *Server) createRouters() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck", s.healthcheckHandler)
 	r.HandleFunc("/users", s.userController.Create).Methods("POST")
+	r.HandleFunc("/tokens", s.userController.CreateToken).Methods("POST")
 	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	)).Methods("GET")

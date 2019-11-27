@@ -41,6 +41,10 @@ func (fup *FakeUserProxy) Create(user entities.User) (err error) {
 	return err
 }
 
+func (fup *FakeUserProxy) CreateToken(user entities.User) (string, error) {
+	return "", nil
+}
+
 func TestCreateUser(t *testing.T) {
 	testCases := []struct {
 		name          string

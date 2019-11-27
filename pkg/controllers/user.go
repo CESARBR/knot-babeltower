@@ -12,15 +12,22 @@ import (
 
 // UserController represents the controller for user
 type UserController struct {
-	logger               logging.Logger
-	createUserInteractor *interactors.CreateUser
+	logger                logging.Logger
+	createUserInteractor  *interactors.CreateUser
+	createTokenInteractor *interactors.CreateToken
 }
 
 // NewUserController constructs the controller
 func NewUserController(
 	logger logging.Logger,
-	createUserInteractor *interactors.CreateUser) *UserController {
-	return &UserController{logger, createUserInteractor}
+	createUserInteractor *interactors.CreateUser,
+	createTokenInteractor *interactors.CreateToken) *UserController {
+	return &UserController{logger, createUserInteractor, createTokenInteractor}
+}
+
+// CreateTokenResponse is used to map the use case response to HTTP
+type CreateTokenResponse struct {
+	Token string `json:"token"`
 }
 
 // DetailedErrorResponse represents the response to be sent to the request
@@ -53,6 +60,8 @@ func mapErrorToStatusCode(err error) int {
 	switch err.(type) {
 	case entities.ErrEntityExists:
 		return http.StatusConflict
+	case entities.ErrInvalidCredentials:
+		return http.StatusForbidden
 	default:
 		return http.StatusInternalServerError
 	}
@@ -93,4 +102,36 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 
 	uc.logger.Infof("User %s created", user.Email)
 	uc.writeResponse(w, http.StatusCreated, nil)
+}
+
+// CreateToken godoc
+// @Summary Generate a user's token
+// @Produce json
+// @Accept  json
+// @Param user body entities.User true "User e-mail and password"
+// @Success 201 {object} CreateTokenResponse "User's token"
+// @Failure 403 {object} StatusResponse "Invalid credentials"
+// @Failure 500 {string} string "Internal server error"
+// @Router /tokens [post]
+// CreateToken handles the server request and calls CreateTokenInteractor
+func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
+	var user entities.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		uc.logger.Error("Failed to parse request body")
+		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
+		return
+	}
+
+	token, err := uc.createTokenInteractor.Execute(user)
+	if err != nil {
+		uc.logger.Errorf("Failed to create user's token: %s", err)
+		der := &DetailedErrorResponse{err.Error()}
+		uc.writeResponse(w, mapErrorToStatusCode(err), der)
+		return
+	}
+
+	uc.logger.Infof("User's %s token created", user.Email)
+	ctr := &CreateTokenResponse{token}
+	uc.writeResponse(w, http.StatusCreated, ctr)
 }

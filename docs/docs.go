@@ -45,6 +45,36 @@ var doc = `{
                 }
             }
         },
+        "/tokens": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Generate a new user's token",
+                "parameters": [
+                    {
+                        "description": "User e-mail and password",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User's token",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.CreateTokenResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "post": {
                 "consumes": [
@@ -69,7 +99,7 @@ var doc = `{
                     "201": {
                         "description": "Message informing the user was created properly",
                         "schema": {
-                            "$ref": "#/definitions/controllers.StatusResponse"
+                            "$ref": "#/definitions/controllers.DetailedErrorResponse"
                         }
                     },
                     "409": {
@@ -95,7 +125,15 @@ var doc = `{
         }
     },
     "definitions": {
-        "controllers.StatusResponse": {
+        "controllers.CreateTokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.DetailedErrorResponse": {
             "type": "object",
             "properties": {
                 "message": {
