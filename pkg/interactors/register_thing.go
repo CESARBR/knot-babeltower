@@ -160,7 +160,13 @@ func (rt *RegisterThing) Execute(id string, args ...interface{}) error {
 		return err
 	}
 
-	// TODO: wait connector reply
+	// Ignore message received and don't wait for response
+	go func(rt *RegisterThing) {
+		_, err := rt.connector.RecvRegisterDevice()
+		if err != nil {
+			rt.logger.Error(err)
+		}
+	}(rt)
 
 	return nil
 }
