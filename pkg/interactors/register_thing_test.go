@@ -39,7 +39,8 @@ type FakeProxy struct {
 
 type FakeConnector struct {
 	mock.Mock
-	returnError error
+	sendError error
+	recvError error
 }
 
 func (fl *FakeRegisterThingLogger) Info(...interface{}) {}
@@ -72,6 +73,12 @@ func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
 	return ret.Error(0)
 }
 
+func (fc *FakeConnector) RecvRegisterDevice() (bytes []byte, err error) {
+	ret := fc.Called()
+
+	return bytes, ret.Error(1)
+}
+
 func TestRegisterThing(t *testing.T) {
 	testCases := map[string]registerTestSuite{
 		"TestPublisherError": {
@@ -82,7 +89,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{returnErr: errors.New("mock publisher error")},
 			&FakeProxy{},
-			&FakeConnector{returnError: nil},
+			&FakeConnector{},
 			errors.New("mock publisher error"),
 		},
 		"TestProxyError": {
@@ -173,7 +180,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeConnector{},
 			ErrorUnauthorized{},
 		},
-		"shouldRaiseConnectorError": {
+		"shouldRaiseConnectorSendError": {
 			false,
 			"123",
 			"test",
@@ -181,7 +188,18 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{},
 			&FakeProxy{},
-			&FakeConnector{returnError: entities.ErrEntityExists{}},
+			&FakeConnector{sendError: entities.ErrEntityExists{}},
+			entities.ErrEntityExists{},
+		},
+		"shouldRaiseConnectorRecvError": {
+			false,
+			"123",
+			"test",
+			"authorization token",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{},
+			&FakeProxy{},
+			&FakeConnector{recvError: entities.ErrEntityExists{}},
 			entities.ErrEntityExists{},
 		},
 	}
@@ -203,7 +221,9 @@ func TestRegisterThing(t *testing.T) {
 			tc.fakeProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
 				Return(tc.fakePublisher.token, tc.fakeProxy.returnError).Maybe()
 			tc.fakeConnector.On("SendRegisterDevice", tc.thingID, tc.thingName).
-				Return(tc.fakeConnector.returnError).Maybe()
+				Return(tc.fakeConnector.sendError).Maybe()
+			tc.fakeConnector.On("RecvRegisterDevice").
+				Return([]byte{}, tc.fakeConnector.recvError).Maybe()
 
 			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy, tc.fakeConnector)
 			if tc.testArguments {
