@@ -1,7 +1,8 @@
 - repo: git://github.com/dnephin/pre-commit-golang
-  rev: master
+  rev: 0a943e8cbbdfd4a4b33f15e77c542715b4964f65
   hooks:
     - id: go-fmt
     - id: golangci-lint
     - id: go-imports
     - id: go-unit-tests
+    - id: go-build
