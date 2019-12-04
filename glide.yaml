@@ -12,3 +12,5 @@ import:
 - package: github.com/streadway/amqp
 - package: gopkg.in/cenkalti/backoff.v3
   version: ^3.0.0
+- package: github.com/alecthomas/template
+- package: github.com/swaggo/http-swagger

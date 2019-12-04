@@ -49,6 +49,16 @@ func verifyErrorType(err error) int {
 	}
 }
 
+// Create godoc
+// @Summary Creates a new user
+// @Produce json
+// @Accept  json
+// @Param user body entities.User true "User e-mail and password"
+// @Success 201 {object} StatusResponse "Message informing the user was created properly"
+// @Failure 422 {object} StatusResponse "Invalid request format"
+// @Failure 409 {object} StatusResponse "User already exists"
+// @Failure 500 {string} string "Internal server error"
+// @Router /users [post]
 // Create handles the server request and calls CreateUserInteractor
 func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	var err error

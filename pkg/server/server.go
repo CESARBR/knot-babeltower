@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "github.com/CESARBR/knot-babeltower/docs" // This blank import is needed in order to documentation be provided by the server
 	"github.com/CESARBR/knot-babeltower/pkg/controllers"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
-
 	"github.com/gorilla/mux"
 )
 
@@ -51,10 +53,22 @@ func (s *Server) Stop() {
 	}
 }
 
+// @title Babeltower API
+// @version 1.0
+// @description This is the babeltower HTTP API documentation.
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /
 func (s *Server) createRouters() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/healthcheck", s.healthcheckHandler)
 	r.HandleFunc("/users", s.userController.Create).Methods("POST")
+	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	)).Methods("GET")
 	return r
 }
 
@@ -65,6 +79,11 @@ func (s *Server) logRequest(handler http.Handler) http.Handler {
 	})
 }
 
+// Healthcheck godoc
+// @Summary Verify the service health
+// @Produce json
+// @Success 200 {object} Health
+// @Router /healthcheck [get]
 func (s *Server) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
