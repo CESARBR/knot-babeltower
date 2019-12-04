@@ -19,6 +19,7 @@ tools:
 	go get github.com/matm/gocov-html
 	go get github.com/ahmetb/govvv
 	go get github.com/cespare/reflex
+	go get github.com/swaggo/swag/cmd/swag
 	pip install pre-commit
 	pre-commit install
 
@@ -33,6 +34,10 @@ watch:
 .PHONY: bin
 bin:
 	env CGO_ENABLED=0 GOOS=$(OS) GOARCH=${GOARCH} go build -a -installsuffix cgo ${LDFLAGS} -o ${BINARY}-$(OS)-${GOARCH} cmd/main.go ;
+
+.PHONY: http-docs
+http-docs:
+	swag init -g pkg/server/server.go
 
 .PHONY: test
 test:

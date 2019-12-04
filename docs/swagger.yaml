@@ -1,0 +1,71 @@
+basePath: /
+definitions:
+  controllers.StatusResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  entities.User:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  server.Health:
+    properties:
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the babeltower HTTP API documentation.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Babeltower API
+  version: "1.0"
+paths:
+  /healthcheck:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Health'
+      summary: Verify the service health
+  /users:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User e-mail and password
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entities.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Message informing the user was created properly
+          schema:
+            $ref: '#/definitions/controllers.StatusResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/controllers.StatusResponse'
+        "422":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/controllers.StatusResponse'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Creates a new user
+swagger: "2.0"
