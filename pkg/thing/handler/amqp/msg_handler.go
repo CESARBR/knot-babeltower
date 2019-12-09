@@ -1,9 +1,10 @@
-package network
+package amqp
 
 import (
 	"encoding/json"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
 	logger        logging.Logger
-	amqp          *Amqp
+	amqp          *network.Amqp
 	registerThing Interactor
 }
 
@@ -25,7 +26,7 @@ type Interactor interface {
 }
 
 func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
-	msgParsed := RegisterRequestMsg{}
+	msgParsed := network.RegisterRequestMsg{}
 	err := json.Unmarshal(body, &msgParsed)
 	if err != nil {
 		return err
@@ -34,7 +35,7 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string)
 	return mc.registerThing.Execute(msgParsed.ID, msgParsed.Name, authorizationHeader)
 }
 
-func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
+func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 	for {
 		msg := <-msgChan
 		mc.logger.Infof("Exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
@@ -54,7 +55,7 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
 }
 
 // NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *Amqp, registerThing Interactor) *MsgHandler {
+func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, registerThing Interactor) *MsgHandler {
 	return &MsgHandler{logger, amqp, registerThing}
 }
 
@@ -62,7 +63,7 @@ func NewMsgHandler(logger logging.Logger, amqp *Amqp, registerThing Interactor) 
 func (mc *MsgHandler) Start(started chan bool) {
 	mc.logger.Debug("Msg handler started")
 
-	msgChan := make(chan InMsg)
+	msgChan := make(chan network.InMsg)
 	err := mc.amqp.OnMessage(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyFogIn)
 	if err != nil {
 		mc.logger.Error(err)

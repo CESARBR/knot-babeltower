@@ -1,9 +1,10 @@
-package network
+package amqp
 
 import (
 	"encoding/json"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 
 type connector struct {
 	logger logging.Logger
-	amqp   *Amqp
+	amqp   *network.Amqp
 }
 
 // Connector handle messages received from a service
@@ -25,7 +26,7 @@ type Connector interface {
 }
 
 // NewConnector constructs the Connector
-func NewConnector(logger logging.Logger, amqp *Amqp) Connector {
+func NewConnector(logger logging.Logger, amqp *network.Amqp) Connector {
 	return &connector{logger, amqp}
 }
 
@@ -33,7 +34,7 @@ func NewConnector(logger logging.Logger, amqp *Amqp) Connector {
 func (mp *connector) SendRegisterDevice(id string, name string) error {
 	mp.logger.Debug("Sending register message")
 
-	msg := RegisterRequestMsg{id, name}
+	msg := network.RegisterRequestMsg{ID: id, Name: name}
 	bytes, err := json.Marshal(msg)
 	if err != nil {
 		mp.logger.Error(err)
@@ -45,7 +46,7 @@ func (mp *connector) SendRegisterDevice(id string, name string) error {
 
 // RecvRegisterDevice is a blocking function that receives the device
 func (mp *connector) RecvRegisterDevice() ([]byte, error) {
-	msgChan := make(chan InMsg)
+	msgChan := make(chan network.InMsg)
 	err := mp.amqp.OnMessage(msgChan, queueNameOut, exchangeConnOut, registerOutKey)
 	if err != nil {
 		mp.logger.Error(err)

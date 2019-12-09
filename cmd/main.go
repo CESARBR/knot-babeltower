@@ -6,9 +6,12 @@ import (
 	"syscall"
 
 	"github.com/CESARBR/knot-babeltower/internal/config"
-	thingInteractors "github.com/CESARBR/knot-babeltower/pkg/interactors"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/server"
+	thingDeliveryAMQP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
+	thingDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
+	thingHandlerAMQP "github.com/CESARBR/knot-babeltower/pkg/thing/handler/amqp"
+	thingInteractors "github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 	"github.com/CESARBR/knot-babeltower/pkg/user/controllers"
 	userDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
 	userInteractors "github.com/CESARBR/knot-babeltower/pkg/user/interactors"
@@ -41,12 +44,12 @@ func main() {
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
 
 	// AMQP Publisher
-	msgPublisher := network.NewMsgPublisher(logrus.Get("MsgPublisher"), amqp)
+	msgPublisher := thingDeliveryAMQP.NewMsgPublisher(logrus.Get("MsgPublisher"), amqp)
 
 	// Services
 	userProxy := userDeliveryHTTP.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
-	thingProxy := network.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
-	connector := network.NewConnector(logrus.Get("Connector"), amqp)
+	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
+	connector := thingDeliveryAMQP.NewConnector(logrus.Get("Connector"), amqp)
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
@@ -62,7 +65,7 @@ func main() {
 
 	// AMQP Handler
 	msgChan := make(chan bool, 1)
-	msgHandler := network.NewMsgHandler(logrus.Get("MsgHandler"), amqp, registerThing)
+	msgHandler := thingHandlerAMQP.NewMsgHandler(logrus.Get("MsgHandler"), amqp, registerThing)
 
 	// Start goroutines
 	go amqp.Start(amqpChan)
