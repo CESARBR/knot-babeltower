@@ -9,8 +9,9 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "github.com/CESARBR/knot-babeltower/docs" // This blank import is needed in order to documentation be provided by the server
-	"github.com/CESARBR/knot-babeltower/pkg/controllers"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/user/controllers"
+
 	"github.com/gorilla/mux"
 )
 

@@ -6,7 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/CESARBR/knot-babeltower/pkg/entities"
+	shared "github.com/CESARBR/knot-babeltower/pkg/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
 type FakeCreateUserLogger struct {
@@ -70,8 +71,8 @@ func TestCreateUser(t *testing.T) {
 			"123",
 			&FakeCreateUserLogger{},
 			&FakeUserProxy{},
-			entities.ErrEntityExists{Msg: "User exists"},
-			entities.ErrEntityExists{Msg: "mocked msg"},
+			shared.ErrEntityExists{Msg: "User exists"},
+			shared.ErrEntityExists{Msg: "mocked msg"},
 		},
 	}
 

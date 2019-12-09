@@ -6,10 +6,12 @@ import (
 	"syscall"
 
 	"github.com/CESARBR/knot-babeltower/internal/config"
-	"github.com/CESARBR/knot-babeltower/pkg/controllers"
-	"github.com/CESARBR/knot-babeltower/pkg/interactors"
+	thingInteractors "github.com/CESARBR/knot-babeltower/pkg/interactors"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/server"
+	"github.com/CESARBR/knot-babeltower/pkg/user/controllers"
+	userDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
+	userInteractors "github.com/CESARBR/knot-babeltower/pkg/user/interactors"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 )
@@ -42,14 +44,14 @@ func main() {
 	msgPublisher := network.NewMsgPublisher(logrus.Get("MsgPublisher"), amqp)
 
 	// Services
-	userProxy := network.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
+	userProxy := userDeliveryHTTP.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
 	thingProxy := network.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
 	connector := network.NewConnector(logrus.Get("Connector"), amqp)
 
 	// Interactors
-	createUser := interactors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
-	createToken := interactors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
-	registerThing := interactors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher, thingProxy, connector)
+	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
+	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
+	registerThing := thingInteractors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher, thingProxy, connector)
 
 	// Controllers
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
