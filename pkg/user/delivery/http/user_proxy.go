@@ -1,4 +1,4 @@
-package network
+package http
 
 import (
 	"bytes"
@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/CESARBR/knot-babeltower/pkg/entities"
+	shared "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
 // UserProxy proxy a request to the user service interface
@@ -56,7 +57,7 @@ func (p *Proxy) Create(user entities.User) (err error) {
 
 	if resp.StatusCode == http.StatusConflict {
 		msg := fmt.Sprintf("User %s exists", user.Email)
-		return entities.ErrEntityExists{Msg: msg}
+		return shared.ErrEntityExists{Msg: msg}
 	}
 
 	return nil

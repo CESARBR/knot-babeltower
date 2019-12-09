@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CESARBR/knot-babeltower/pkg/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
