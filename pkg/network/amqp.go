@@ -16,6 +16,14 @@ type Amqp struct {
 	queue   *amqp.Queue
 }
 
+// InMsg represents the message received from the AMQP broker
+type InMsg struct {
+	Exchange   string
+	RoutingKey string
+	Headers    map[string]interface{}
+	Body       []byte
+}
+
 func (a *Amqp) notifyWhenClosed(started chan bool) {
 	errReason := <-a.conn.NotifyClose(make(chan *amqp.Error))
 	a.logger.Infof("AMQP connection closed: %s", errReason)

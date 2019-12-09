@@ -5,14 +5,16 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
 )
 
 // RegisterThing use case to register a new thing
 type RegisterThing struct {
 	logger       logging.Logger
-	msgPublisher network.Publisher
-	thingProxy   network.ThingProxy
-	connector    network.Connector
+	msgPublisher amqp.Publisher
+	thingProxy   http.ThingProxy
+	connector    amqp.Connector
 }
 
 // ErrorIDLenght is raised when ID is more than 16 characters
@@ -58,7 +60,7 @@ func (err ErrorInvalidTypeArgument) Error() string {
 }
 
 // NewRegisterThing contructs the use case
-func NewRegisterThing(logger logging.Logger, msgPublisher network.Publisher, thingProxy network.ThingProxy, connector network.Connector) *RegisterThing {
+func NewRegisterThing(logger logging.Logger, msgPublisher amqp.Publisher, thingProxy http.ThingProxy, connector amqp.Connector) *RegisterThing {
 	return &RegisterThing{logger, msgPublisher, thingProxy, connector}
 }
 

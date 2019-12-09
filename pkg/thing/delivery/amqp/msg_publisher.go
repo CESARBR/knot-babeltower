@@ -1,9 +1,10 @@
-package network
+package amqp
 
 import (
 	"encoding/json"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 )
 
 const (
@@ -14,21 +15,21 @@ const (
 // MsgPublisher handle messages received from a service
 type MsgPublisher struct {
 	logger logging.Logger
-	amqp   *Amqp
+	amqp   *network.Amqp
 }
 
 // Publisher is the interface with methods that the publisher should have
 type Publisher interface {
-	SendRegisterDevice(RegisterResponseMsg) error
+	SendRegisterDevice(network.RegisterResponseMsg) error
 }
 
 // NewMsgPublisher constructs the MsgPublisher
-func NewMsgPublisher(logger logging.Logger, amqp *Amqp) *MsgPublisher {
+func NewMsgPublisher(logger logging.Logger, amqp *network.Amqp) *MsgPublisher {
 	return &MsgPublisher{logger, amqp}
 }
 
 // SendRegisterDevice sends a registered message
-func (mp *MsgPublisher) SendRegisterDevice(msg RegisterResponseMsg) error {
+func (mp *MsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
 	mp.logger.Debug("Sending register message")
 
 	jsonMsg, err := json.Marshal(msg)
