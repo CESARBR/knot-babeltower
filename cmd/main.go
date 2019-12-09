@@ -54,7 +54,7 @@ func main() {
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
 	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
-	registerThing := thingInteractors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher, thingProxy, connector)
+	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("RegisterThing"), msgPublisher, thingProxy, connector)
 
 	// Controllers
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
@@ -65,7 +65,7 @@ func main() {
 
 	// AMQP Handler
 	msgChan := make(chan bool, 1)
-	msgHandler := thingHandlerAMQP.NewMsgHandler(logrus.Get("MsgHandler"), amqp, registerThing)
+	msgHandler := thingHandlerAMQP.NewMsgHandler(logrus.Get("MsgHandler"), amqp, thingInteractor)
 
 	// Start goroutines
 	go amqp.Start(amqpChan)

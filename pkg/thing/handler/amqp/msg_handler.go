@@ -5,6 +5,7 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 )
 
 const (
@@ -15,14 +16,9 @@ const (
 
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
-	logger        logging.Logger
-	amqp          *network.Amqp
-	registerThing Interactor
-}
-
-// Interactor is the use case to be executed
-type Interactor interface {
-	Execute(id string, args ...interface{}) error
+	logger          logging.Logger
+	amqp            *network.Amqp
+	thingInteractor interactors.Interactor
 }
 
 func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
@@ -32,7 +28,7 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string)
 		return err
 	}
 
-	return mc.registerThing.Execute(msgParsed.ID, msgParsed.Name, authorizationHeader)
+	return mc.thingInteractor.Register(msgParsed.ID, msgParsed.Name, authorizationHeader)
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
@@ -55,7 +51,7 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 }
 
 // NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, registerThing Interactor) *MsgHandler {
+func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, registerThing interactors.Interactor) *MsgHandler {
 	return &MsgHandler{logger, amqp, registerThing}
 }
 
