@@ -11,10 +11,9 @@ import (
 )
 
 type registerTestSuite struct {
-	testArguments bool
 	thingID       string
-	thingName     interface{}
-	authorization interface{}
+	thingName     string
+	authorization string
 	fakeLogger    *FakeRegisterThingLogger
 	fakePublisher *FakeMsgPublisher
 	fakeProxy     *FakeProxy
@@ -82,7 +81,6 @@ func (fc *FakeConnector) RecvRegisterDevice() (bytes []byte, err error) {
 func TestRegisterThing(t *testing.T) {
 	testCases := map[string]registerTestSuite{
 		"TestPublisherError": {
-			false,
 			"123",
 			"test",
 			"authorization token",
@@ -93,7 +91,6 @@ func TestRegisterThing(t *testing.T) {
 			errors.New("mock publisher error"),
 		},
 		"TestProxyError": {
-			false,
 			"123",
 			"test",
 			"authorization token",
@@ -104,7 +101,6 @@ func TestRegisterThing(t *testing.T) {
 			errors.New("mock proxy error"),
 		},
 		"TestIDLenght": {
-			false,
 			"01234567890123456789",
 			"test",
 			"authorization token",
@@ -114,19 +110,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeConnector{},
 			ErrorIDLenght{},
 		},
-		"TestNameEmpty": {
-			false,
-			"123",
-			"",
-			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorNameNotFound{}},
-			&FakeProxy{},
-			&FakeConnector{},
-			ErrorNameNotFound{},
-		},
 		"TestIDInvalid": {
-			false,
 			"not hex string",
 			"test",
 			"authorization token",
@@ -136,52 +120,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeConnector{},
 			ErrorIDInvalid{},
 		},
-		"TestMissingArgument": {
-			true,
-			"123",
-			"",
-			"",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorMissingArgument{}},
-			&FakeProxy{},
-			&FakeConnector{},
-			ErrorMissingArgument{},
-		},
-		"TestInvalidTypeName": {
-			false,
-			"123",
-			123,
-			"",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Name is not string"}},
-			&FakeProxy{},
-			&FakeConnector{},
-			ErrorInvalidTypeArgument{"Name is not string"},
-		},
-		"TestInvalidTypeToken": {
-			false,
-			"123",
-			"test",
-			123,
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Authorization token is not string"}},
-			&FakeProxy{},
-			&FakeConnector{},
-			ErrorInvalidTypeArgument{"Authorization token is not string"},
-		},
-		"TestTokenUnauthorized": {
-			false,
-			"123",
-			"test",
-			"",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorUnauthorized{}},
-			&FakeProxy{},
-			&FakeConnector{},
-			ErrorUnauthorized{},
-		},
 		"shouldRaiseConnectorSendError": {
-			false,
 			"123",
 			"test",
 			"authorization token",
@@ -192,7 +131,6 @@ func TestRegisterThing(t *testing.T) {
 			entities.ErrEntityExists{},
 		},
 		"shouldRaiseConnectorRecvError": {
-			false,
 			"123",
 			"test",
 			"authorization token",
@@ -225,13 +163,8 @@ func TestRegisterThing(t *testing.T) {
 			tc.fakeConnector.On("RecvRegisterDevice").
 				Return([]byte{}, tc.fakeConnector.recvError).Maybe()
 
-			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy, tc.fakeConnector)
-			if tc.testArguments {
-				err = createThingInteractor.Execute(tc.thingID)
-			} else {
-				err = createThingInteractor.Execute(tc.thingID, tc.thingName, tc.authorization)
-			}
-
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy, tc.fakeConnector)
+			err = thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
 			if err != nil && !assert.IsType(t, err, tc.errExpected) {
 				t.Errorf("Create Thing failed with unexpected error. Error: %s", err)
 				return
