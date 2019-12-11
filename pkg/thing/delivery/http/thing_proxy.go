@@ -7,13 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
 // ThingProxy proxy a request to the thing service interface
 type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
+	UpdateSchema(ID string, schemaList []entities.Schema) error
 }
 
 type proxy struct {
@@ -52,49 +53,111 @@ func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingPro
 	return proxy{url, logger}
 }
 
-// Create registers a thing on service and return the id generated
-func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
-	p.logger.Debug("Proxying request to create thing")
+// RequestInfo aims to group all request releated information
+type RequestInfo struct {
+	method        string
+	url           string
+	authorization string
+	contentType   string
+	data          []byte
+}
+
+type errorConflict struct{ error }
+type errorForbidden struct{ error }
+
+func (err errorForbidden) Error() string {
+	return "Error forbidden"
+}
+
+func (err errorConflict) Error() string {
+	return "Error conflict"
+}
+
+func (p proxy) mapErrorFromStatusCode(code int) error {
+	var err error
+
+	if code != http.StatusCreated {
+		switch code {
+		case http.StatusConflict:
+			err = errorConflict{}
+		case http.StatusForbidden:
+			err = errorForbidden{}
+		}
+	}
+	return err
+}
+
+func (p proxy) sendRequest(info *RequestInfo) (*http.Response, error) {
 	/**
 	 * Add Timeout in http.Client to avoid blocking the request.
 	 */
 	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest(info.method, info.url, bytes.NewBuffer(info.data))
+	if err != nil {
+		p.logger.Error(err)
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", info.authorization)
+	req.Header.Set("Content-Type", info.contentType)
+
+	return client.Do(req)
+}
+
+// Create register a thing on service and return the id generated
+func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
+	p.logger.Debug("Proxying request to create thing")
 	jsonBody, err := p.getJSONBody(id, name)
 	if err != nil {
 		p.logger.Error(err)
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", p.url+"/things", bytes.NewBuffer(jsonBody))
-	if err != nil {
-		p.logger.Error(err)
-		return "", err
+	requestInfo := &RequestInfo{
+		"POST",
+		p.url + "/things",
+		authorization,
+		"application/json",
+		jsonBody,
 	}
 
-	req.Header.Set("Authorization", authorization)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
+	resp, err := p.sendRequest(requestInfo)
+	print(resp)
 	if err != nil {
 		p.logger.Error(err)
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusCreated {
-		p.logger.Errorf("Status not created: %d", resp.StatusCode)
-		switch resp.StatusCode {
-		case http.StatusConflict:
-			// TODO: Verify uniqueness from KNoT ID
-			err = entities.ErrEntityExists{Msg: "Thing exists"}
-		case http.StatusForbidden:
-			err = entities.ErrNoPerm{Msg: "The authorization token has no permission to create a thing"}
-		}
 		return "", err
 	}
 
 	locationHeader := resp.Header.Get("Location")
-	idGenerated = locationHeader[len("/things/"):] // get substring after "/things/"
+	fmt.Print(locationHeader)
+	thingID := locationHeader[len("/things/"):] // get substring after "/things/"
+	return thingID, p.mapErrorFromStatusCode(resp.StatusCode)
+}
 
-	return idGenerated, err
+// UpdateSchema receives the thing's ID and schema and send a HTTP request to
+// the thing's service in order to update it with the schema.
+func (p proxy) UpdateSchema(ID string, schemaList []entities.Schema) error {
+	parsedSchema, err := json.Marshal(schemaList)
+	if err != nil {
+		p.logger.Error(err)
+		return err
+	}
+
+	requestInfo := &RequestInfo{
+		"PUT",
+		p.url + "/things" + ID,
+		"authorization",
+		"application/json",
+		parsedSchema,
+	}
+
+	resp, err := p.sendRequest(requestInfo)
+	if err != nil {
+		p.logger.Error(err)
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	return p.mapErrorFromStatusCode(resp.StatusCode)
 }

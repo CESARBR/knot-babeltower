@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CESARBR/knot-babeltower/pkg/entities"
+	sharedEntities "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -72,6 +73,12 @@ func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
 	return ret.String(0), ret.Error(1)
 }
 
+func (fp *FakeProxy) UpdateSchema(id string, schemaList []entities.Schema) error {
+	ret := fp.Called(id, schemaList)
+
+	return ret.Error(0)
+}
+
 func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
 	ret := fc.Called(id, name)
 
@@ -133,8 +140,8 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{},
 			&FakeProxy{},
-			&FakeConnector{sendError: entities.ErrEntityExists{}},
-			entities.ErrEntityExists{},
+			&FakeConnector{sendError: sharedEntities.ErrEntityExists{}},
+			sharedEntities.ErrEntityExists{},
 		},
 		"shouldRaiseConnectorRecvError": {
 			"123",
@@ -143,8 +150,8 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{},
 			&FakeProxy{},
-			&FakeConnector{recvError: entities.ErrEntityExists{}},
-			entities.ErrEntityExists{},
+			&FakeConnector{recvError: sharedEntities.ErrEntityExists{}},
+			sharedEntities.ErrEntityExists{},
 		},
 	}
 
