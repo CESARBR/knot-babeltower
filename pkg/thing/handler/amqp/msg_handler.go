@@ -82,7 +82,13 @@ func (mc *MsgHandler) handleUpdateSchemaMsg(body []byte, authorizationHeader str
 
 	mc.logger.Info("Update schema message received")
 	mc.logger.Debug(authorizationHeader, updateSchemaReq)
-	// TODO: call interactor
+
+	err = mc.thingInteractor.UpdateSchema(authorizationHeader, updateSchemaReq.ID, updateSchemaReq.Schema)
+	if err != nil {
+		mc.logger.Error(err)
+		return err
+	}
+
 	return nil
 }
 
