@@ -16,6 +16,7 @@ require (
 	github.com/go-openapi/spec v0.19.5
 	github.com/go-openapi/swag v0.19.5
 	github.com/golangci/golangci-lint v1.22.2 // indirect
+	github.com/google/go-querystring v1.0.0
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/hcl v1.0.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
