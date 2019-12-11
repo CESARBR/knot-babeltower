@@ -73,8 +73,8 @@ func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
 	return ret.String(0), ret.Error(1)
 }
 
-func (fp *FakeProxy) UpdateSchema(id string, schemaList []entities.Schema) error {
-	ret := fp.Called(id, schemaList)
+func (fp *FakeProxy) UpdateSchema(authorization, id string, schemaList []entities.Schema) error {
+	ret := fp.Called(authorization, id, schemaList)
 
 	return ret.Error(0)
 }

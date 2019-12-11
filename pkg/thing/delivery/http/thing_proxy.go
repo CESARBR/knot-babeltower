@@ -15,6 +15,7 @@ import (
 // ThingProxy proxy a request to the thing service interface
 type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
+	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
 }
 
 type proxy struct {
@@ -171,8 +172,14 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
 // the thing's service in order to update it with the schema.
-func (p proxy) UpdateSchema(ID string, schemaList []entities.Schema) error {
-	parsedSchema, err := json.Marshal(schemaList)
+func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
+	thing, err := p.getThing(authorization, ID)
+	if err != nil {
+		return err
+	}
+
+	thing.Metadata.Knot.Schema = schemaList
+	parsedBody, err := json.Marshal(thing)
 	if err != nil {
 		p.logger.Error(err)
 		return err
@@ -180,10 +187,10 @@ func (p proxy) UpdateSchema(ID string, schemaList []entities.Schema) error {
 
 	requestInfo := &RequestInfo{
 		"PUT",
-		p.url + "/things" + ID,
-		"authorization",
+		p.url + "/things/" + thing.ID,
+		authorization,
 		"application/json",
-		parsedSchema,
+		parsedBody,
 		nil,
 	}
 

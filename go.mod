@@ -15,6 +15,8 @@ require (
 	github.com/go-openapi/jsonreference v0.19.3
 	github.com/go-openapi/spec v0.19.5
 	github.com/go-openapi/swag v0.19.5
+	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golangci/golangci-lint v1.22.2 // indirect
 	github.com/google/go-querystring v1.0.0
 	github.com/gorilla/mux v1.7.3
@@ -22,6 +24,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2
+	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/mailru/easyjson v0.0.0-20191204191233-4a28c93cedfd
 	github.com/matm/gocov-html v0.0.0-20191111163307-9ee104d84c82 // indirect
