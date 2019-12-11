@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	queueNameFogIn  = "fogIn-messages"
-	exchangeFogIn   = "fogIn"
-	bindingKeyFogIn = "device.*"
+	queueNameFogIn   = "fogIn-messages"
+	exchangeFogIn    = "fogIn"
+	bindingKeyDevice = "device.*"
+	bindingKeySchema = "schema.*"
 )
 
 // MsgHandler handle messages received from a service
@@ -26,12 +27,11 @@ func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingInteractor in
 	return &MsgHandler{logger, amqp, thingInteractor}
 }
 
-// Start starts to listen for messages
+// Start starts to listen messages
 func (mc *MsgHandler) Start(started chan bool) {
 	mc.logger.Debug("Msg handler started")
-
 	msgChan := make(chan network.InMsg)
-	err := mc.amqp.OnMessage(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyFogIn)
+	err := mc.subscribeToMessages(msgChan)
 	if err != nil {
 		mc.logger.Error(err)
 		started <- false
@@ -48,6 +48,20 @@ func (mc *MsgHandler) Stop() {
 	mc.logger.Debug("Msg handler stopped")
 }
 
+func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
+	var err error
+	subscribe := func(msgChan chan network.InMsg, queueName, exchange, key string) {
+		if err != nil {
+			return
+		}
+		err = mc.amqp.OnMessage(msgChan, queueName, exchange, key)
+	}
+
+	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
+	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
+	return err
+}
+
 func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
 	msgParsed := network.RegisterRequestMsg{}
 	err := json.Unmarshal(body, &msgParsed)
@@ -56,6 +70,20 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string)
 	}
 
 	return mc.thingInteractor.Register(authorizationHeader, msgParsed.ID, msgParsed.Name)
+}
+
+func (mc *MsgHandler) handleUpdateSchemaMsg(body []byte, authorizationHeader string) error {
+	var updateSchemaReq network.UpdateSchemaRequest
+	err := json.Unmarshal(body, &updateSchemaReq)
+	if err != nil {
+		mc.logger.Error(err)
+		return err
+	}
+
+	mc.logger.Info("Update schema message received")
+	mc.logger.Debug(authorizationHeader, updateSchemaReq)
+	// TODO: call interactor
+	return nil
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
@@ -69,6 +97,12 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		switch msg.RoutingKey {
 		case "device.register":
 			err := mc.handleRegisterMsg(msg.Body, authorizationHeader.(string))
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
+		case "schema.update":
+			err := mc.handleUpdateSchemaMsg(msg.Body, authorizationHeader.(string))
 			if err != nil {
 				mc.logger.Error(err)
 				continue
