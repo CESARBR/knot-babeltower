@@ -20,3 +20,8 @@ type UpdateSchemaRequest struct {
 	ID     string            `json:"id"`
 	Schema []entities.Schema `json:"schema,omitempty"`
 }
+
+// UpdatedSchemaResponse represents the update schema response message
+type UpdatedSchemaResponse struct {
+	ID string `json:"id"`
+}

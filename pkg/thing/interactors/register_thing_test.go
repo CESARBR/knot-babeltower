@@ -60,6 +60,12 @@ func (fp *FakeMsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) 
 	return ret.Error(0)
 }
 
+func (fp *FakeMsgPublisher) SendUpdatedSchema(thingID string) error {
+	ret := fp.Called(thingID)
+
+	return ret.Error(0)
+}
+
 func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
 	ret := fp.Called(id, name, authorization)
 
