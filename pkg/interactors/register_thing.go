@@ -11,6 +11,7 @@ import (
 type RegisterThing struct {
 	logger       logging.Logger
 	msgPublisher network.Publisher
+	thingProxy   network.ThingProxy
 }
 
 // ErrorIDLenght is raised when ID is more than 16 characters
@@ -42,8 +43,8 @@ func (err ErrorArgument) Error() string {
 }
 
 // NewRegisterThing contructs the use case
-func NewRegisterThing(logger logging.Logger, msgPublisher network.Publisher) *RegisterThing {
-	return &RegisterThing{logger, msgPublisher}
+func NewRegisterThing(logger logging.Logger, msgPublisher network.Publisher, thingProxy network.ThingProxy) *RegisterThing {
+	return &RegisterThing{logger, msgPublisher, thingProxy}
 }
 
 func (rt *RegisterThing) reply(id, token string, err error) error {
