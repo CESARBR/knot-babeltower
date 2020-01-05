@@ -14,9 +14,14 @@ const (
 
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
-	logger       logging.Logger
-	amqp         *Amqp
-	msgPublisher *MsgPublisher
+	logger        logging.Logger
+	amqp          *Amqp
+	registerThing Interactor
+}
+
+// Interactor is the use case to be executed
+type Interactor interface {
+	Execute(id string, args ...interface{}) error
 }
 
 func (mc *MsgHandler) handleRegisterMsg(body []byte) error {
@@ -26,8 +31,7 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte) error {
 		return err
 	}
 
-	response := RegisterResponseMsg{ID: msgParsed.ID, Token: "secret", Error: nil}
-	return mc.msgPublisher.SendRegisterDevice(response)
+	return mc.registerThing.Execute(msgParsed.ID, msgParsed.Name)
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
@@ -48,8 +52,8 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan InMsg) {
 }
 
 // NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *Amqp, msgPublisher *MsgPublisher) *MsgHandler {
-	return &MsgHandler{logger, amqp, msgPublisher}
+func NewMsgHandler(logger logging.Logger, amqp *Amqp, registerThing Interactor) *MsgHandler {
+	return &MsgHandler{logger, amqp, registerThing}
 }
 
 // Start starts to listen for messages

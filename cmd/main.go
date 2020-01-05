@@ -41,16 +41,13 @@ func main() {
 	// AMQP Publisher
 	msgPublisher := network.NewMsgPublisher(logrus.Get("MsgPublisher"), amqp)
 
-	// AMQP Handler
-	msgChan := make(chan bool, 1)
-	msgHandler := network.NewMsgHandler(logrus.Get("MsgHandler"), amqp, msgPublisher)
-
 	// Services
 	userProxy := network.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
 
 	// Interactors
 	createUser := interactors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
 	createToken := interactors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
+	registerThing := interactors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher)
 
 	// Controllers
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
@@ -58,6 +55,10 @@ func main() {
 	// Server
 	serverChan := make(chan bool, 1)
 	server := server.NewServer(config.Server.Port, logrus.Get("Server"), userController)
+
+	// AMQP Handler
+	msgChan := make(chan bool, 1)
+	msgHandler := network.NewMsgHandler(logrus.Get("MsgHandler"), amqp, registerThing)
 
 	// Start goroutines
 	go amqp.Start(amqpChan)
