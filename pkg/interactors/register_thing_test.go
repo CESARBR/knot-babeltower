@@ -16,6 +16,7 @@ type registerTestSuite struct {
 	authorization interface{}
 	fakeLogger    *FakeRegisterThingLogger
 	fakePublisher *FakeMsgPublisher
+	fakeProxy     *FakeProxy
 	errExpected   error
 }
 
@@ -26,6 +27,10 @@ type FakeMsgPublisher struct {
 	mock.Mock
 	sendError error
 	returnErr error
+}
+
+type FakeProxy struct {
+	mock.Mock
 }
 
 func (fl *FakeRegisterThingLogger) Info(...interface{}) {}
@@ -46,6 +51,12 @@ func (fp *FakeMsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) 
 	return ret.Error(0)
 }
 
+func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
+	ret := fp.Called(id, name, authorization)
+
+	return ret.String(0), ret.Error(1)
+}
+
 func TestRegisterThing(t *testing.T) {
 	testCases := map[string]registerTestSuite{
 		"TestPublisherError": {
@@ -55,6 +66,7 @@ func TestRegisterThing(t *testing.T) {
 			"authorization token",
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{returnErr: errors.New("mock publisher error")},
+			&FakeProxy{},
 			errors.New("mock publisher error"),
 		},
 		"TestIDLenght": {
@@ -64,6 +76,7 @@ func TestRegisterThing(t *testing.T) {
 			"authorization token",
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{sendError: ErrorIDLenght{}},
+			&FakeProxy{},
 			ErrorIDLenght{},
 		},
 		"TestNameEmpty": {
@@ -73,6 +86,7 @@ func TestRegisterThing(t *testing.T) {
 			"authorization token",
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{sendError: ErrorNameNotFound{}},
+			&FakeProxy{},
 			ErrorNameNotFound{},
 		},
 		"TestIDInvalid": {
@@ -82,6 +96,7 @@ func TestRegisterThing(t *testing.T) {
 			"authorization token",
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{sendError: ErrorIDInvalid{}},
+			&FakeProxy{},
 			ErrorIDInvalid{},
 		},
 	}
@@ -100,7 +115,7 @@ func TestRegisterThing(t *testing.T) {
 			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: "", Error: tmp}
 			tc.fakePublisher.On("SendRegisterDevice", msg).
 				Return(tc.fakePublisher.returnErr)
-			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher)
+			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy)
 			if tc.testArguments {
 				err = createThingInteractor.Execute(tc.thingID)
 			} else {

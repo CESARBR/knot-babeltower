@@ -30,12 +30,19 @@ type RabbitMQ struct {
 	URL string
 }
 
+// Things represents the things service to proxy request
+type Things struct {
+	Hostname string
+	Port     uint16
+}
+
 // Config represents the service configuration
 type Config struct {
 	Server
 	Logger
 	Users
 	RabbitMQ
+	Things
 }
 
 func readFile(name string) {
