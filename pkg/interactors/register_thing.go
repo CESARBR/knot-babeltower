@@ -12,6 +12,7 @@ type RegisterThing struct {
 	logger       logging.Logger
 	msgPublisher network.Publisher
 	thingProxy   network.ThingProxy
+	connector    network.Connector
 }
 
 // ErrorIDLenght is raised when ID is more than 16 characters
@@ -57,8 +58,8 @@ func (err ErrorInvalidTypeArgument) Error() string {
 }
 
 // NewRegisterThing contructs the use case
-func NewRegisterThing(logger logging.Logger, msgPublisher network.Publisher, thingProxy network.ThingProxy) *RegisterThing {
-	return &RegisterThing{logger, msgPublisher, thingProxy}
+func NewRegisterThing(logger logging.Logger, msgPublisher network.Publisher, thingProxy network.ThingProxy, connector network.Connector) *RegisterThing {
+	return &RegisterThing{logger, msgPublisher, thingProxy, connector}
 }
 
 func (rt *RegisterThing) reply(id, token string, err error) error {
@@ -152,6 +153,14 @@ func (rt *RegisterThing) Execute(id string, args ...interface{}) error {
 		rt.logger.Error(errReply)
 		return errReply
 	}
+
+	err = rt.connector.SendRegisterDevice(id, name)
+	if err != nil {
+		rt.logger.Error(err)
+		return err
+	}
+
+	// TODO: wait connector reply
 
 	return nil
 }

@@ -44,11 +44,12 @@ func main() {
 	// Services
 	userProxy := network.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
 	thingProxy := network.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
+	connector := network.NewConnector(logrus.Get("Connector"), amqp)
 
 	// Interactors
 	createUser := interactors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
 	createToken := interactors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
-	registerThing := interactors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher, thingProxy)
+	registerThing := interactors.NewRegisterThing(logrus.Get("RegisterThing"), msgPublisher, thingProxy, connector)
 
 	// Controllers
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)

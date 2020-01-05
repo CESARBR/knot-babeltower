@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,6 +18,7 @@ type registerTestSuite struct {
 	fakeLogger    *FakeRegisterThingLogger
 	fakePublisher *FakeMsgPublisher
 	fakeProxy     *FakeProxy
+	fakeConnector *FakeConnector
 	errExpected   error
 }
 
@@ -31,6 +33,11 @@ type FakeMsgPublisher struct {
 }
 
 type FakeProxy struct {
+	mock.Mock
+	returnError error
+}
+
+type FakeConnector struct {
 	mock.Mock
 	returnError error
 }
@@ -59,6 +66,12 @@ func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
 	return ret.String(0), ret.Error(1)
 }
 
+func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
+	ret := fc.Called(id, name)
+
+	return ret.Error(0)
+}
+
 func TestRegisterThing(t *testing.T) {
 	testCases := map[string]registerTestSuite{
 		"TestPublisherError": {
@@ -69,6 +82,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{returnErr: errors.New("mock publisher error")},
 			&FakeProxy{},
+			&FakeConnector{returnError: nil},
 			errors.New("mock publisher error"),
 		},
 		"TestProxyError": {
@@ -79,6 +93,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: errors.New("mock proxy error")},
 			&FakeProxy{returnError: errors.New("mock proxy error")},
+			&FakeConnector{},
 			errors.New("mock proxy error"),
 		},
 		"TestIDLenght": {
@@ -89,6 +104,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorIDLenght{}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorIDLenght{},
 		},
 		"TestNameEmpty": {
@@ -99,6 +115,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorNameNotFound{}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorNameNotFound{},
 		},
 		"TestIDInvalid": {
@@ -109,6 +126,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorIDInvalid{}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorIDInvalid{},
 		},
 		"TestMissingArgument": {
@@ -119,6 +137,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorMissingArgument{}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorMissingArgument{},
 		},
 		"TestInvalidTypeName": {
@@ -129,6 +148,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Name is not string"}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorInvalidTypeArgument{"Name is not string"},
 		},
 		"TestInvalidTypeToken": {
@@ -139,6 +159,7 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorInvalidTypeArgument{"Authorization token is not string"}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorInvalidTypeArgument{"Authorization token is not string"},
 		},
 		"TestTokenUnauthorized": {
@@ -149,7 +170,19 @@ func TestRegisterThing(t *testing.T) {
 			&FakeRegisterThingLogger{},
 			&FakeMsgPublisher{token: "", sendError: ErrorUnauthorized{}},
 			&FakeProxy{},
+			&FakeConnector{},
 			ErrorUnauthorized{},
+		},
+		"shouldRaiseConnectorError": {
+			false,
+			"123",
+			"test",
+			"authorization token",
+			&FakeRegisterThingLogger{},
+			&FakeMsgPublisher{},
+			&FakeProxy{},
+			&FakeConnector{returnError: entities.ErrEntityExists{}},
+			entities.ErrEntityExists{},
 		},
 	}
 
@@ -169,8 +202,10 @@ func TestRegisterThing(t *testing.T) {
 				Return(tc.fakePublisher.returnErr)
 			tc.fakeProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
 				Return(tc.fakePublisher.token, tc.fakeProxy.returnError).Maybe()
+			tc.fakeConnector.On("SendRegisterDevice", tc.thingID, tc.thingName).
+				Return(tc.fakeConnector.returnError).Maybe()
 
-			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy)
+			createThingInteractor := NewRegisterThing(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy, tc.fakeConnector)
 			if tc.testArguments {
 				err = createThingInteractor.Execute(tc.thingID)
 			} else {
@@ -184,6 +219,7 @@ func TestRegisterThing(t *testing.T) {
 
 			tc.fakePublisher.AssertExpectations(t)
 			tc.fakeProxy.AssertExpectations(t)
+			tc.fakeConnector.AssertExpectations(t)
 			t.Log("Create thing ok")
 		})
 	}

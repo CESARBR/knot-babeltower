@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	exchangeFogOut = "FogOut"
+	exchangeFogOut = "fogOut"
 	registerOutKey = "device.registered"
 )
 
