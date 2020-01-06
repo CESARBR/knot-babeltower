@@ -60,7 +60,15 @@ paths:
           description: User's token
           schema:
             $ref: '#/definitions/controllers.CreateTokenResponse'
-      summary: Generate a new user's token
+        "403":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/controllers.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Generate a user's token
   /users:
     post:
       consumes:
@@ -78,15 +86,15 @@ paths:
         "201":
           description: Message informing the user was created properly
           schema:
-            $ref: '#/definitions/controllers.StatusResponse'
+            $ref: '#/definitions/controllers.DetailedErrorResponse'
         "409":
           description: User already exists
           schema:
-            $ref: '#/definitions/controllers.StatusResponse'
+            $ref: '#/definitions/controllers.DetailedErrorResponse'
         "422":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/controllers.StatusResponse'
+            $ref: '#/definitions/controllers.DetailedErrorResponse'
         "500":
           description: Internal server error
           schema:

@@ -72,9 +72,9 @@ func mapErrorToStatusCode(err error) int {
 // @Produce json
 // @Accept  json
 // @Param user body entities.User true "User e-mail and password"
-// @Success 201 {object} StatusResponse "Message informing the user was created properly"
-// @Failure 422 {object} StatusResponse "Invalid request format"
-// @Failure 409 {object} StatusResponse "User already exists"
+// @Success 201 {object} DetailedErrorResponse "Message informing the user was created properly"
+// @Failure 422 {object} DetailedErrorResponse "Invalid request format"
+// @Failure 409 {object} DetailedErrorResponse "User already exists"
 // @Failure 500 {string} string "Internal server error"
 // @Router /users [post]
 // Create handles the server request and calls CreateUserInteractor
@@ -110,7 +110,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Param user body entities.User true "User e-mail and password"
 // @Success 201 {object} CreateTokenResponse "User's token"
-// @Failure 403 {object} StatusResponse "Invalid credentials"
+// @Failure 403 {object} DetailedErrorResponse "Invalid credentials"
 // @Failure 500 {string} string "Internal server error"
 // @Router /tokens [post]
 // CreateToken handles the server request and calls CreateTokenInteractor

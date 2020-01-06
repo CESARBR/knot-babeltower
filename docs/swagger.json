@@ -37,7 +37,7 @@
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Generate a new user's token",
+                "summary": "Generate a user's token",
                 "parameters": [
                     {
                         "description": "User e-mail and password",
@@ -54,6 +54,18 @@
                         "description": "User's token",
                         "schema": {
                             "$ref": "#/definitions/controllers.CreateTokenResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.DetailedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -89,13 +101,13 @@
                     "409": {
                         "description": "User already exists",
                         "schema": {
-                            "$ref": "#/definitions/controllers.StatusResponse"
+                            "$ref": "#/definitions/controllers.DetailedErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Invalid request format",
                         "schema": {
-                            "$ref": "#/definitions/controllers.StatusResponse"
+                            "$ref": "#/definitions/controllers.DetailedErrorResponse"
                         }
                     },
                     "500": {
