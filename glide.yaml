@@ -11,7 +11,7 @@ import:
   version: v1.4.0
 - package: github.com/streadway/amqp
 - package: gopkg.in/cenkalti/backoff.v3
-  version: ^3.0.0
+  version: v3.1.1
 - package: github.com/alecthomas/template
 - package: github.com/swaggo/http-swagger
 - package: github.com/stretchr/testify
