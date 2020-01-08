@@ -1,5 +1,5 @@
-hash: 465234515d8d4d58797d120e18899a83c3b660fc031cca78bbd93ec4ace4dd3a
-updated: 2019-12-12T10:28:48.579109-03:00
+hash: 62cf9c8d62a3d707088a7dbc27720d39e3494f010a9e3bb7bc700a570b612a67
+updated: 2020-01-08T14:07:38.180706-03:00
 imports:
 - name: github.com/alecthomas/template
   version: fb15b899a75114aa79cc930e33c46b577cc664b1
@@ -10,11 +10,11 @@ imports:
 - name: github.com/go-openapi/jsonpointer
   version: ed123515f087412cd7ef02e49b0b0a5e6a79a360
 - name: github.com/go-openapi/jsonreference
-  version: 82f31475a8f7a12bc26962f6e26ceade8ea6f66a
+  version: 1f9748e5f45ed77698a87f9f41ae6b35948d9bb8
 - name: github.com/go-openapi/spec
   version: 772572fd19ebcc983369e53bfaed4bde2077fe0c
 - name: github.com/go-openapi/swag
-  version: 8a84ec635f1b280a7062edeab609f0667a053248
+  version: 6a1eb9830f1c6b090dcd01cee6c3983604a2306f
 - name: github.com/gorilla/mux
   version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
 - name: github.com/hashicorp/hcl
@@ -73,7 +73,7 @@ imports:
 - name: github.com/swaggo/files
   version: 630677cd5c140664e2ff6b53e75c289877268c69
 - name: github.com/swaggo/http-swagger
-  version: c2865af9083e2d95ea55cd2734c03f7f81030cea
+  version: 0e9263c4b516a9b0f7570db00b0c08252b05b43f
 - name: github.com/swaggo/swag
   version: c9f403a30434dc43903a02f80bcf736f11169a86
 - name: golang.org/x/net
@@ -95,7 +95,7 @@ imports:
   - unicode/norm
   - width
 - name: golang.org/x/tools
-  version: 825cb0626375eeecd4d401e7f1653c1ec405d2c8
+  version: 11e9d9cc0042e6bd10337d4d2c3e5d9295508e7d
   subpackages:
   - go/ast/astutil
   - go/buildutil
