@@ -93,6 +93,7 @@ func main() {
 			msgHandler.Stop()
 			amqp.Stop()
 			server.Stop()
+			os.Exit(0)
 		}
 	}
 }
