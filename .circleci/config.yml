@@ -1,0 +1,26 @@
+version: 2.0
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/CESARBR/knot-babeltower
+    steps:
+      - checkout
+      - run: echo "Hello World"
+      - run: go version
+      - run:
+          name: "Install tools"
+          command: |
+            sudo apt install python-pip
+            curl https://glide.sh/get | sh
+            go get github.com/ahmetb/govvv
+            make tools
+      - run:
+          name: "Fetch dependencies"
+          command: make deps
+      - run:
+          name: "Run linter"
+          command: make lint
+      - run:
+          name: "Run tests"
+          command: make test
