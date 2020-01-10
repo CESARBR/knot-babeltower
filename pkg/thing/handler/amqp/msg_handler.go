@@ -21,6 +21,33 @@ type MsgHandler struct {
 	thingInteractor interactors.Interactor
 }
 
+// NewMsgHandler constructs the MsgHandler
+func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingInteractor interactors.Interactor) *MsgHandler {
+	return &MsgHandler{logger, amqp, thingInteractor}
+}
+
+// Start starts to listen for messages
+func (mc *MsgHandler) Start(started chan bool) {
+	mc.logger.Debug("Msg handler started")
+
+	msgChan := make(chan network.InMsg)
+	err := mc.amqp.OnMessage(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyFogIn)
+	if err != nil {
+		mc.logger.Error(err)
+		started <- false
+		return
+	}
+
+	go mc.onMsgReceived(msgChan)
+
+	started <- true
+}
+
+// Stop stops to listen for messages
+func (mc *MsgHandler) Stop() {
+	mc.logger.Debug("Msg handler stopped")
+}
+
 func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
 	msgParsed := network.RegisterRequestMsg{}
 	err := json.Unmarshal(body, &msgParsed)
@@ -48,31 +75,4 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 			}
 		}
 	}
-}
-
-// NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingInteractor interactors.Interactor) *MsgHandler {
-	return &MsgHandler{logger, amqp, thingInteractor}
-}
-
-// Start starts to listen for messages
-func (mc *MsgHandler) Start(started chan bool) {
-	mc.logger.Debug("Msg handler started")
-
-	msgChan := make(chan network.InMsg)
-	err := mc.amqp.OnMessage(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyFogIn)
-	if err != nil {
-		mc.logger.Error(err)
-		started <- false
-		return
-	}
-
-	go mc.onMsgReceived(msgChan)
-
-	started <- true
-}
-
-// Stop stops to listen for messages
-func (mc *MsgHandler) Stop() {
-	mc.logger.Debug("Msg handler stopped")
 }
