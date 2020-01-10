@@ -51,8 +51,8 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 }
 
 // NewMsgHandler constructs the MsgHandler
-func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, registerThing interactors.Interactor) *MsgHandler {
-	return &MsgHandler{logger, amqp, registerThing}
+func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingInteractor interactors.Interactor) *MsgHandler {
+	return &MsgHandler{logger, amqp, thingInteractor}
 }
 
 // Start starts to listen for messages
