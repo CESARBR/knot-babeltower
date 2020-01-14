@@ -28,7 +28,7 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string)
 		return err
 	}
 
-	return mc.thingInteractor.Register(msgParsed.ID, msgParsed.Name, authorizationHeader)
+	return mc.thingInteractor.Register(authorizationHeader, msgParsed.ID, msgParsed.Name)
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
