@@ -6,94 +6,19 @@ import (
 
 	sharedEntities "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
-	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 type registerTestSuite struct {
-	thingID       string
-	thingName     string
-	authorization string
-	fakeLogger    *FakeRegisterThingLogger
-	fakePublisher *FakeMsgPublisher
-	fakeProxy     *FakeProxy
-	fakeConnector *FakeConnector
-	errExpected   error
-}
-
-type FakeRegisterThingLogger struct {
-}
-
-type FakeMsgPublisher struct {
-	mock.Mock
-	sendError error
-	returnErr error
-	token     string
-}
-
-type FakeProxy struct {
-	mock.Mock
-	returnError error
-}
-
-type FakeConnector struct {
-	mock.Mock
-	sendError error
-	recvError error
-}
-
-func (fl *FakeRegisterThingLogger) Info(...interface{}) {}
-
-func (fl *FakeRegisterThingLogger) Infof(string, ...interface{}) {}
-
-func (fl *FakeRegisterThingLogger) Debug(...interface{}) {}
-
-func (fl *FakeRegisterThingLogger) Warn(...interface{}) {}
-
-func (fl *FakeRegisterThingLogger) Error(...interface{}) {}
-
-func (fl *FakeRegisterThingLogger) Errorf(string, ...interface{}) {}
-
-func (fp *FakeMsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
-	ret := fp.Called(msg)
-
-	return ret.Error(0)
-}
-
-func (fp *FakeMsgPublisher) SendUpdatedSchema(thingID string) error {
-	ret := fp.Called(thingID)
-
-	return ret.Error(0)
-}
-
-func (fp *FakeProxy) Create(id, name, authorization string) (string, error) {
-	ret := fp.Called(id, name, authorization)
-
-	return ret.String(0), ret.Error(1)
-}
-
-func (fp *FakeProxy) UpdateSchema(authorization, id string, schemaList []entities.Schema) error {
-	ret := fp.Called(authorization, id, schemaList)
-
-	return ret.Error(0)
-}
-
-func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
-	ret := fc.Called(id, name)
-
-	return ret.Error(0)
-}
-
-func (fc *FakeConnector) SendUpdateSchema(id string, schemaList []entities.Schema) (err error) {
-	ret := fc.Called(id, schemaList)
-	return ret.Error(0)
-}
-
-func (fc *FakeConnector) RecvRegisterDevice() (bytes []byte, err error) {
-	ret := fc.Called()
-
-	return bytes, ret.Error(1)
+	thingID        string
+	thingName      string
+	authorization  string
+	fakeLogger     *mocks.FakeLogger
+	fakePublisher  *mocks.FakePublisher
+	fakeThingProxy *mocks.FakeThingProxy
+	fakeConnector  *mocks.FakeConnector
+	errExpected    error
 }
 
 func TestRegisterThing(t *testing.T) {
@@ -102,60 +27,60 @@ func TestRegisterThing(t *testing.T) {
 			"123",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{returnErr: errors.New("mock publisher error")},
-			&FakeProxy{},
-			&FakeConnector{},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{ReturnErr: errors.New("mock publisher error")},
+			&mocks.FakeThingProxy{},
+			&mocks.FakeConnector{},
 			errors.New("mock publisher error"),
 		},
 		"TestProxyError": {
 			"123",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: errors.New("mock proxy error")},
-			&FakeProxy{returnError: errors.New("mock proxy error")},
-			&FakeConnector{},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{Token: "", SendError: errors.New("mock proxy error")},
+			&mocks.FakeThingProxy{ReturnErr: errors.New("mock proxy error")},
+			&mocks.FakeConnector{},
 			errors.New("mock proxy error"),
 		},
 		"TestIDLenght": {
 			"01234567890123456789",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorIDLenght{}},
-			&FakeProxy{},
-			&FakeConnector{},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{Token: "", SendError: ErrorIDLenght{}},
+			&mocks.FakeThingProxy{},
+			&mocks.FakeConnector{},
 			ErrorIDLenght{},
 		},
 		"TestIDInvalid": {
 			"not hex string",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{token: "", sendError: ErrorIDInvalid{}},
-			&FakeProxy{},
-			&FakeConnector{},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{Token: "", SendError: ErrorIDInvalid{}},
+			&mocks.FakeThingProxy{},
+			&mocks.FakeConnector{},
 			ErrorIDInvalid{},
 		},
 		"shouldRaiseConnectorSendError": {
 			"123",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{},
-			&FakeProxy{},
-			&FakeConnector{sendError: sharedEntities.ErrEntityExists{}},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{},
+			&mocks.FakeThingProxy{},
+			&mocks.FakeConnector{SendError: sharedEntities.ErrEntityExists{}},
 			sharedEntities.ErrEntityExists{},
 		},
 		"shouldRaiseConnectorRecvError": {
 			"123",
 			"test",
 			"authorization token",
-			&FakeRegisterThingLogger{},
-			&FakeMsgPublisher{},
-			&FakeProxy{},
-			&FakeConnector{recvError: sharedEntities.ErrEntityExists{}},
+			&mocks.FakeLogger{},
+			&mocks.FakePublisher{},
+			&mocks.FakeThingProxy{},
+			&mocks.FakeConnector{RecvError: sharedEntities.ErrEntityExists{}},
 			sharedEntities.ErrEntityExists{},
 		},
 	}
@@ -166,22 +91,22 @@ func TestRegisterThing(t *testing.T) {
 		t.Run(tcName, func(t *testing.T) {
 			var err error
 			var tmp *string
-			if tc.fakePublisher.sendError != nil {
+			if tc.fakePublisher.SendError != nil {
 				tmp = new(string)
-				*tmp = tc.fakePublisher.sendError.Error()
+				*tmp = tc.fakePublisher.SendError.Error()
 			}
 
-			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: tc.fakePublisher.token, Error: tmp}
+			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: tc.fakePublisher.Token, Error: tmp}
 			tc.fakePublisher.On("SendRegisterDevice", msg).
-				Return(tc.fakePublisher.returnErr)
-			tc.fakeProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
-				Return(tc.fakePublisher.token, tc.fakeProxy.returnError).Maybe()
+				Return(tc.fakePublisher.ReturnErr)
+			tc.fakeThingProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
+				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()
 			tc.fakeConnector.On("SendRegisterDevice", tc.thingID, tc.thingName).
-				Return(tc.fakeConnector.sendError).Maybe()
+				Return(tc.fakeConnector.SendError).Maybe()
 			tc.fakeConnector.On("RecvRegisterDevice").
-				Return([]byte{}, tc.fakeConnector.recvError).Maybe()
+				Return([]byte{}, tc.fakeConnector.RecvError).Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeProxy, tc.fakeConnector)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err = thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
 			if err != nil && !assert.IsType(t, err, tc.errExpected) {
 				t.Errorf("Create Thing failed with unexpected error. Error: %s", err)
@@ -189,7 +114,7 @@ func TestRegisterThing(t *testing.T) {
 			}
 
 			tc.fakePublisher.AssertExpectations(t)
-			tc.fakeProxy.AssertExpectations(t)
+			tc.fakeThingProxy.AssertExpectations(t)
 			tc.fakeConnector.AssertExpectations(t)
 			t.Log("Create thing ok")
 		})

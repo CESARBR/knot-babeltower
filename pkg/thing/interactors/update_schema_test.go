@@ -4,26 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CESARBR/knot-babeltower/pkg/network"
-	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type FakeUpdateSchemaLogger struct{}
-
-type FakeThingProxy struct {
-	mock.Mock
-}
-
-type FakePublisher struct {
-	mock.Mock
-}
-
-type FakeThingConnector struct {
-	mock.Mock
-}
 
 type UpdateSchemaTestCase struct {
 	name                          string
@@ -34,62 +18,13 @@ type UpdateSchemaTestCase struct {
 	expectedSchemaResponse        error
 	expectedUpdatedSchema         error
 	expectedUpdateSchemaConnector error
-	fakeLogger                    *FakeUpdateSchemaLogger
-	fakeThingProxy                *FakeThingProxy
-	fakePublisher                 *FakePublisher
-	fakeConnector                 *FakeThingConnector
+	fakeLogger                    *mocks.FakeLogger
+	fakeThingProxy                *mocks.FakeThingProxy
+	fakePublisher                 *mocks.FakePublisher
+	fakeConnector                 *mocks.FakeConnector
 }
 
-func (fl *FakeUpdateSchemaLogger) Info(...interface{}) {}
-
-func (fl *FakeUpdateSchemaLogger) Infof(string, ...interface{}) {}
-
-func (fl *FakeUpdateSchemaLogger) Debug(...interface{}) {}
-
-func (fl *FakeUpdateSchemaLogger) Warn(...interface{}) {}
-
-func (fl *FakeUpdateSchemaLogger) Error(...interface{}) {}
-
-func (fl *FakeUpdateSchemaLogger) Errorf(string, ...interface{}) {}
-
-func (ftp *FakeThingProxy) Create(id, name, authorization string) (idGenerated string, err error) {
-	return "", nil
-}
-
-func (ftp *FakeThingProxy) UpdateSchema(authorization, thingID string, schema []entities.Schema) error {
-	args := ftp.Called(thingID, schema)
-	return args.Error(0)
-}
-
-func (ftp *FakeThingProxy) Get(authorization, thingID string) (*http.ThingProxyRepr, error) {
-	return nil, nil
-}
-
-func (fp *FakePublisher) SendRegisterDevice(network.RegisterResponseMsg) error {
-	return nil
-}
-
-func (fp *FakePublisher) SendUpdatedSchema(thingID string) error {
-	args := fp.Called(thingID)
-	return args.Error(0)
-}
-
-func (fc *FakeThingConnector) SendRegisterDevice(id, name string) (err error) {
-	ret := fc.Called(id, name)
-	return ret.Error(0)
-}
-
-func (fc *FakeThingConnector) SendUpdateSchema(id string, schemaList []entities.Schema) (err error) {
-	ret := fc.Called(id, schemaList)
-	return ret.Error(0)
-}
-
-func (fc *FakeThingConnector) RecvRegisterDevice() (bytes []byte, err error) {
-	ret := fc.Called()
-	return bytes, ret.Error(1)
-}
-
-var cases = []UpdateSchemaTestCase{
+var tCases = []UpdateSchemaTestCase{
 	{
 		"schema successfully updated on the thing's proxy",
 		"authorization token",
@@ -107,10 +42,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"failed to update the schema on the thing's proxy",
@@ -129,10 +64,10 @@ var cases = []UpdateSchemaTestCase{
 		errors.New("failed to update schema"),
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"schema response successfully sent",
@@ -151,10 +86,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"failed to send updated schema response",
@@ -173,10 +108,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		errors.New("failed to send updated schema response"),
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"failed to send update schema to connector",
@@ -195,10 +130,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		errors.New("failed to send update schema to connector"),
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"invalid schema type ID",
@@ -217,10 +152,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"invalid schema unit",
@@ -239,10 +174,10 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 	{
 		"invalid schema name",
@@ -261,15 +196,15 @@ var cases = []UpdateSchemaTestCase{
 		nil,
 		nil,
 		nil,
-		&FakeUpdateSchemaLogger{},
-		&FakeThingProxy{},
-		&FakePublisher{},
-		&FakeThingConnector{},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
 	},
 }
 
 func TestUpdateSchema(t *testing.T) {
-	for _, tc := range cases {
+	for _, tc := range tCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.fakeThingProxy.
 				On("UpdateSchema", tc.thingID, tc.schemaList).
