@@ -12,6 +12,8 @@
 - [Docker installation and usage](#docker-installation-and-usage)
   - [Requirements](#requirements)
   - [Building and Running](#building-and-running)
+    - [Production](#production)
+    - [Development](#development)
 - [Verify service health](#verify-service-health)
 
 ## Basic installation and usage
@@ -57,6 +59,8 @@ make run
 
 ### Building and Running
 
+#### Production
+
 A container is specified at `docker/Dockerfile`. To use it, execute the following steps:
 
 01. Build the image:
@@ -72,6 +76,28 @@ A container is specified at `docker/Dockerfile`. To use it, execute the followin
     ```bash
     docker run --env-file knot-babeltower.env -ti cesarbr/knot-babeltower
     ```
+
+#### Development
+
+A development container is specified at `docker/Dockerfile-dev`. To use it, execute the following steps:
+
+01. Build the image:
+
+    ```bash
+    docker build . -f docker/Dockerfile-dev -t cesarbr/knot-babeltower:dev
+    ```
+
+01. Create a file containing the configuration as environment variables.
+
+01. Run the container:
+
+    ```bash
+    docker run --env-file knot-babeltower.env -p 8080:80 -v `pwd`:/usr/src/app -ti cesarbr/knot-babeltower:dev
+    ```
+
+The first argument to -v must be the root of this repository, so if you are running from another folder, replace `pwd` with the corresponding path.
+
+This will start the server with auto-reload.
 
 ## Verify service health
 
