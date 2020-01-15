@@ -61,4 +61,5 @@ clean:
 
 .PHONY: deps
 deps:
-	glide up
+	go mod download
+	go mod vendor

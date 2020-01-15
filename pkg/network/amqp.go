@@ -1,7 +1,7 @@
 package network
 
 import (
-	"gopkg.in/cenkalti/backoff.v3"
+	"github.com/cenkalti/backoff/v4"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/streadway/amqp"

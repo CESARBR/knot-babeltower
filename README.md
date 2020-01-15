@@ -18,7 +18,7 @@
 
 ### Requirements
 
-*   Install glide dependency manager (<https://github.com/Masterminds/glide>)
+*   Go version 1.13+.
 *   Be sure the local packages binaries path is in the system's `PATH` environment variable:
 
 ```bash
