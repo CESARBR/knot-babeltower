@@ -85,6 +85,11 @@ func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
 	return ret.Error(0)
 }
 
+func (fc *FakeConnector) SendUpdateSchema(id string, schemaList []entities.Schema) (err error) {
+	ret := fc.Called(id, schemaList)
+	return ret.Error(0)
+}
+
 func (fc *FakeConnector) RecvRegisterDevice() (bytes []byte, err error) {
 	ret := fc.Called()
 

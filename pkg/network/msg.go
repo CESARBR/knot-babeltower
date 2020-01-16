@@ -8,6 +8,12 @@ type RegisterRequestMsg struct {
 	Name string `json:"name"`
 }
 
+// UpdateSchemaRequestMsg represents the update schema request message
+type UpdateSchemaRequestMsg struct {
+	ID     string            `json:"id"`
+	Schema []entities.Schema `json:"schema,omitempty"`
+}
+
 // RegisterResponseMsg is sent when receive a register request
 type RegisterResponseMsg struct {
 	ID    string  `json:"id"`

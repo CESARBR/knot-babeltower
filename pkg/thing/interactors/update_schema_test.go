@@ -26,17 +26,18 @@ type FakeThingConnector struct {
 }
 
 type UpdateSchemaTestCase struct {
-	name                   string
-	authorization          string
-	thingID                string
-	schemaList             []entities.Schema
-	isSchemaValid          bool
-	expectedSchemaResponse error
-	expectedUpdatedSchema  error
-	fakeLogger             *FakeUpdateSchemaLogger
-	fakeThingProxy         *FakeThingProxy
-	fakePublisher          *FakePublisher
-	fakeConnector          *FakeThingConnector
+	name                          string
+	authorization                 string
+	thingID                       string
+	schemaList                    []entities.Schema
+	isSchemaValid                 bool
+	expectedSchemaResponse        error
+	expectedUpdatedSchema         error
+	expectedUpdateSchemaConnector error
+	fakeLogger                    *FakeUpdateSchemaLogger
+	fakeThingProxy                *FakeThingProxy
+	fakePublisher                 *FakePublisher
+	fakeConnector                 *FakeThingConnector
 }
 
 func (fl *FakeUpdateSchemaLogger) Info(...interface{}) {}
@@ -78,6 +79,11 @@ func (fc *FakeThingConnector) SendRegisterDevice(id, name string) (err error) {
 	return ret.Error(0)
 }
 
+func (fc *FakeThingConnector) SendUpdateSchema(id string, schemaList []entities.Schema) (err error) {
+	ret := fc.Called(id, schemaList)
+	return ret.Error(0)
+}
+
 func (fc *FakeThingConnector) RecvRegisterDevice() (bytes []byte, err error) {
 	ret := fc.Called()
 	return bytes, ret.Error(1)
@@ -98,6 +104,7 @@ var cases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
+		nil,
 		nil,
 		nil,
 		&FakeUpdateSchemaLogger{},
@@ -121,6 +128,7 @@ var cases = []UpdateSchemaTestCase{
 		true,
 		errors.New("failed to update schema"),
 		nil,
+		nil,
 		&FakeUpdateSchemaLogger{},
 		&FakeThingProxy{},
 		&FakePublisher{},
@@ -140,6 +148,7 @@ var cases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
+		nil,
 		nil,
 		nil,
 		&FakeUpdateSchemaLogger{},
@@ -162,7 +171,30 @@ var cases = []UpdateSchemaTestCase{
 		},
 		true,
 		nil,
+		nil,
 		errors.New("failed to send updated schema response"),
+		&FakeUpdateSchemaLogger{},
+		&FakeThingProxy{},
+		&FakePublisher{},
+		&FakeThingConnector{},
+	},
+	{
+		"failed to send update schema to connector",
+		"authorization token",
+		"29cf40c23012ce1c",
+		[]entities.Schema{
+			{
+				SensorID:  0,
+				ValueType: 3,
+				Unit:      0,
+				TypeID:    65521,
+				Name:      "LED",
+			},
+		},
+		true,
+		nil,
+		nil,
+		errors.New("failed to send update schema to connector"),
 		&FakeUpdateSchemaLogger{},
 		&FakeThingProxy{},
 		&FakePublisher{},
@@ -182,6 +214,7 @@ var cases = []UpdateSchemaTestCase{
 			},
 		},
 		false,
+		nil,
 		nil,
 		nil,
 		&FakeUpdateSchemaLogger{},
@@ -205,6 +238,7 @@ var cases = []UpdateSchemaTestCase{
 		false,
 		nil,
 		nil,
+		nil,
 		&FakeUpdateSchemaLogger{},
 		&FakeThingProxy{},
 		&FakePublisher{},
@@ -226,6 +260,7 @@ var cases = []UpdateSchemaTestCase{
 		false,
 		nil,
 		nil,
+		nil,
 		&FakeUpdateSchemaLogger{},
 		&FakeThingProxy{},
 		&FakePublisher{},
@@ -240,7 +275,10 @@ func TestUpdateSchema(t *testing.T) {
 				On("UpdateSchema", tc.thingID, tc.schemaList).
 				Return(tc.expectedSchemaResponse).
 				Maybe()
-
+			tc.fakeConnector.
+				On("SendUpdateSchema", tc.thingID, tc.schemaList).
+				Return(tc.expectedUpdateSchemaConnector).
+				Maybe()
 			tc.fakePublisher.
 				On("SendUpdatedSchema", tc.thingID).
 				Return(tc.expectedUpdatedSchema).
