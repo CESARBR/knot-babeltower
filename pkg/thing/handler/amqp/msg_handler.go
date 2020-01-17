@@ -94,6 +94,10 @@ func (mc *MsgHandler) handleUpdateSchemaMsg(body []byte, authorizationHeader str
 	return nil
 }
 
+func (mc *MsgHandler) handleListDevices(authorization string) error {
+	return mc.thingInteractor.List(authorization)
+}
+
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 	for {
 		msg := <-msgChan
@@ -111,8 +115,11 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 			}
 		case "device.cmd.list":
 			mc.logger.Info("List things request received")
-			mc.logger.Debug(authorizationHeader)
-			// TODO: call use case operation
+			err := mc.handleListDevices(authorizationHeader.(string))
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
 		case "schema.update":
 			err := mc.handleUpdateSchemaMsg(msg.Body, authorizationHeader.(string))
 			if err != nil {
