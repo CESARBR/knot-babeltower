@@ -31,3 +31,8 @@ type UpdateSchemaRequest struct {
 type UpdatedSchemaResponse struct {
 	ID string `json:"id"`
 }
+
+// ListThingsResponse represents the list things response
+type ListThingsResponse struct {
+	Things []*entities.Thing `json:"things"`
+}
