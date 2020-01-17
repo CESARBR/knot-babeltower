@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	queueNameFogIn   = "fogIn-messages"
-	exchangeFogIn    = "fogIn"
-	bindingKeyDevice = "device.*"
-	bindingKeySchema = "schema.*"
+	queueNameFogIn           = "fogIn-messages"
+	exchangeFogIn            = "fogIn"
+	bindingKeyDevice         = "device.*"
+	bindingKeyDeviceCommands = "device.cmd.*"
+	bindingKeySchema         = "schema.*"
 )
 
 // MsgHandler handle messages received from a service
@@ -59,6 +60,7 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
+	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
 	return err
 }
 
@@ -107,6 +109,10 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 				mc.logger.Error(err)
 				continue
 			}
+		case "device.cmd.list":
+			mc.logger.Info("List things request received")
+			mc.logger.Debug(authorizationHeader)
+			// TODO: call use case operation
 		case "schema.update":
 			err := mc.handleUpdateSchemaMsg(msg.Body, authorizationHeader.(string))
 			if err != nil {
