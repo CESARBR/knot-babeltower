@@ -16,6 +16,7 @@ import (
 type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
 	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
+	List(authorization string) (things []*entities.Thing, err error)
 }
 
 type proxy struct {
@@ -203,6 +204,19 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 	defer resp.Body.Close()
 
 	return p.mapErrorFromStatusCode(resp.StatusCode)
+}
+
+func (p proxy) List(authorization string) (things []*entities.Thing, err error) {
+	pagThings, err := p.getPaginatedThings(authorization)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, t := range pagThings {
+		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema})
+	}
+
+	return things, err
 }
 
 func (p proxy) getPaginatedThings(authorization string) ([]*ThingProxyRepr, error) {
