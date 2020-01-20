@@ -31,5 +31,6 @@ func (ftp *FakeThingProxy) Get(authorization, thingID string) (*http.ThingProxyR
 
 // List provides a mock function to list things from the thing's service
 func (ftp *FakeThingProxy) List(authorization string) ([]*entities.Thing, error) {
-	return nil, nil
+	args := ftp.Called(authorization)
+	return args.Get(0).([]*entities.Thing), args.Error(1)
 }
