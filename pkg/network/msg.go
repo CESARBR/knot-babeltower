@@ -36,3 +36,9 @@ type UpdatedSchemaResponse struct {
 type ListThingsResponse struct {
 	Things []*entities.Thing `json:"things"`
 }
+
+// RequestDataCommand represents the request data command
+type RequestDataCommand struct {
+	ID        string `json:"id"`
+	SensorIds []int  `json:"sensorIds"`
+}
