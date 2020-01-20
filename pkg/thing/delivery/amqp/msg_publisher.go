@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	exchangeFogOut   = "fogOut"
-	registerOutKey   = "device.registered"
-	schemaOutKey     = "schema.updated"
-	listThingsOutKey = "device.list"
+	exchangeFogOut    = "fogOut"
+	registerOutKey    = "device.registered"
+	schemaOutKey      = "schema.updated"
+	listThingsOutKey  = "device.list"
+	requestDataOutKey = "data.request"
 )
 
 // MsgPublisher handle messages received from a service
@@ -26,6 +27,7 @@ type Publisher interface {
 	SendRegisterDevice(network.RegisterResponseMsg) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
+	SendRequestData(thingID string, sensorIds []int) error
 }
 
 // NewMsgPublisher constructs the MsgPublisher
@@ -66,4 +68,15 @@ func (mp *MsgPublisher) SendThings(things []*entities.Thing) error {
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, listThingsOutKey, msg)
+}
+
+// SendRequestData sends request data command
+func (mp *MsgPublisher) SendRequestData(thingID string, sensorIds []int) error {
+	resp := &network.RequestDataCommand{ID: thingID, SensorIds: sensorIds}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, requestDataOutKey, msg)
 }
