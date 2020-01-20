@@ -12,6 +12,7 @@ const (
 	queueNameFogIn           = "fogIn-messages"
 	exchangeFogIn            = "fogIn"
 	bindingKeyDevice         = "device.*"
+	bindingKeyData           = "data.*"
 	bindingKeyDeviceCommands = "device.cmd.*"
 	bindingKeySchema         = "schema.*"
 )
@@ -61,6 +62,7 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
+	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyData)
 	return err
 }
 
@@ -98,6 +100,21 @@ func (mc *MsgHandler) handleListDevices(authorization string) error {
 	return mc.thingInteractor.List(authorization)
 }
 
+func (mc *MsgHandler) handleRequestData(body []byte, authorization string) error {
+	var requestDataReq network.RequestDataCommand
+	err := json.Unmarshal(body, &requestDataReq)
+	if err != nil {
+		mc.logger.Error(err)
+		return err
+	}
+
+	mc.logger.Info("Request data command received")
+	mc.logger.Debug(authorization, requestDataReq)
+	// TODO: call request data interactor
+
+	return nil
+}
+
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 	for {
 		msg := <-msgChan
@@ -116,6 +133,12 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		case "device.cmd.list":
 			mc.logger.Info("List things request received")
 			err := mc.handleListDevices(authorizationHeader.(string))
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
+		case "data.request":
+			err := mc.handleRequestData(msg.Body, authorizationHeader.(string))
 			if err != nil {
 				mc.logger.Error(err)
 				continue
