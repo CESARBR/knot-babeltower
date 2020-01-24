@@ -110,7 +110,10 @@ func (mc *MsgHandler) handleRequestData(body []byte, authorization string) error
 
 	mc.logger.Info("Request data command received")
 	mc.logger.Debug(authorization, requestDataReq)
-	// TODO: call request data interactor
+	err = mc.thingInteractor.RequestData(authorization, requestDataReq.ID, requestDataReq.SensorIds)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
