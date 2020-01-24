@@ -17,6 +17,7 @@ type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
 	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
 	List(authorization string) (things []*entities.Thing, err error)
+	GetThing(authorization, ID string) (*entities.Thing, error)
 }
 
 type proxy struct {
@@ -56,8 +57,8 @@ func (etnf *ErrThingNotFound) Error() string {
 	return fmt.Sprintf("Thing %s not found", etnf.ID)
 }
 
-func (p proxy) getJSONBody(id, name string, schemaList []entities.Schema) ([]byte, error) {
-	body := ThingProxyRepr{
+func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema) ThingProxyRepr {
+	return ThingProxyRepr{
 		Name: name,
 		Metadata: objMetadata{
 			Knot: objKnot{
@@ -66,7 +67,6 @@ func (p proxy) getJSONBody(id, name string, schemaList []entities.Schema) ([]byt
 			},
 		},
 	}
-	return json.Marshal(body)
 }
 
 // NewThingProxy creates a proxy to the thing service
@@ -144,7 +144,8 @@ func (p proxy) sendRequest(info *RequestInfo) (*http.Response, error) {
 // Create register a thing on service and return the id generated
 func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
 	p.logger.Debug("Proxying request to create thing")
-	jsonBody, err := p.getJSONBody(id, name, nil)
+	t := p.getRemoteThingRepr(id, name, nil)
+	body, err := json.Marshal(t)
 	if err != nil {
 		p.logger.Error(err)
 		return "", err
@@ -155,7 +156,7 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 		p.url + "/things",
 		authorization,
 		"application/json",
-		jsonBody,
+		body,
 		nil,
 	}
 
@@ -174,13 +175,14 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
 // the thing's service in order to update it with the schema.
 func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
-	thing, err := p.getThing(authorization, ID)
+	t, err := p.GetThing(authorization, ID)
 	if err != nil {
 		return err
 	}
 
-	thing.Metadata.Knot.Schema = schemaList
-	parsedBody, err := json.Marshal(thing)
+	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema)
+	rt.Metadata.Knot.Schema = schemaList
+	parsedBody, err := json.Marshal(rt)
 	if err != nil {
 		p.logger.Error(err)
 		return err
@@ -188,7 +190,7 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 
 	requestInfo := &RequestInfo{
 		"PUT",
-		p.url + "/things/" + thing.ID,
+		p.url + "/things/" + t.ID,
 		authorization,
 		"application/json",
 		parsedBody,
@@ -256,7 +258,8 @@ func (p proxy) getPaginatedThings(authorization string) ([]*ThingProxyRepr, erro
 	return things, nil
 }
 
-func (p proxy) getThing(authorization, ID string) (*ThingProxyRepr, error) {
+// GetThing list the things registered on thing's service
+func (p proxy) GetThing(authorization, ID string) (*entities.Thing, error) {
 	things, err := p.getPaginatedThings(authorization)
 	if err != nil {
 		return nil, err
@@ -265,7 +268,8 @@ func (p proxy) getThing(authorization, ID string) (*ThingProxyRepr, error) {
 	for i := range things {
 		t := things[i]
 		if t.Metadata.Knot.ID == ID {
-			return t, nil
+			nt := &entities.Thing{ID: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema}
+			return nt, nil
 		}
 	}
 
