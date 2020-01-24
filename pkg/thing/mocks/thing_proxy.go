@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/stretchr/testify/mock"
 )
@@ -24,9 +23,10 @@ func (ftp *FakeThingProxy) UpdateSchema(authorization, thingID string, schema []
 	return ret.Error(0)
 }
 
-// Get provides a mock function to receive a thing from the thing's service
-func (ftp *FakeThingProxy) Get(authorization, thingID string) (*http.ThingProxyRepr, error) {
-	return nil, nil
+// GetThing provides a mock function to receive a thing from the thing's service
+func (ftp *FakeThingProxy) GetThing(authorization, thingID string) (*entities.Thing, error) {
+	args := ftp.Called(authorization, thingID)
+	return args.Get(0).(*entities.Thing), args.Error(1)
 }
 
 // List provides a mock function to list things from the thing's service
