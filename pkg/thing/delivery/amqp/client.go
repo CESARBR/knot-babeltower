@@ -13,6 +13,7 @@ const (
 	registerOutKey    = "device.registered"
 	schemaOutKey      = "schema.updated"
 	listThingsOutKey  = "device.list"
+	authDeviceOutKey  = "device.auth"
 	requestDataOutKey = "data.request"
 )
 
@@ -27,6 +28,7 @@ type ClientPublisher interface {
 	SendRegisterDevice(network.RegisterResponseMsg) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
+	SendAuthStatus(thingID string, errMsg *string) error
 	SendRequestData(thingID string, sensorIds []int) error
 }
 
@@ -68,6 +70,17 @@ func (mp *msgClientPublisher) SendThings(things []*entities.Thing) error {
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, listThingsOutKey, msg)
+}
+
+// SendAuthStatus sends the auth thing status response
+func (mp *msgClientPublisher) SendAuthStatus(thingID string, errMsg *string) error {
+	resp := &network.AuthThingResponse{ID: thingID, ErrMsg: errMsg}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, authDeviceOutKey, msg)
 }
 
 // SendRequestData sends request data command

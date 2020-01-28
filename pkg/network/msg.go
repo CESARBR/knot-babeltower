@@ -48,3 +48,9 @@ type AuthThingCommand struct {
 	ID    string `json:"id"`
 	Token string `json:"token"`
 }
+
+// AuthThingResponse represents the auth device command response
+type AuthThingResponse struct {
+	ID     string  `json:"id"`
+	ErrMsg *string `json:"error"`
+}
