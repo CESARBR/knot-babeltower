@@ -12,6 +12,7 @@ type FakePublisher struct {
 	ReturnErr error
 	SendError error
 	Token     string
+	ErrMsg    *string
 }
 
 // SendRegisterDevice provides a mock function to send a register device response
@@ -29,6 +30,12 @@ func (fp *FakePublisher) SendUpdatedSchema(thingID string) error {
 // SendThings provides a mock function to send a list things response
 func (fp *FakePublisher) SendThings(things []*entities.Thing) error {
 	args := fp.Called(things)
+	return args.Error(0)
+}
+
+// SendAuthStatus provides a mock function to send auth thing command response
+func (fp *FakePublisher) SendAuthStatus(thingID string, errMsg *string) error {
+	args := fp.Called(thingID, errMsg)
 	return args.Error(0)
 }
 
