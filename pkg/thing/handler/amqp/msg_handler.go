@@ -100,6 +100,21 @@ func (mc *MsgHandler) handleListDevices(authorization string) error {
 	return mc.thingInteractor.List(authorization)
 }
 
+func (mc *MsgHandler) handleAuthThing(body []byte, authorization string) error {
+	var authThingReq network.AuthThingCommand
+	err := json.Unmarshal(body, &authThingReq)
+	if err != nil {
+		mc.logger.Error(err)
+		return err
+	}
+
+	mc.logger.Info("Auth device command received")
+	mc.logger.Debug(authorization, authThingReq)
+	// TODO: call auth device interactor
+
+	return nil
+}
+
 func (mc *MsgHandler) handleRequestData(body []byte, authorization string) error {
 	var requestDataReq network.RequestDataCommand
 	err := json.Unmarshal(body, &requestDataReq)
@@ -136,6 +151,12 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		case "device.cmd.list":
 			mc.logger.Info("List things request received")
 			err := mc.handleListDevices(authorizationHeader.(string))
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
+		case "device.cmd.auth":
+			err := mc.handleAuthThing(msg.Body, authorizationHeader.(string))
 			if err != nil {
 				mc.logger.Error(err)
 				continue

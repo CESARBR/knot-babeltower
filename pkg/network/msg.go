@@ -42,3 +42,9 @@ type RequestDataCommand struct {
 	ID        string `json:"id"`
 	SensorIds []int  `json:"sensorIds"`
 }
+
+// AuthThingCommand represents the auth device command
+type AuthThingCommand struct {
+	ID    string `json:"id"`
+	Token string `json:"token"`
+}
