@@ -9,6 +9,7 @@ import (
 type FakeThingProxy struct {
 	mock.Mock
 	ReturnErr error
+	Thing     *entities.Thing
 }
 
 // Create provides a mock function to create a thing on the thing's seervice
