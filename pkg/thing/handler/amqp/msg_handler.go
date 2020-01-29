@@ -110,7 +110,10 @@ func (mc *MsgHandler) handleAuthThing(body []byte, authorization string) error {
 
 	mc.logger.Info("Auth device command received")
 	mc.logger.Debug(authorization, authThingReq)
-	// TODO: call auth device interactor
+	err = mc.thingInteractor.Auth(authorization, authThingReq.ID, authThingReq.Token)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

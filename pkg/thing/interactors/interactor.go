@@ -13,6 +13,7 @@ type Interactor interface {
 	UpdateSchema(authorization, id string, schemaList []entities.Schema) error
 	List(authorization string) error
 	RequestData(authorization, thingID string, sensorIds []int) error
+	Auth(authorization, id, token string) error
 }
 
 // ThingInteractor represents the thing interactor capabilities, it's composed
