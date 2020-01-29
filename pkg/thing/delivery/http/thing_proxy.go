@@ -85,11 +85,6 @@ type RequestInfo struct {
 }
 
 type errorConflict struct{ error }
-type errorForbidden struct{ error }
-
-func (err errorForbidden) Error() string {
-	return "Error forbidden"
-}
 
 func (err errorConflict) Error() string {
 	return "Error conflict"
@@ -103,7 +98,7 @@ func (p proxy) mapErrorFromStatusCode(code int) error {
 		case http.StatusConflict:
 			err = errorConflict{}
 		case http.StatusForbidden:
-			err = errorForbidden{}
+			err = entities.ErrThingForbidden{}
 		}
 	}
 	return err
