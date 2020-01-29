@@ -48,15 +48,6 @@ type pageFetchInput struct {
 	Things []*ThingProxyRepr `json:"things"`
 }
 
-// ErrThingNotFound represents the error when the schema has a invalid format
-type ErrThingNotFound struct {
-	ID string
-}
-
-func (etnf *ErrThingNotFound) Error() string {
-	return fmt.Sprintf("Thing %s not found", etnf.ID)
-}
-
 func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema) ThingProxyRepr {
 	return ThingProxyRepr{
 		Name: name,
@@ -273,5 +264,5 @@ func (p proxy) GetThing(authorization, ID string) (*entities.Thing, error) {
 		}
 	}
 
-	return nil, &ErrThingNotFound{ID}
+	return nil, &entities.ErrThingNotFound{ID: ID}
 }
