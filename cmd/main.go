@@ -40,7 +40,7 @@ func main() {
 	go monitorSignals(sigs, quit, logger)
 
 	// AMQP
-	amqpChan := make(chan bool, 1)
+	amqpStartedChan := make(chan bool, 1)
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
 
 	// AMQP Publisher
@@ -60,30 +60,30 @@ func main() {
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
 
 	// Server
-	serverChan := make(chan bool, 1)
+	serverStartedChan := make(chan bool, 1)
 	server := server.NewServer(config.Server.Port, logrus.Get("Server"), userController)
 
 	// AMQP Handler
-	msgChan := make(chan bool, 1)
+	msgStartedChan := make(chan bool, 1)
 	msgHandler := thingHandlerAMQP.NewMsgHandler(logrus.Get("MsgHandler"), amqp, thingInteractor)
 
 	// Start goroutines
-	go amqp.Start(amqpChan)
-	go server.Start(serverChan)
+	go amqp.Start(amqpStartedChan)
+	go server.Start(serverStartedChan)
 
 	// Main loop
 	for {
 		select {
-		case started := <-serverChan:
+		case started := <-serverStartedChan:
 			if started {
 				logger.Info("Server started")
 			}
-		case started := <-amqpChan:
+		case started := <-amqpStartedChan:
 			if started {
 				logger.Info("AMQP connection started")
-				go msgHandler.Start(msgChan)
+				go msgHandler.Start(msgStartedChan)
 			}
-		case started := <-msgChan:
+		case started := <-msgStartedChan:
 			if started {
 				logger.Info("Msg handler started")
 			} else {
