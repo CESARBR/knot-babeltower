@@ -43,18 +43,18 @@ func main() {
 	amqpStartedChan := make(chan bool, 1)
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
 
-	// AMQP Publisher
-	msgPublisher := thingDeliveryAMQP.NewMsgPublisher(logrus.Get("MsgPublisher"), amqp)
+	// AMQP Publishers
+	clientPublisher := thingDeliveryAMQP.NewMsgClientPublisher(logrus.Get("ClientPublisher"), amqp)
+	connectorPublisher := thingDeliveryAMQP.NewMsgConnectorPublisher(logrus.Get("ConnectorPublisher"), amqp)
 
 	// Services
 	userProxy := userDeliveryHTTP.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
 	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
-	connector := thingDeliveryAMQP.NewConnector(logrus.Get("Connector"), amqp)
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
 	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
-	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), msgPublisher, thingProxy, connector)
+	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy, connectorPublisher)
 
 	// Controllers
 	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)

@@ -16,25 +16,25 @@ const (
 	updateSchemaInKey = "schema.update"
 )
 
-type connector struct {
+type msgConnectorPublisher struct {
 	logger logging.Logger
 	amqp   *network.Amqp
 }
 
 // Connector handle messages received from a service
-type Connector interface {
+type ConnectorPublisher interface {
 	SendRegisterDevice(string, string) error
 	SendUpdateSchema(string, []entities.Schema) error
 	RecvRegisterDevice() ([]byte, error)
 }
 
 // NewConnector constructs the Connector
-func NewConnector(logger logging.Logger, amqp *network.Amqp) Connector {
-	return &connector{logger, amqp}
+func NewMsgConnectorPublisher(logger logging.Logger, amqp *network.Amqp) ConnectorPublisher {
+	return &msgConnectorPublisher{logger, amqp}
 }
 
 // SendRegisterDevice sends a registered message
-func (mp *connector) SendRegisterDevice(id string, name string) error {
+func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) error {
 	mp.logger.Debug("Sending register message")
 
 	msg := network.RegisterRequestMsg{ID: id, Name: name}
@@ -48,7 +48,7 @@ func (mp *connector) SendRegisterDevice(id string, name string) error {
 }
 
 // SendUpdateSchema sends an update schema message
-func (mp *connector) SendUpdateSchema(id string, schemaList []entities.Schema) error {
+func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entities.Schema) error {
 	mp.logger.Info("Sending update schema message to connector")
 	msg := network.UpdateSchemaRequestMsg{ID: id, Schema: schemaList}
 	bytes, err := json.Marshal(msg)
@@ -60,7 +60,7 @@ func (mp *connector) SendUpdateSchema(id string, schemaList []entities.Schema) e
 }
 
 // RecvRegisterDevice is a blocking function that receives the device
-func (mp *connector) RecvRegisterDevice() ([]byte, error) {
+func (mp *msgConnectorPublisher) RecvRegisterDevice() ([]byte, error) {
 	msgChan := make(chan network.InMsg)
 	err := mp.amqp.OnMessage(msgChan, queueNameOut, exchangeConnOut, registerOutKey)
 	if err != nil {

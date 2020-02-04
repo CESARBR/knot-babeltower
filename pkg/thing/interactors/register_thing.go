@@ -52,7 +52,7 @@ func (i *ThingInteractor) reply(id, token string, err error) error {
 	}
 
 	response := network.RegisterResponseMsg{ID: id, Token: token, Error: errStr}
-	errPublish := i.msgPublisher.SendRegisterDevice(response)
+	errPublish := i.clientPublisher.SendRegisterDevice(response)
 	if errPublish != nil {
 		i.logger.Error(errPublish)
 		return errPublish
@@ -96,7 +96,7 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 		return errReply
 	}
 
-	err = i.connector.SendRegisterDevice(id, name)
+	err = i.connectorPublisher.SendRegisterDevice(id, name)
 	if err != nil {
 		i.logger.Error(err)
 		return err
@@ -104,7 +104,7 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 
 	// Ignore message received and don't wait for response
 	go func(i *ThingInteractor) {
-		_, err := i.connector.RecvRegisterDevice()
+		_, err := i.connectorPublisher.RecvRegisterDevice()
 		if err != nil {
 			i.logger.Error(err)
 		}

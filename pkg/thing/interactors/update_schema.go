@@ -38,12 +38,12 @@ func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList
 
 	i.logger.Info("Schema updated")
 
-	err = i.connector.SendUpdateSchema(thingID, schemaList)
+	err = i.connectorPublisher.SendUpdateSchema(thingID, schemaList)
 	if err != nil {
 		return err
 	}
 
-	err = i.msgPublisher.SendUpdatedSchema(thingID)
+	err = i.clientPublisher.SendUpdatedSchema(thingID)
 	if err != nil {
 		return err
 	}

@@ -16,27 +16,27 @@ const (
 	requestDataOutKey = "data.request"
 )
 
-// MsgPublisher handle messages received from a service
-type MsgPublisher struct {
+// msgClientPublisher handle messages received from a service
+type msgClientPublisher struct {
 	logger logging.Logger
 	amqp   *network.Amqp
 }
 
-// Publisher is the interface with methods that the publisher should have
-type Publisher interface {
+// ClientPublisher is the interface with methods that the publisher should have
+type ClientPublisher interface {
 	SendRegisterDevice(network.RegisterResponseMsg) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
 	SendRequestData(thingID string, sensorIds []int) error
 }
 
-// NewMsgPublisher constructs the MsgPublisher
-func NewMsgPublisher(logger logging.Logger, amqp *network.Amqp) *MsgPublisher {
-	return &MsgPublisher{logger, amqp}
+// NewMsgClientPublisher constructs the msgClientPublisher
+func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPublisher {
+	return &msgClientPublisher{logger, amqp}
 }
 
 // SendRegisterDevice sends a registered message
-func (mp *MsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
+func (mp *msgClientPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
 	mp.logger.Debug("Sending register message")
 
 	jsonMsg, err := json.Marshal(msg)
@@ -49,7 +49,7 @@ func (mp *MsgPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) erro
 }
 
 // SendUpdatedSchema sends the updated schema response
-func (mp *MsgPublisher) SendUpdatedSchema(thingID string) error {
+func (mp *msgClientPublisher) SendUpdatedSchema(thingID string) error {
 	resp := &network.UpdatedSchemaResponse{ID: thingID}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -60,7 +60,7 @@ func (mp *MsgPublisher) SendUpdatedSchema(thingID string) error {
 }
 
 // SendThings sends the updated schema response
-func (mp *MsgPublisher) SendThings(things []*entities.Thing) error {
+func (mp *msgClientPublisher) SendThings(things []*entities.Thing) error {
 	resp := &network.ListThingsResponse{Things: things}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -71,7 +71,7 @@ func (mp *MsgPublisher) SendThings(things []*entities.Thing) error {
 }
 
 // SendRequestData sends request data command
-func (mp *MsgPublisher) SendRequestData(thingID string, sensorIds []int) error {
+func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) error {
 	resp := &network.RequestDataCommand{ID: thingID, SensorIds: sensorIds}
 	msg, err := json.Marshal(resp)
 	if err != nil {
