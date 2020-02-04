@@ -15,7 +15,7 @@ func (i *ThingInteractor) List(authorization string) error {
 		return err
 	}
 
-	err = i.msgPublisher.SendThings(things)
+	err = i.clientPublisher.SendThings(things)
 	if err != nil {
 		return err
 	}
