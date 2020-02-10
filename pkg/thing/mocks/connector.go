@@ -23,9 +23,3 @@ func (fc *FakeConnector) SendUpdateSchema(id string, schemaList []entities.Schem
 	ret := fc.Called(id, schemaList)
 	return ret.Error(0)
 }
-
-// RecvRegisterDevice provides a mock function to receive a register device confirmation from connector
-func (fc *FakeConnector) RecvRegisterDevice() (bytes []byte, err error) {
-	ret := fc.Called()
-	return bytes, ret.Error(1)
-}

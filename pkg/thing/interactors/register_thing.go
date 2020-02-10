@@ -102,13 +102,5 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 		return err
 	}
 
-	// Ignore message received and don't wait for response
-	go func(i *ThingInteractor) {
-		_, err := i.connectorPublisher.RecvRegisterDevice()
-		if err != nil {
-			i.logger.Error(err)
-		}
-	}(i)
-
 	return nil
 }

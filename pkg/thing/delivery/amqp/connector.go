@@ -10,8 +10,6 @@ import (
 
 const (
 	exchangeConnIn    = "connIn"
-	exchangeConnOut   = "connOut"
-	queueNameOut      = "connOut-messages"
 	registerInKey     = "device.register"
 	updateSchemaInKey = "schema.update"
 )
@@ -25,7 +23,6 @@ type msgConnectorPublisher struct {
 type ConnectorPublisher interface {
 	SendRegisterDevice(string, string) error
 	SendUpdateSchema(string, []entities.Schema) error
-	RecvRegisterDevice() ([]byte, error)
 }
 
 // NewConnector constructs the Connector
@@ -57,19 +54,4 @@ func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entiti
 		return err
 	}
 	return mp.amqp.PublishPersistentMessage(exchangeConnIn, updateSchemaInKey, bytes)
-}
-
-// RecvRegisterDevice is a blocking function that receives the device
-func (mp *msgConnectorPublisher) RecvRegisterDevice() ([]byte, error) {
-	msgChan := make(chan network.InMsg)
-	err := mp.amqp.OnMessage(msgChan, queueNameOut, exchangeConnOut, registerOutKey)
-	if err != nil {
-		mp.logger.Error(err)
-		return nil, err
-	}
-
-	msg := <-msgChan
-	mp.logger.Info("Message received:", string(msg.Body))
-
-	return msg.Body, nil
 }
