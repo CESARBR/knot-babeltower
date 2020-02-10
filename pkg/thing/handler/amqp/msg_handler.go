@@ -11,6 +11,8 @@ import (
 const (
 	queueNameFogIn           = "fogIn-messages"
 	exchangeFogIn            = "fogIn"
+	queueNameConnOut         = "connOut-messages"
+	exchangeConnOut          = "connOut"
 	bindingKeyDevice         = "device.*"
 	bindingKeyData           = "data.*"
 	bindingKeyDeviceCommands = "device.cmd.*"
@@ -62,7 +64,7 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
-	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyData)
+	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyData)
 	return err
 }
 
