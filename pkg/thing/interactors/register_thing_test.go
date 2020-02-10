@@ -73,16 +73,6 @@ func TestRegisterThing(t *testing.T) {
 			&mocks.FakeConnector{SendError: sharedEntities.ErrEntityExists{}},
 			sharedEntities.ErrEntityExists{},
 		},
-		"shouldRaiseConnectorRecvError": {
-			"123",
-			"test",
-			"authorization token",
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{},
-			&mocks.FakeThingProxy{},
-			&mocks.FakeConnector{RecvError: sharedEntities.ErrEntityExists{}},
-			sharedEntities.ErrEntityExists{},
-		},
 	}
 
 	t.Logf("Number of test cases: %d", len(testCases))
@@ -103,8 +93,6 @@ func TestRegisterThing(t *testing.T) {
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()
 			tc.fakeConnector.On("SendRegisterDevice", tc.thingID, tc.thingName).
 				Return(tc.fakeConnector.SendError).Maybe()
-			tc.fakeConnector.On("RecvRegisterDevice").
-				Return([]byte{}, tc.fakeConnector.RecvError).Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err = thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)

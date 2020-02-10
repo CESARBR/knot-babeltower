@@ -65,6 +65,7 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
 	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyData)
+	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDevice)
 	return err
 }
 
@@ -135,6 +136,9 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 				mc.logger.Error(err)
 				continue
 			}
+		case "device.registered":
+			// Ignore message
+			continue
 		case "device.cmd.list":
 			mc.logger.Info("List things request received")
 			err := mc.handleListDevices(authorizationHeader.(string))
