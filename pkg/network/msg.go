@@ -26,6 +26,12 @@ type RegisterResponseMsg struct {
 	Error *string `json:"error"`
 }
 
+// UnregisterResponseMsg represents the outgoing unregister device response message
+type UnregisterResponseMsg struct {
+	ID    string  `json:"id"`
+	Error *string `json:"error"`
+}
+
 // UpdateSchemaRequest represents the update schema request message
 type UpdateSchemaRequest struct {
 	ID     string            `json:"id"`
