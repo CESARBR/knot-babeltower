@@ -11,6 +11,7 @@ import (
 const (
 	exchangeFogOut    = "fogOut"
 	registerOutKey    = "device.registered"
+	unregisterOutKey  = "device.unregistered"
 	schemaOutKey      = "schema.updated"
 	listThingsOutKey  = "device.list"
 	authDeviceOutKey  = "device.auth"
@@ -26,6 +27,7 @@ type msgClientPublisher struct {
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
 	SendRegisterDevice(network.RegisterResponseMsg) error
+	SendUnregisteredDevice(thingID string, errMsg *string) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
 	SendAuthStatus(thingID string, errMsg *string) error
@@ -37,7 +39,7 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 	return &msgClientPublisher{logger, amqp}
 }
 
-// SendRegisterDevice sends a registered message
+// SendRegisterDevice publishes the registered device's credentials to the device registration queue
 func (mp *msgClientPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
 	mp.logger.Debug("Sending register message")
 
@@ -48,6 +50,19 @@ func (mp *msgClientPublisher) SendRegisterDevice(msg network.RegisterResponseMsg
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, registerOutKey, jsonMsg)
+}
+
+// SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
+func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *string) error {
+	mp.logger.Debug("Sending unregistered message")
+	resp := &network.UnregisterResponseMsg{ID: thingID, Error: errMsg}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		mp.logger.Error(err)
+		return err
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, unregisterOutKey, msg)
 }
 
 // SendUpdatedSchema sends the updated schema response
