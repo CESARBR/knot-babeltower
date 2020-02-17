@@ -10,6 +10,7 @@ import (
 // Interactor is an interface that defines the thing's use cases operations
 type Interactor interface {
 	Register(authorization, id, name string) error
+	Unregister(authorization, id string) error
 	UpdateSchema(authorization, id string, schemaList []entities.Schema) error
 	List(authorization string) error
 	RequestData(authorization, thingID string, sensorIds []int) error

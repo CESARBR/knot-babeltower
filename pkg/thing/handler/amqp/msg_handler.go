@@ -86,8 +86,7 @@ func (mc *MsgHandler) handleUnregisterMsg(body []byte, authorizationHeader strin
 		return err
 	}
 
-	// TODO: call unregister device interactor
-	return nil
+	return mc.thingInteractor.Unregister(authorizationHeader, msg.ID)
 }
 
 func (mc *MsgHandler) handleUpdateSchemaMsg(body []byte, authorizationHeader string) error {
