@@ -79,6 +79,17 @@ func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string)
 	return mc.thingInteractor.Register(authorizationHeader, msgParsed.ID, msgParsed.Name)
 }
 
+func (mc *MsgHandler) handleUnregisterMsg(body []byte, authorizationHeader string) error {
+	msg := network.UnregisterRequestMsg{}
+	err := json.Unmarshal(body, &msg)
+	if err != nil {
+		return err
+	}
+
+	// TODO: call unregister device interactor
+	return nil
+}
+
 func (mc *MsgHandler) handleUpdateSchemaMsg(body []byte, authorizationHeader string) error {
 	var updateSchemaReq network.UpdateSchemaRequest
 	err := json.Unmarshal(body, &updateSchemaReq)
@@ -152,6 +163,12 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		case "device.registered":
 			// Ignore message
 			continue
+		case "device.unregister":
+			err := mc.handleUnregisterMsg(msg.Body, authorizationHeader.(string))
+			if err != nil {
+				mc.logger.Error(err)
+				continue
+			}
 		case "device.cmd.list":
 			mc.logger.Info("List things request received")
 			err := mc.handleListDevices(authorizationHeader.(string))

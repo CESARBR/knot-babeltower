@@ -8,6 +8,11 @@ type RegisterRequestMsg struct {
 	Name string `json:"name"`
 }
 
+// UnregisterRequestMsg represents the incoming unregister device request message
+type UnregisterRequestMsg struct {
+	ID string `json:"id"`
+}
+
 // UpdateSchemaRequestMsg represents the update schema request message
 type UpdateSchemaRequestMsg struct {
 	ID     string            `json:"id"`
