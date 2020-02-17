@@ -18,6 +18,12 @@ func (fc *FakeConnector) SendRegisterDevice(id, name string) (err error) {
 	return ret.Error(0)
 }
 
+// SendUnregisterDevice provides a mock function to send unregister device command to connector
+func (fc *FakeConnector) SendUnregisterDevice(id string) error {
+	ret := fc.Called(id)
+	return ret.Error(0)
+}
+
 // SendUpdateSchema provides a mock function to send an update schema command to connector
 func (fc *FakeConnector) SendUpdateSchema(id string, schemaList []entities.Schema) (err error) {
 	ret := fc.Called(id, schemaList)

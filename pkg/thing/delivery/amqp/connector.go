@@ -11,6 +11,7 @@ import (
 const (
 	exchangeConnIn    = "connIn"
 	registerInKey     = "device.register"
+	unregisterInKey   = "device.unregister"
 	updateSchemaInKey = "schema.update"
 )
 
@@ -19,13 +20,14 @@ type msgConnectorPublisher struct {
 	amqp   *network.Amqp
 }
 
-// Connector handle messages received from a service
+// ConnectorPublisher handle messages received from a service
 type ConnectorPublisher interface {
 	SendRegisterDevice(string, string) error
+	SendUnregisterDevice(string) error
 	SendUpdateSchema(string, []entities.Schema) error
 }
 
-// NewConnector constructs the Connector
+// NewMsgConnectorPublisher constructs the Connector
 func NewMsgConnectorPublisher(logger logging.Logger, amqp *network.Amqp) ConnectorPublisher {
 	return &msgConnectorPublisher{logger, amqp}
 }
@@ -42,6 +44,19 @@ func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) erro
 	}
 	// TODO: receive message
 	return mp.amqp.PublishPersistentMessage(exchangeConnIn, registerInKey, bytes)
+}
+
+// SendUnregisterDevice sends an unregister message
+func (mp *msgConnectorPublisher) SendUnregisterDevice(id string) error {
+	mp.logger.Debug("Sending unregister message")
+	msg := network.UnregisterRequestMsg{ID: id}
+	bytes, err := json.Marshal(msg)
+	if err != nil {
+		mp.logger.Error(err)
+		return err
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, unregisterInKey, bytes)
 }
 
 // SendUpdateSchema sends an update schema message
