@@ -35,3 +35,9 @@ func (ftp *FakeThingProxy) List(authorization string) ([]*entities.Thing, error)
 	args := ftp.Called(authorization)
 	return args.Get(0).([]*entities.Thing), args.Error(1)
 }
+
+// Remove provides a mock function to remove a thing on the thing's service
+func (ftp *FakeThingProxy) Remove(authorization, thingID string) error {
+	ret := ftp.Called(authorization, thingID)
+	return ret.Error(0)
+}
