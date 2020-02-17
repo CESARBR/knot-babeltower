@@ -18,6 +18,7 @@ type ThingProxy interface {
 	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
 	List(authorization string) (things []*entities.Thing, err error)
 	GetThing(authorization, ID string) (*entities.Thing, error)
+	Remove(authorization, ID string) error
 }
 
 type proxy struct {
@@ -266,4 +267,30 @@ func (p proxy) GetThing(authorization, ID string) (*entities.Thing, error) {
 	}
 
 	return nil, &entities.ErrThingNotFound{ID: ID}
+}
+
+// Remove removes the indicated thing from the thing's service
+func (p proxy) Remove(authorization, ID string) error {
+	t, err := p.GetThing(authorization, ID)
+	if err != nil {
+		return err
+	}
+
+	requestInfo := &RequestInfo{
+		"DELETE",
+		p.url + "/things/" + t.ID,
+		authorization,
+		"application/json",
+		nil,
+		nil,
+	}
+
+	resp, err := p.sendRequest(requestInfo)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
