@@ -195,7 +195,6 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 		p.logger.Error(err)
 		return err
 	}
-
 	defer resp.Body.Close()
 
 	return p.mapErrorFromStatusCode(resp.StatusCode)
@@ -233,6 +232,12 @@ func (p proxy) getPaginatedThings(authorization string) ([]*ThingProxyRepr, erro
 			return nil, err
 		}
 		defer resp.Body.Close()
+
+		err = p.mapErrorFromStatusCode(resp.StatusCode)
+		if err != nil {
+			p.logger.Error(err)
+			return nil, err
+		}
 
 		page := &pageFetchInput{}
 		err = json.NewDecoder(resp.Body).Decode(&page)
@@ -289,7 +294,6 @@ func (p proxy) Remove(authorization, ID string) error {
 	if err != nil {
 		return err
 	}
-
 	defer resp.Body.Close()
 
 	return p.mapErrorFromStatusCode(resp.StatusCode)
