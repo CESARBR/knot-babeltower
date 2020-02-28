@@ -183,7 +183,7 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 
 	requestInfo := &RequestInfo{
 		"PUT",
-		p.url + "/things/" + t.ID,
+		p.url + "/things/" + t.Token,
 		authorization,
 		"application/json",
 		parsedBody,
@@ -266,7 +266,7 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 	for i := range things {
 		t := things[i]
 		if t.Metadata.Knot.ID == ID {
-			nt := &entities.Thing{ID: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema}
+			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema}
 			return nt, nil
 		}
 	}
@@ -283,7 +283,7 @@ func (p proxy) Remove(authorization, ID string) error {
 
 	requestInfo := &RequestInfo{
 		"DELETE",
-		p.url + "/things/" + t.ID,
+		p.url + "/things/" + t.Token,
 		authorization,
 		"application/json",
 		nil,
