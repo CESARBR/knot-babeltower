@@ -152,10 +152,15 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 		return "", err
 	}
 
+	err = p.mapErrorFromStatusCode(resp.StatusCode)
+	if err != nil {
+		p.logger.Error(err)
+		return "", err
+	}
+
 	locationHeader := resp.Header.Get("Location")
-	fmt.Print(locationHeader)
 	thingID := locationHeader[len("/things/"):] // get substring after "/things/"
-	return thingID, p.mapErrorFromStatusCode(resp.StatusCode)
+	return thingID, nil
 }
 
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
