@@ -151,6 +151,7 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 		p.logger.Error(err)
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	err = p.mapErrorFromStatusCode(resp.StatusCode)
 	if err != nil {
