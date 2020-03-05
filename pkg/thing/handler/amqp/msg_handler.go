@@ -70,13 +70,13 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 }
 
 func (mc *MsgHandler) handleRegisterMsg(body []byte, authorizationHeader string) error {
-	msgParsed := network.RegisterRequestMsg{}
-	err := json.Unmarshal(body, &msgParsed)
+	msg := network.RegisterRequestMsg{}
+	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return err
 	}
 
-	return mc.thingInteractor.Register(authorizationHeader, msgParsed.ID, msgParsed.Name)
+	return mc.thingInteractor.Register(authorizationHeader, msg.ID, msg.Name)
 }
 
 func (mc *MsgHandler) handleUnregisterMsg(body []byte, authorizationHeader string) error {
