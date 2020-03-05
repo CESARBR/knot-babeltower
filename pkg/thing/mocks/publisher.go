@@ -15,8 +15,8 @@ type FakePublisher struct {
 	ErrMsg    *string
 }
 
-// SendRegisterDevice provides a mock function to send a register device response
-func (fp *FakePublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
+// SendRegisteredDevice provides a mock function to send a register device response
+func (fp *FakePublisher) SendRegisteredDevice(msg network.RegisterResponseMsg) error {
 	ret := fp.Called(msg)
 	return ret.Error(0)
 }

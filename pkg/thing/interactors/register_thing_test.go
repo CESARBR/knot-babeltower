@@ -87,7 +87,7 @@ func TestRegisterThing(t *testing.T) {
 			}
 
 			msg := network.RegisterResponseMsg{ID: tc.thingID, Token: tc.fakePublisher.Token, Error: tmp}
-			tc.fakePublisher.On("SendRegisterDevice", msg).
+			tc.fakePublisher.On("SendRegisteredDevice", msg).
 				Return(tc.fakePublisher.ReturnErr)
 			tc.fakeThingProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()

@@ -26,7 +26,7 @@ type msgClientPublisher struct {
 
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
-	SendRegisterDevice(network.RegisterResponseMsg) error
+	SendRegisteredDevice(network.RegisterResponseMsg) error
 	SendUnregisteredDevice(thingID string, errMsg *string) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
@@ -40,9 +40,8 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisterDevice(msg network.RegisterResponseMsg) error {
-	mp.logger.Debug("Sending register message")
-
+func (mp *msgClientPublisher) SendRegisteredDevice(msg network.RegisterResponseMsg) error {
+	mp.logger.Debug("Sending registered message")
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		mp.logger.Error(err)
