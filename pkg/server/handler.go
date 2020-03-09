@@ -24,7 +24,7 @@ type MsgHandler struct {
 	thingController *controllers.ThingController
 }
 
-// NewMsgHandler constructs the MsgHandler
+// NewMsgHandler creates a new MsgHandler instance with the necessary dependencies
 func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingController *controllers.ThingController) *MsgHandler {
 	return &MsgHandler{logger, amqp, thingController}
 }
@@ -59,63 +59,66 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 		err = mc.amqp.OnMessage(msgChan, queueName, exchange, key)
 	}
 
+	// Subscribe to messages received from any client
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
+
+	// Subscribe to messages received from the connector service
 	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyData)
 	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDevice)
+
 	return err
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 	for {
+		var err error
 		msg := <-msgChan
 		mc.logger.Infof("Exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
 		mc.logger.Infof("Message received: %s", string(msg.Body))
 
-		authorizationHeader := msg.Headers["Authorization"]
+		if msg.Exchange == exchangeFogIn {
+			err = mc.handleClientMessages(msg)
+		} else if msg.Exchange == exchangeConnOut {
+			err = mc.handleConnectorMessages(msg)
+		}
 
-		switch msg.RoutingKey {
-		case "device.register":
-			err := mc.thingController.Register(msg.Body, authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
-		case "device.registered":
-			// Ignore message
+		if err != nil {
+			mc.logger.Error(err)
 			continue
-		case "device.unregister":
-			err := mc.thingController.Unregister(msg.Body, authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
-		case "device.cmd.list":
-			mc.logger.Info("List things request received")
-			err := mc.thingController.ListDevices(authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
-		case "device.cmd.auth":
-			err := mc.thingController.AuthDevice(msg.Body, authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
-		case "data.request":
-			err := mc.thingController.RequestData(msg.Body, authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
-		case "schema.update":
-			err := mc.thingController.UpdateSchema(msg.Body, authorizationHeader.(string))
-			if err != nil {
-				mc.logger.Error(err)
-				continue
-			}
 		}
 	}
+}
+
+func (mc *MsgHandler) handleClientMessages(msg network.InMsg) error {
+	authorizationHeader := msg.Headers["Authorization"]
+
+	switch msg.RoutingKey {
+	case "device.register":
+		return mc.thingController.Register(msg.Body, authorizationHeader.(string))
+	case "device.unregister":
+		return mc.thingController.Unregister(msg.Body, authorizationHeader.(string))
+	case "schema.update":
+		return mc.thingController.UpdateSchema(msg.Body, authorizationHeader.(string))
+	case "device.cmd.auth":
+		return mc.thingController.AuthDevice(msg.Body, authorizationHeader.(string))
+	case "device.cmd.list":
+		return mc.thingController.ListDevices(authorizationHeader.(string))
+	}
+
+	return nil
+}
+
+func (mc *MsgHandler) handleConnectorMessages(msg network.InMsg) error {
+	authorizationHeader := msg.Headers["Authorization"]
+
+	switch msg.RoutingKey {
+	case "data.request":
+		return mc.thingController.RequestData(msg.Body, authorizationHeader.(string))
+	case "device.registered":
+		// Ignore message
+	}
+
+	return nil
 }
