@@ -8,11 +8,11 @@ import (
 	"github.com/CESARBR/knot-babeltower/internal/config"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/server"
+	thingControllers "github.com/CESARBR/knot-babeltower/pkg/thing/controllers"
 	thingDeliveryAMQP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
 	thingDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
-	thingHandlerAMQP "github.com/CESARBR/knot-babeltower/pkg/thing/handler/amqp"
 	thingInteractors "github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
-	"github.com/CESARBR/knot-babeltower/pkg/user/controllers"
+	userControllers "github.com/CESARBR/knot-babeltower/pkg/user/controllers"
 	userDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
 	userInteractors "github.com/CESARBR/knot-babeltower/pkg/user/interactors"
 
@@ -57,19 +57,20 @@ func main() {
 	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy, connectorPublisher)
 
 	// Controllers
-	userController := controllers.NewUserController(logrus.Get("Controller"), createUser, createToken)
+	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor)
+	userController := userControllers.NewUserController(logrus.Get("UserController"), createUser, createToken)
 
 	// Server
 	serverStartedChan := make(chan bool, 1)
-	server := server.NewServer(config.Server.Port, logrus.Get("Server"), userController)
+	http := server.NewServer(config.Server.Port, logrus.Get("Server"), userController)
 
 	// AMQP Handler
 	msgStartedChan := make(chan bool, 1)
-	msgHandler := thingHandlerAMQP.NewMsgHandler(logrus.Get("MsgHandler"), amqp, thingInteractor)
+	msgHandler := server.NewMsgHandler(logrus.Get("MsgHandler"), amqp, thingController)
 
 	// Start goroutines
 	go amqp.Start(amqpStartedChan)
-	go server.Start(serverStartedChan)
+	go http.Start(serverStartedChan)
 
 	// Main loop
 	for {
@@ -92,7 +93,7 @@ func main() {
 		case <-quit:
 			msgHandler.Stop()
 			amqp.Stop()
-			server.Stop()
+			http.Stop()
 			os.Exit(0)
 		}
 	}
