@@ -131,7 +131,7 @@ func TestAuthThing(t *testing.T) {
 	for _, tc := range atCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.fakeThingProxy.
-				On("GetThing", tc.authParam, tc.idParam).
+				On("Get", tc.authParam, tc.idParam).
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
 			tc.fakePublisher.

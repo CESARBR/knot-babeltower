@@ -19,7 +19,7 @@ func (i *ThingInteractor) Auth(authorization, id, token string) error {
 		return errors.New("thing's token not provided")
 	}
 
-	_, err := i.thingProxy.GetThing(authorization, id)
+	_, err := i.thingProxy.Get(authorization, id)
 	if err != nil {
 		i.logger.Error(err)
 		msg := err.Error()
