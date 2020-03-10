@@ -27,7 +27,7 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 		return errors.New("authorization key not provided")
 	}
 
-	thing, err := i.thingProxy.GetThing(authorization, thingID)
+	thing, err := i.thingProxy.Get(authorization, thingID)
 	if err != nil {
 		i.logger.Error(err)
 		return err

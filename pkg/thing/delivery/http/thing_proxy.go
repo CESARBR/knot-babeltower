@@ -17,7 +17,7 @@ type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
 	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
 	List(authorization string) (things []*entities.Thing, err error)
-	GetThing(authorization, ID string) (*entities.Thing, error)
+	Get(authorization, ID string) (*entities.Thing, error)
 	Remove(authorization, ID string) error
 }
 
@@ -168,7 +168,7 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
 // the thing's service in order to update it with the schema.
 func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
-	t, err := p.GetThing(authorization, ID)
+	t, err := p.Get(authorization, ID)
 	if err != nil {
 		return err
 	}
@@ -251,8 +251,8 @@ func (p proxy) getPaginatedThings(authorization string) ([]*ThingProxyRepr, erro
 	return things, nil
 }
 
-// GetThing list the things registered on thing's service
-func (p proxy) GetThing(authorization, ID string) (*entities.Thing, error) {
+// Get list the things registered on thing's service
+func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 	things, err := p.getPaginatedThings(authorization)
 	if err != nil {
 		return nil, err
@@ -271,7 +271,7 @@ func (p proxy) GetThing(authorization, ID string) (*entities.Thing, error) {
 
 // Remove removes the indicated thing from the thing's service
 func (p proxy) Remove(authorization, ID string) error {
-	t, err := p.GetThing(authorization, ID)
+	t, err := p.Get(authorization, ID)
 	if err != nil {
 		return err
 	}

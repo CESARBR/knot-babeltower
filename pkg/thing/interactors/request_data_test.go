@@ -165,7 +165,7 @@ func TestGetData(t *testing.T) {
 	for _, tc := range gdCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.fakeThingProxy.
-				On("GetThing", tc.authorization, tc.thingID).
+				On("Get", tc.authorization, tc.thingID).
 				Return(tc.expectedThing, tc.expectedThingError).
 				Maybe()
 			tc.fakePublisher.
