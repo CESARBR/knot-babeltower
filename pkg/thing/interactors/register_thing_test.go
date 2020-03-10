@@ -96,7 +96,7 @@ func TestRegisterThing(t *testing.T) {
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err = thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
-			if err != nil && !assert.IsType(t, err, tc.errExpected) {
+			if err != nil && !assert.IsType(t, errors.Unwrap(err), tc.errExpected) {
 				t.Errorf("Create Thing failed with unexpected error. Error: %s", err)
 				return
 			}
