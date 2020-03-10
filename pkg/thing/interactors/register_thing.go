@@ -1,6 +1,7 @@
 package interactors
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -82,24 +83,27 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 	if err != nil {
 		errReply := i.reply(id, "", err)
 		if errReply != nil {
-			i.logger.Error(errReply)
+			return fmt.Errorf("error sending success response to client: %v: %w", errReply, err)
 		}
-
-		return err
+		return fmt.Errorf("error registering thing: %w", err)
 	}
 
 	// Get the id generated as a token and send in the response
 	token, err := i.thingProxy.Create(id, name, authorization)
 	errReply := i.reply(id, token, err)
+	if err != nil {
+		if errReply != nil {
+			return fmt.Errorf("error sending success response to client: %v: %w", errReply, err)
+		}
+		return fmt.Errorf("error registering thing: %w", err)
+	}
 	if errReply != nil {
 		i.logger.Error(errReply)
-		return errReply
 	}
 
 	err = i.connectorPublisher.SendRegisterDevice(id, name)
 	if err != nil {
-		i.logger.Error(err)
-		return err
+		return fmt.Errorf("error sending request to connector: %w", err)
 	}
 
 	return nil
