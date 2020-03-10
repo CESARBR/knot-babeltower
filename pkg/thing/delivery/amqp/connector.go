@@ -32,7 +32,7 @@ func NewMsgConnectorPublisher(logger logging.Logger, amqp *network.Amqp) Connect
 	return &msgConnectorPublisher{logger, amqp}
 }
 
-// SendRegisterDevice sends a registered message
+// SendRegisterDevice sends a register message
 func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) error {
 	mp.logger.Debug("Sending register message")
 

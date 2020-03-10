@@ -12,7 +12,7 @@ type FakeThingProxy struct {
 	Thing     *entities.Thing
 }
 
-// Create provides a mock function to create a thing on the thing's seervice
+// Create provides a mock function to create a thing on the thing's service
 func (ftp *FakeThingProxy) Create(id, name, authorization string) (idGenerated string, err error) {
 	ret := ftp.Called(id, name, authorization)
 	return ret.String(0), ret.Error(1)

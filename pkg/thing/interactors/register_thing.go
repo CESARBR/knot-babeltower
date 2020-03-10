@@ -15,10 +15,10 @@ type ErrorIDInvalid struct{}
 // ErrorNameNotFound is raised when Name is empty
 type ErrorNameNotFound struct{}
 
-// ErrorMissingArgument is raised there is some argument missing
+// ErrorMissingArgument is raised when there is some argument missing
 type ErrorMissingArgument struct{}
 
-// ErrorInvalidTypeArgument is raised when the type is the expected
+// ErrorInvalidTypeArgument is raised when the type is not the expected
 type ErrorInvalidTypeArgument struct{ msg string }
 
 func (err ErrorIDLenght) Error() string {
