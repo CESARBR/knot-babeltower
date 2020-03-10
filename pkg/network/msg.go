@@ -2,7 +2,7 @@ package network
 
 import "github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 
-// RegisterRequestMsg is received to register a device
+// RegisterRequestMsg represents the incoming register device request message
 type RegisterRequestMsg struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
@@ -19,7 +19,7 @@ type UpdateSchemaRequestMsg struct {
 	Schema []entities.Schema `json:"schema,omitempty"`
 }
 
-// RegisterResponseMsg is sent when receive a register request
+// RegisterResponseMsg represents the outgoing register device response message
 type RegisterResponseMsg struct {
 	ID    string  `json:"id"`
 	Token string  `json:"token"`
