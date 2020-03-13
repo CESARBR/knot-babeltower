@@ -40,39 +40,6 @@ func (err ErrorInvalidTypeArgument) Error() string {
 	return err.msg
 }
 
-func (i *ThingInteractor) reply(id, token string, err error) error {
-	var errStr *string
-
-	if err != nil {
-		errStr = new(string)
-		*errStr = err.Error()
-	} else {
-		errStr = nil
-	}
-
-	errPublish := i.clientPublisher.SendRegisteredDevice(id, token, errStr)
-	if errPublish != nil {
-		i.logger.Error(errPublish)
-		return errPublish
-	}
-
-	return nil
-}
-
-func (i *ThingInteractor) verifyThingID(id string) error {
-	if len(id) > 16 {
-		return ErrorIDLenght{}
-	}
-
-	_, err := strconv.ParseUint(id, 16, 64)
-	if err != nil {
-		i.logger.Error(err)
-		return ErrorIDInvalid{}
-	}
-
-	return nil
-}
-
 // Register runs the use case to create a new thing
 func (i *ThingInteractor) Register(authorization, id, name string) error {
 	i.logger.Debug("Executing register thing use case")
@@ -101,6 +68,39 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 	err = i.connectorPublisher.SendRegisterDevice(id, name)
 	if err != nil {
 		return fmt.Errorf("error sending request to connector: %w", err)
+	}
+
+	return nil
+}
+
+func (i *ThingInteractor) verifyThingID(id string) error {
+	if len(id) > 16 {
+		return ErrorIDLenght{}
+	}
+
+	_, err := strconv.ParseUint(id, 16, 64)
+	if err != nil {
+		i.logger.Error(err)
+		return ErrorIDInvalid{}
+	}
+
+	return nil
+}
+
+func (i *ThingInteractor) reply(id, token string, err error) error {
+	var errStr *string
+
+	if err != nil {
+		errStr = new(string)
+		*errStr = err.Error()
+	} else {
+		errStr = nil
+	}
+
+	errPublish := i.clientPublisher.SendRegisteredDevice(id, token, errStr)
+	if errPublish != nil {
+		i.logger.Error(errPublish)
+		return errPublish
 	}
 
 	return nil
