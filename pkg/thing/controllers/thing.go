@@ -21,13 +21,13 @@ func NewThingController(logger logging.Logger, thingInteractor interactors.Inter
 
 // Register handles the register device request and execute its use case
 func (mc *ThingController) Register(body []byte, authorizationHeader string) error {
-	msgParsed := network.RegisterRequestMsg{}
-	err := json.Unmarshal(body, &msgParsed)
+	msg := network.RegisterRequestMsg{}
+	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return err
 	}
 
-	return mc.thingInteractor.Register(authorizationHeader, msgParsed.ID, msgParsed.Name)
+	return mc.thingInteractor.Register(authorizationHeader, msg.ID, msg.Name)
 }
 
 // Unregister handles the unregister device request and execute its use case
