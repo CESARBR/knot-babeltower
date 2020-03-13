@@ -24,33 +24,35 @@ type interval struct {
 	max int
 }
 
+// rules reference table: https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html
 var rules = map[int]schemaType{
-	0:      schemaType{valueType: interval{1, 4}, unit: 0},
-	0xfff0: schemaType{valueType: interval{1, 4}, unit: 0},
-	0xfff1: schemaType{valueType: interval{1, 4}, unit: 0},
-	0xfff2: schemaType{valueType: interval{1, 4}, unit: 0},
-	0xff10: schemaType{valueType: interval{1, 4}, unit: 0},
-	1:      schemaType{valueType: 1, unit: interval{1, 3}},
-	2:      schemaType{valueType: 1, unit: interval{1, 2}},
-	3:      schemaType{valueType: 1, unit: 1},
-	4:      schemaType{valueType: 1, unit: interval{1, 3}},
-	5:      schemaType{valueType: 1, unit: interval{1, 3}},
-	6:      schemaType{valueType: 1, unit: 1},
-	7:      schemaType{valueType: 1, unit: interval{1, 3}},
-	8:      schemaType{valueType: 1, unit: interval{1, 3}},
-	9:      schemaType{valueType: 1, unit: interval{1, 4}},
-	0x0A:   schemaType{valueType: 1, unit: interval{1, 3}},
-	0x0B:   schemaType{valueType: 1, unit: interval{1, 4}},
-	0x0C:   schemaType{valueType: 2, unit: interval{1, 2}},
-	0x0D:   schemaType{valueType: 2, unit: interval{1, 4}},
-	0x0E:   schemaType{valueType: 2, unit: interval{1, 3}},
-	0x0F:   schemaType{valueType: 2, unit: 1},
-	0x10:   schemaType{valueType: 2, unit: 1},
-	0x11:   schemaType{valueType: 2, unit: 1},
-	0x12:   schemaType{valueType: 2, unit: 1},
-	0x13:   schemaType{valueType: 1, unit: interval{1, 4}},
-	0x14:   schemaType{valueType: 2, unit: interval{1, 6}},
-	0x15:   schemaType{valueType: 1, unit: interval{1, 6}},
+	0x0000: schemaType{valueType: 4, unit: 0},              // RAW   => NONE
+	0x0001: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => VOLTAGE
+	0x0002: schemaType{valueType: 1, unit: interval{1, 2}}, // INT   => CURRENT
+	0x0003: schemaType{valueType: 1, unit: 1},              // INT   => RESISTENCE
+	0x0004: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => POWER
+	0x0005: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => TEMPERATURE
+	0x0006: schemaType{valueType: 1, unit: 1},              // INT   => RELATIVE_HUMIDITY
+	0x0007: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => LUMINOSITY
+	0x0008: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => TIME
+	0x0009: schemaType{valueType: 1, unit: interval{1, 4}}, // INT   => MASS
+	0x000A: schemaType{valueType: 1, unit: interval{1, 3}}, // INT   => PRESSURE
+	0x000B: schemaType{valueType: 1, unit: interval{1, 4}}, // INT   => DISTANCE
+	0x000C: schemaType{valueType: 2, unit: interval{1, 2}}, // FLOAT => ANGLE
+	0x000D: schemaType{valueType: 2, unit: interval{1, 4}}, // FLOAT => VOLUME
+	0x000E: schemaType{valueType: 2, unit: interval{1, 3}}, // FLOAT => AREA
+	0x000F: schemaType{valueType: 2, unit: 1},              // FLOAT => RAIN
+	0x0010: schemaType{valueType: 2, unit: 1},              // FLOAT => DENSITY
+	0x0011: schemaType{valueType: 2, unit: 1},              // FLOAT => LATITUDE
+	0x0012: schemaType{valueType: 2, unit: 1},              // FLOAT => LONGITUDE
+	0x0013: schemaType{valueType: 1, unit: interval{1, 4}}, // INT   => SPEED
+	0x0014: schemaType{valueType: 2, unit: interval{1, 6}}, // FLOAT => VOLUMEFLOW
+	0x0015: schemaType{valueType: 1, unit: interval{1, 6}}, // INT   => ENERGY
+	0xFFF0: schemaType{valueType: 3, unit: 0},              // BOOL  => PRESENCE
+	0xFFF1: schemaType{valueType: 3, unit: 0},              // BOOL  => SWITCH
+	0xFFF2: schemaType{valueType: 4, unit: 0},              // RAW   => COMMAND
+	0xFF10: schemaType{valueType: 1, unit: 0},              // INT   => ANALOG
+	0xFFFF: schemaType{valueType: 4, unit: 0},              // RAW   => INVALID
 }
 
 // UpdateSchema receive the new sensor schema and update it on the thing's service
