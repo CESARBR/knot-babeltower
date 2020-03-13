@@ -1,44 +1,15 @@
 package interactors
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 )
 
-// ErrorIDLenght is raised when ID is more than 16 characters
-type ErrorIDLenght struct{}
-
-// ErrorIDInvalid is raised when ID is not in hexadecimal value
-type ErrorIDInvalid struct{}
-
-// ErrorNameNotFound is raised when Name is empty
-type ErrorNameNotFound struct{}
-
-// ErrorMissingArgument is raised when there is some argument missing
-type ErrorMissingArgument struct{}
-
-// ErrorInvalidTypeArgument is raised when the type is not the expected
-type ErrorInvalidTypeArgument struct{ msg string }
-
-func (err ErrorIDLenght) Error() string {
-	return "ID length error"
-}
-
-func (err ErrorIDInvalid) Error() string {
-	return "ID is not in hexadecimal"
-}
-
-func (err ErrorNameNotFound) Error() string {
-	return "Name not found"
-}
-
-func (err ErrorMissingArgument) Error() string {
-	return "Missing arguments"
-}
-
-func (err ErrorInvalidTypeArgument) Error() string {
-	return err.msg
-}
+var (
+	ErrIDLength = errors.New("id length exceeds 16 characters")
+	ErrIDNotInHex = errors.New("id is not in hexadecimal format")
+)
 
 // Register runs the use case to create a new thing
 func (i *ThingInteractor) Register(authorization, id, name string) error {
@@ -71,13 +42,12 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 
 func (i *ThingInteractor) verifyThingID(id string) error {
 	if len(id) > 16 {
-		return ErrorIDLenght{}
+		return ErrIDLength
 	}
 
 	_, err := strconv.ParseUint(id, 16, 64)
 	if err != nil {
-		i.logger.Error(err)
-		return ErrorIDInvalid{}
+		return ErrIDNotInHex
 	}
 
 	return nil
