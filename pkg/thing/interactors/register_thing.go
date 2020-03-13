@@ -45,32 +45,28 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 	i.logger.Debug("Executing register thing use case")
 	err := i.verifyThingID(id)
 	if err != nil {
-		errReply := i.reply(id, "", err)
-		if errReply != nil {
-			return fmt.Errorf("error sending success response to client: %v: %w", errReply, err)
-		}
-		return fmt.Errorf("error registering thing: %w", err)
+		sendErr := i.sendResponse(id, "", err)
+		return fmt.Errorf("error registering thing: %w", sendErr)
 	}
 
 	// Get the id generated as a token and send in the response
 	token, err := i.thingProxy.Create(id, name, authorization)
-	errReply := i.reply(id, token, err)
+	sendErr := i.sendResponse(id, token, err)
 	if err != nil {
-		if errReply != nil {
-			return fmt.Errorf("error sending success response to client: %v: %w", errReply, err)
-		}
-		return fmt.Errorf("error registering thing: %w", err)
-	}
-	if errReply != nil {
-		i.logger.Error(errReply)
+		// it was not possible to create a thing, so returns without send request to connector
+		return fmt.Errorf("error registering thing: %w", sendErr)
 	}
 
 	err = i.connectorPublisher.SendRegisterDevice(id, name)
 	if err != nil {
+		if sendErr != nil {
+			// an error ocurred also on replying to client (on sendResponse method)
+			return fmt.Errorf("error sending request to connector: %v: %w", err, sendErr)
+		}
 		return fmt.Errorf("error sending request to connector: %w", err)
 	}
 
-	return nil
+	return sendErr
 }
 
 func (i *ThingInteractor) verifyThingID(id string) error {
@@ -87,21 +83,21 @@ func (i *ThingInteractor) verifyThingID(id string) error {
 	return nil
 }
 
-func (i *ThingInteractor) reply(id, token string, err error) error {
-	var errStr *string
+func (i *ThingInteractor) sendResponse(id, token string, err error) error {
+	sendErr := i.clientPublisher.SendRegisteredDevice(id, token, getErrMessagePtr(err))
+	if sendErr != nil {
+		if err != nil {
+			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)
+		}
+		return fmt.Errorf("error sending response to client: %w", sendErr)
+	}
+	return err
+}
 
+func getErrMessagePtr(err error) *string {
 	if err != nil {
-		errStr = new(string)
-		*errStr = err.Error()
-	} else {
-		errStr = nil
+		msg := err.Error()
+		return &msg
 	}
-
-	errPublish := i.clientPublisher.SendRegisteredDevice(id, token, errStr)
-	if errPublish != nil {
-		i.logger.Error(errPublish)
-		return errPublish
-	}
-
 	return nil
 }
