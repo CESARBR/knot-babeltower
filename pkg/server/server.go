@@ -15,17 +15,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Health represents the service's health status
-type Health struct {
-	Status string `json:"status"`
-}
-
 // Server represents the HTTP server
 type Server struct {
 	port           int
 	logger         logging.Logger
 	userController *controllers.UserController
 	srv            *http.Server
+}
+
+// Health represents the service's health status
+type Health struct {
+	Status string `json:"status"`
 }
 
 // NewServer creates a new server instance
@@ -74,13 +74,6 @@ func (s *Server) createRouters() *mux.Router {
 	return r
 }
 
-func (s *Server) logRequest(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.logger.Infof("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-		handler.ServeHTTP(w, r)
-	})
-}
-
 // Healthcheck godoc
 // @Summary Verify the service health
 // @Produce json
@@ -94,4 +87,11 @@ func (s *Server) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.logger.Errorf("Error sending response, %s\n", err)
 	}
+}
+
+func (s *Server) logRequest(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.logger.Infof("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
 }
