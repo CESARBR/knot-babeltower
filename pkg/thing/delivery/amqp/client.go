@@ -18,12 +18,6 @@ const (
 	requestDataOutKey = "data.request"
 )
 
-// msgClientPublisher handle messages received from a service
-type msgClientPublisher struct {
-	logger logging.Logger
-	amqp   *network.Amqp
-}
-
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
 	SendRegisteredDevice(network.RegisterResponseMsg) error
@@ -32,6 +26,12 @@ type ClientPublisher interface {
 	SendThings(things []*entities.Thing) error
 	SendAuthStatus(thingID string, errMsg *string) error
 	SendRequestData(thingID string, sensorIds []int) error
+}
+
+// msgClientPublisher handle messages received from a service
+type msgClientPublisher struct {
+	logger logging.Logger
+	amqp   *network.Amqp
 }
 
 // NewMsgClientPublisher constructs the msgClientPublisher
