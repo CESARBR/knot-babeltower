@@ -57,15 +57,7 @@ func (a *Amqp) Stop() {
 
 // PublishPersistentMessage sends a persistent message to RabbitMQ
 func (a *Amqp) PublishPersistentMessage(exchange, key string, body []byte) error {
-	err := a.channel.ExchangeDeclare(
-		exchange,
-		amqp.ExchangeTopic, // type
-		true,               // durable
-		false,              // delete when complete
-		false,              // internal
-		false,              // noWait
-		nil,                // arguments
-	)
+	err := a.declareExchange(exchange)
 	if err != nil {
 		a.logger.Error(err)
 		return err
