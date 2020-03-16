@@ -23,7 +23,7 @@ type ClientPublisher interface {
 	SendRegisteredDevice(network.DeviceRegisteredResponse) error
 	SendUnregisteredDevice(thingID string, errMsg *string) error
 	SendUpdatedSchema(thingID string) error
-	SendThings(things []*entities.Thing) error
+	SendDevicesList(things []*entities.Thing) error
 	SendAuthStatus(thingID string, errMsg *string) error
 	SendRequestData(thingID string, sensorIds []int) error
 }
@@ -75,8 +75,8 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string) error {
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, schemaOutKey, msg)
 }
 
-// SendThings sends the updated schema response
-func (mp *msgClientPublisher) SendThings(things []*entities.Thing) error {
+// SendDevicesList sends the list devices command response
+func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing) error {
 	resp := &network.DeviceListResponse{Things: things}
 	msg, err := json.Marshal(resp)
 	if err != nil {
