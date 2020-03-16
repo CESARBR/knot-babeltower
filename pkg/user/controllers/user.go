@@ -18,14 +18,6 @@ type UserController struct {
 	createTokenInteractor *interactors.CreateToken
 }
 
-// NewUserController constructs the controller
-func NewUserController(
-	logger logging.Logger,
-	createUserInteractor *interactors.CreateUser,
-	createTokenInteractor *interactors.CreateToken) *UserController {
-	return &UserController{logger, createUserInteractor, createTokenInteractor}
-}
-
 // CreateTokenResponse is used to map the use case response to HTTP
 type CreateTokenResponse struct {
 	Token string `json:"token"`
@@ -36,36 +28,12 @@ type DetailedErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func (uc *UserController) writeResponse(w http.ResponseWriter, statusCode int, msg interface{}) {
-	w.WriteHeader(statusCode)
-
-	if msg == nil {
-		return
-	}
-
-	js, err := json.Marshal(msg)
-	if err != nil {
-		uc.logger.Errorf("Unable to marshal json: %s", err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(js)
-	if err != nil {
-		uc.logger.Errorf("Unable to write to connection HTTP: %s", err)
-		return
-	}
-}
-
-func mapErrorToStatusCode(err error) int {
-	switch err.(type) {
-	case shared.ErrEntityExists:
-		return http.StatusConflict
-	case entities.ErrInvalidCredentials:
-		return http.StatusForbidden
-	default:
-		return http.StatusInternalServerError
-	}
+// NewUserController constructs the controller
+func NewUserController(
+	logger logging.Logger,
+	createUserInteractor *interactors.CreateUser,
+	createTokenInteractor *interactors.CreateToken) *UserController {
+	return &UserController{logger, createUserInteractor, createTokenInteractor}
 }
 
 // Create godoc
@@ -135,4 +103,36 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 	uc.logger.Infof("User's %s token created", user.Email)
 	ctr := &CreateTokenResponse{token}
 	uc.writeResponse(w, http.StatusCreated, ctr)
+}
+
+func (uc *UserController) writeResponse(w http.ResponseWriter, statusCode int, msg interface{}) {
+	w.WriteHeader(statusCode)
+
+	if msg == nil {
+		return
+	}
+
+	js, err := json.Marshal(msg)
+	if err != nil {
+		uc.logger.Errorf("Unable to marshal json: %s", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(js)
+	if err != nil {
+		uc.logger.Errorf("Unable to write to connection HTTP: %s", err)
+		return
+	}
+}
+
+func mapErrorToStatusCode(err error) int {
+	switch err.(type) {
+	case shared.ErrEntityExists:
+		return http.StatusConflict
+	case entities.ErrInvalidCredentials:
+		return http.StatusForbidden
+	default:
+		return http.StatusInternalServerError
+	}
 }
