@@ -44,6 +44,12 @@ func (fp *FakePublisher) SendAuthStatus(thingID string, errMsg *string) error {
 	return args.Error(0)
 }
 
+// SendUpdateData provides a mock function to send an update data command
+func (fp *FakePublisher) SendUpdateData(thingID string, data []entities.Data) error {
+	args := fp.Called(thingID, data)
+	return args.Error(0)
+}
+
 // SendRequestData provides a mock function to send a request data command
 func (fp *FakePublisher) SendRequestData(thingID string, sensorIds []int) error {
 	args := fp.Called(thingID, sensorIds)
