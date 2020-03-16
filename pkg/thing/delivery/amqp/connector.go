@@ -15,16 +15,16 @@ const (
 	updateSchemaInKey = "schema.update"
 )
 
-type msgConnectorPublisher struct {
-	logger logging.Logger
-	amqp   *network.Amqp
-}
-
 // ConnectorPublisher handle messages received from a service
 type ConnectorPublisher interface {
 	SendRegisterDevice(string, string) error
 	SendUnregisterDevice(string) error
 	SendUpdateSchema(string, []entities.Schema) error
+}
+
+type msgConnectorPublisher struct {
+	logger logging.Logger
+	amqp   *network.Amqp
 }
 
 // NewMsgConnectorPublisher constructs the Connector
