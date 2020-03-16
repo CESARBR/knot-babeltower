@@ -20,7 +20,7 @@ const (
 
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
-	SendRegisteredDevice(network.RegisterResponseMsg) error
+	SendRegisteredDevice(network.DeviceRegisteredResponse) error
 	SendUnregisteredDevice(thingID string, errMsg *string) error
 	SendUpdatedSchema(thingID string) error
 	SendThings(things []*entities.Thing) error
@@ -40,7 +40,7 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisteredDevice(msg network.RegisterResponseMsg) error {
+func (mp *msgClientPublisher) SendRegisteredDevice(msg network.DeviceRegisteredResponse) error {
 	mp.logger.Debug("Sending registered message")
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -54,7 +54,7 @@ func (mp *msgClientPublisher) SendRegisteredDevice(msg network.RegisterResponseM
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
 func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *string) error {
 	mp.logger.Debug("Sending unregistered message")
-	resp := &network.UnregisterResponseMsg{ID: thingID, Error: errMsg}
+	resp := &network.DeviceUnregisteredResponse{ID: thingID, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		mp.logger.Error(err)
@@ -66,7 +66,7 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *str
 
 // SendUpdatedSchema sends the updated schema response
 func (mp *msgClientPublisher) SendUpdatedSchema(thingID string) error {
-	resp := &network.UpdatedSchemaResponse{ID: thingID}
+	resp := &network.SchemaUpdatedResponse{ID: thingID}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string) error {
 
 // SendThings sends the updated schema response
 func (mp *msgClientPublisher) SendThings(things []*entities.Thing) error {
-	resp := &network.ListThingsResponse{Things: things}
+	resp := &network.DeviceListResponse{Things: things}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (mp *msgClientPublisher) SendThings(things []*entities.Thing) error {
 
 // SendAuthStatus sends the auth thing status response
 func (mp *msgClientPublisher) SendAuthStatus(thingID string, errMsg *string) error {
-	resp := &network.AuthThingResponse{ID: thingID, ErrMsg: errMsg}
+	resp := &network.DeviceAuthResponse{ID: thingID, ErrMsg: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (mp *msgClientPublisher) SendAuthStatus(thingID string, errMsg *string) err
 
 // SendRequestData sends request data command
 func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) error {
-	resp := &network.RequestDataCommand{ID: thingID, SensorIds: sensorIds}
+	resp := &network.DataRequest{ID: thingID, SensorIds: sensorIds}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err

@@ -21,7 +21,7 @@ func NewThingController(logger logging.Logger, thingInteractor interactors.Inter
 
 // Register handles the register device request and execute its use case
 func (mc *ThingController) Register(body []byte, authorizationHeader string) error {
-	msg := network.RegisterRequestMsg{}
+	msg := network.DeviceRegisterRequest{}
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (mc *ThingController) Register(body []byte, authorizationHeader string) err
 
 // Unregister handles the unregister device request and execute its use case
 func (mc *ThingController) Unregister(body []byte, authorizationHeader string) error {
-	msg := network.UnregisterRequestMsg{}
+	msg := network.DeviceUnregisterRequest{}
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (mc *ThingController) Unregister(body []byte, authorizationHeader string) e
 
 // UpdateSchema handles the update schema request and execute its use case
 func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string) error {
-	var updateSchemaReq network.UpdateSchemaRequest
+	var updateSchemaReq network.SchemaUpdateRequest
 	err := json.Unmarshal(body, &updateSchemaReq)
 	if err != nil {
 		mc.logger.Error(err)
@@ -69,7 +69,7 @@ func (mc *ThingController) ListDevices(authorization string) error {
 
 // AuthDevice handles the auth device request and execute its use case
 func (mc *ThingController) AuthDevice(body []byte, authorization string) error {
-	var authThingReq network.AuthThingCommand
+	var authThingReq network.DeviceAuthRequest
 	err := json.Unmarshal(body, &authThingReq)
 	if err != nil {
 		mc.logger.Error(err)
@@ -83,7 +83,7 @@ func (mc *ThingController) AuthDevice(body []byte, authorization string) error {
 
 // RequestData handles the request data request and execute its use case
 func (mc *ThingController) RequestData(body []byte, authorization string) error {
-	var requestDataReq network.RequestDataCommand
+	var requestDataReq network.DataRequest
 	err := json.Unmarshal(body, &requestDataReq)
 	if err != nil {
 		mc.logger.Error(err)
