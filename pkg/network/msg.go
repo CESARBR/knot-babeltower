@@ -2,66 +2,60 @@ package network
 
 import "github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 
-// RegisterRequestMsg represents the incoming register device request message
-type RegisterRequestMsg struct {
+// DeviceRegisterRequest represents the incoming register device request message
+type DeviceRegisterRequest struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// UnregisterRequestMsg represents the incoming unregister device request message
-type UnregisterRequestMsg struct {
-	ID string `json:"id"`
-}
-
-// UpdateSchemaRequestMsg represents the update schema request message
-type UpdateSchemaRequestMsg struct {
-	ID     string            `json:"id"`
-	Schema []entities.Schema `json:"schema,omitempty"`
-}
-
-// RegisterResponseMsg represents the outgoing register device response message
-type RegisterResponseMsg struct {
+// DeviceRegisteredResponse represents the outgoing register device response message
+type DeviceRegisteredResponse struct {
 	ID    string  `json:"id"`
 	Token string  `json:"token"`
 	Error *string `json:"error"`
 }
 
-// UnregisterResponseMsg represents the outgoing unregister device response message
-type UnregisterResponseMsg struct {
+// DeviceUnregisterRequest represents the incoming unregister device request message
+type DeviceUnregisterRequest struct {
+	ID string `json:"id"`
+}
+
+// DeviceUnregisteredResponse represents the outgoing unregister device response message
+type DeviceUnregisteredResponse struct {
 	ID    string  `json:"id"`
 	Error *string `json:"error"`
 }
 
-// UpdateSchemaRequest represents the update schema request message
-type UpdateSchemaRequest struct {
+// SchemaUpdateRequest represents the incoming update schema request message
+type SchemaUpdateRequest struct {
 	ID     string            `json:"id"`
 	Schema []entities.Schema `json:"schema,omitempty"`
 }
 
-// UpdatedSchemaResponse represents the update schema response message
-type UpdatedSchemaResponse struct {
+// SchemaUpdatedResponse represents the outgoing update schema response message
+type SchemaUpdatedResponse struct {
 	ID string `json:"id"`
 }
 
-// ListThingsResponse represents the list things response
-type ListThingsResponse struct {
-	Things []*entities.Thing `json:"things"`
-}
-
-// RequestDataCommand represents the request data command
-type RequestDataCommand struct {
-	ID        string `json:"id"`
-	SensorIds []int  `json:"sensorIds"`
-}
-
-// AuthThingCommand represents the auth device command
-type AuthThingCommand struct {
+// DeviceAuthRequest represents the incoming auth device command
+type DeviceAuthRequest struct {
 	ID    string `json:"id"`
 	Token string `json:"token"`
 }
 
-// AuthThingResponse represents the auth device command response
-type AuthThingResponse struct {
+// DeviceAuthResponse represents the outgoing auth device command response
+type DeviceAuthResponse struct {
 	ID     string  `json:"id"`
 	ErrMsg *string `json:"error"`
+}
+
+// DeviceListResponse represents the outgoing list devices command response
+type DeviceListResponse struct {
+	Things []*entities.Thing `json:"things"`
+}
+
+// DataRequest represents the incoming request data command
+type DataRequest struct {
+	ID        string `json:"id"`
+	SensorIds []int  `json:"sensorIds"`
 }

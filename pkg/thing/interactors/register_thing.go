@@ -51,7 +51,7 @@ func (i *ThingInteractor) reply(id, token string, err error) error {
 		errStr = nil
 	}
 
-	response := network.RegisterResponseMsg{ID: id, Token: token, Error: errStr}
+	response := network.DeviceRegisteredResponse{ID: id, Token: token, Error: errStr}
 	errPublish := i.clientPublisher.SendRegisteredDevice(response)
 	if errPublish != nil {
 		i.logger.Error(errPublish)
