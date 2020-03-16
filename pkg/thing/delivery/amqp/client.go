@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -15,6 +16,7 @@ const (
 	schemaOutKey      = "schema.updated"
 	listThingsOutKey  = "device.list"
 	authDeviceOutKey  = "device.auth"
+	updateDataOutKey  = "data.update"
 	requestDataOutKey = "data.request"
 )
 
@@ -25,6 +27,7 @@ type ClientPublisher interface {
 	SendUpdatedSchema(thingID string) error
 	SendDevicesList(things []*entities.Thing) error
 	SendAuthStatus(thingID string, errMsg *string) error
+	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
 }
 
@@ -107,4 +110,15 @@ func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) e
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, requestDataOutKey, msg)
+}
+
+// SendUpdateData send update data command
+func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Data) error {
+	resp := &network.DataUpdate{ID: thingID, Data: data}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return fmt.Errorf("message parsing error: %w", err)
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, updateDataOutKey, msg)
 }
