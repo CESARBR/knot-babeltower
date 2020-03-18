@@ -33,8 +33,8 @@ func (fp *FakePublisher) SendUpdatedSchema(thingID string) error {
 	return ret.Error(0)
 }
 
-// SendThings provides a mock function to send a list things response
-func (fp *FakePublisher) SendThings(things []*entities.Thing) error {
+// SendDevicesList provides a mock function to send a list things response
+func (fp *FakePublisher) SendDevicesList(things []*entities.Thing) error {
 	args := fp.Called(things)
 	return args.Error(0)
 }
