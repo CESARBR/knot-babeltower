@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -97,5 +98,17 @@ func (mc *ThingController) RequestData(body []byte, authorization string) error 
 		return err
 	}
 
+	return nil
+}
+
+// UpdateData handles the update data request and execute its use case
+func (mc *ThingController) UpdateData(body []byte, authorization string) error {
+	msg := network.DataUpdate{}
+	err := json.Unmarshal(body, &msg)
+	if err != nil {
+		return fmt.Errorf("message body parsing error: %w", err)
+	}
+
+	// TODO: call update data interactor
 	return nil
 }
