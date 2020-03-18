@@ -20,7 +20,7 @@ const (
 
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
-	SendRegisteredDevice(network.DeviceRegisteredResponse) error
+	SendRegisteredDevice(thingID, token string, errMsg *string) error
 	SendUnregisteredDevice(thingID string, errMsg *string) error
 	SendUpdatedSchema(thingID string) error
 	SendDevicesList(things []*entities.Thing) error
@@ -40,15 +40,16 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisteredDevice(msg network.DeviceRegisteredResponse) error {
+func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, errMsg *string) error {
 	mp.logger.Debug("Sending registered message")
-	jsonMsg, err := json.Marshal(msg)
+	resp := &network.DeviceRegisteredResponse{ID: thingID, Token: token, Error: errMsg}
+	msg, err := json.Marshal(resp)
 	if err != nil {
 		mp.logger.Error(err)
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, registerOutKey, jsonMsg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, registerOutKey, msg)
 }
 
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
