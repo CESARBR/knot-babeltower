@@ -7,7 +7,10 @@ import (
 )
 
 var (
+	// ErrIDLength error occur when the thing's id have more than 16 ascii characters
 	ErrIDLength = errors.New("id length exceeds 16 characters")
+
+	// ErrIDNotInHex error occur when the thing's id is not formatted in hexadecimal base
 	ErrIDNotInHex = errors.New("id is not in hexadecimal format")
 )
 
