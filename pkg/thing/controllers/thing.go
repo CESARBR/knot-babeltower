@@ -109,6 +109,5 @@ func (mc *ThingController) UpdateData(body []byte, authorization string) error {
 		return fmt.Errorf("message body parsing error: %w", err)
 	}
 
-	// TODO: call update data interactor
-	return nil
+	return mc.thingInteractor.UpdateData(authorization, msg.ID, msg.Data)
 }

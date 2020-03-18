@@ -13,6 +13,7 @@ type Interactor interface {
 	Unregister(authorization, id string) error
 	UpdateSchema(authorization, id string, schemaList []entities.Schema) error
 	List(authorization string) error
+	UpdateData(authorization, thingID string, data []entities.Data) error
 	RequestData(authorization, thingID string, sensorIds []int) error
 	Auth(authorization, id string) error
 }
