@@ -78,7 +78,7 @@ func (mc *ThingController) AuthDevice(body []byte, authorization string) error {
 
 	mc.logger.Info("Auth device command received")
 	mc.logger.Debug(authorization, authThingReq)
-	return mc.thingInteractor.Auth(authorization, authThingReq.ID, authThingReq.Token)
+	return mc.thingInteractor.Auth(authorization, authThingReq.ID)
 }
 
 // RequestData handles the request data request and execute its use case
