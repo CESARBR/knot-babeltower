@@ -80,8 +80,7 @@ func (p *Proxy) CreateToken(user entities.User) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden {
-		msg := fmt.Sprintf("Invalid credentials")
-		return "", entities.ErrInvalidCredentials{Msg: msg}
+		return "", entities.ErrInvalidCredentials{Msg: "invalid credentials"}
 	}
 
 	tr := &TokenResponse{}
