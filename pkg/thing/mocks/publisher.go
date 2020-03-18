@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/stretchr/testify/mock"
 )
@@ -16,8 +15,8 @@ type FakePublisher struct {
 }
 
 // SendRegisteredDevice provides a mock function to send a register device response
-func (fp *FakePublisher) SendRegisteredDevice(msg network.DeviceRegisteredResponse) error {
-	ret := fp.Called(msg)
+func (fp *FakePublisher) SendRegisteredDevice(thingID, token string, errMsg *string) error {
+	ret := fp.Called(thingID, token, errMsg)
 	return ret.Error(0)
 }
 

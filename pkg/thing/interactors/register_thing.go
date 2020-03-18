@@ -3,8 +3,6 @@ package interactors
 import (
 	"fmt"
 	"strconv"
-
-	"github.com/CESARBR/knot-babeltower/pkg/network"
 )
 
 // ErrorIDLenght is raised when ID is more than 16 characters
@@ -52,8 +50,7 @@ func (i *ThingInteractor) reply(id, token string, err error) error {
 		errStr = nil
 	}
 
-	response := network.DeviceRegisteredResponse{ID: id, Token: token, Error: errStr}
-	errPublish := i.clientPublisher.SendRegisteredDevice(response)
+	errPublish := i.clientPublisher.SendRegisteredDevice(id, token, errStr)
 	if errPublish != nil {
 		i.logger.Error(errPublish)
 		return errPublish

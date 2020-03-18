@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	sharedEntities "github.com/CESARBR/knot-babeltower/pkg/entities"
-	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -86,8 +85,7 @@ func TestRegisterThing(t *testing.T) {
 				*tmp = tc.fakePublisher.SendError.Error()
 			}
 
-			msg := network.DeviceRegisteredResponse{ID: tc.thingID, Token: tc.fakePublisher.Token, Error: tmp}
-			tc.fakePublisher.On("SendRegisteredDevice", msg).
+			tc.fakePublisher.On("SendRegisteredDevice", tc.thingID, tc.fakePublisher.Token, tmp).
 				Return(tc.fakePublisher.ReturnErr)
 			tc.fakeThingProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()
