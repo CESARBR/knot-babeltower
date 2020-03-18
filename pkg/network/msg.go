@@ -59,3 +59,9 @@ type DataRequest struct {
 	ID        string `json:"id"`
 	SensorIds []int  `json:"sensorIds"`
 }
+
+// DataUpdate represents the incoming update data command
+type DataUpdate struct {
+	ID   string          `json:"id"`
+	Data []entities.Data `json:"data"`
+}
