@@ -14,16 +14,16 @@ type Interactor interface {
 	UpdateSchema(authorization, id string, schemaList []entities.Schema) error
 	List(authorization string) error
 	RequestData(authorization, thingID string, sensorIds []int) error
-	Auth(authorization, id, token string) error
+	Auth(authorization, id string) error
 }
 
 // ThingInteractor represents the thing interactor capabilities, it's composed
 // by the necessary dependencies
 type ThingInteractor struct {
-	logger                logging.Logger
-	clientPublisher       amqp.ClientPublisher
-	thingProxy            http.ThingProxy
-	connectorPublisher    amqp.ConnectorPublisher
+	logger             logging.Logger
+	clientPublisher    amqp.ClientPublisher
+	thingProxy         http.ThingProxy
+	connectorPublisher amqp.ConnectorPublisher
 }
 
 // NewThingInteractor creates a new ThingInteractor instance

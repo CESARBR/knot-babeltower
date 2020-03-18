@@ -13,7 +13,6 @@ type AuthThingTestCase struct {
 	name           string
 	authParam      string
 	idParam        string
-	tokenParam     string
 	expectedErr    error
 	fakeLogger     *mocks.FakeLogger
 	fakeThingProxy *mocks.FakeThingProxy
@@ -29,7 +28,6 @@ var atCases = []AuthThingTestCase{
 		"authorization key not provided",
 		"",
 		"8380ba096a091fb9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		errors.New("authorization key not provided"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -40,19 +38,7 @@ var atCases = []AuthThingTestCase{
 		"thing's id not provided",
 		"authorization-token",
 		"",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		errors.New("thing's id not provided"),
-		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
-	},
-	{
-		"thing's token not provided",
-		"authorization-token",
-		"8380ba096a091fb9",
-		"",
-		errors.New("thing's token not provided"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -62,7 +48,6 @@ var atCases = []AuthThingTestCase{
 		"thing 6c0dcd9833b595f9 not found",
 		"authorization-token",
 		"6c0dcd9833b595f9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		entities.ErrThingNotFound{ID: "6c0dcd9833b595f9"},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound{ID: "6c0dcd9833b595f9"}},
@@ -73,7 +58,6 @@ var atCases = []AuthThingTestCase{
 		"forbidden to authenticate the thing",
 		"invalid-authorization-token",
 		"8380ba096a091fb9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		&entities.ErrThingForbidden{},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: &entities.ErrThingForbidden{}},
@@ -84,7 +68,6 @@ var atCases = []AuthThingTestCase{
 		"allowed to authenticate the thing",
 		"authorization-token",
 		"8380ba096a091fb9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
@@ -99,7 +82,6 @@ var atCases = []AuthThingTestCase{
 		"failed to send the authenticate response",
 		"authorization-token",
 		"8380ba096a091fb9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		errors.New("failed to send authenticate response"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
@@ -114,7 +96,6 @@ var atCases = []AuthThingTestCase{
 		"authenticate response successfully sent",
 		"authorization-token",
 		"8380ba096a091fb9",
-		"b2773648-055e-4b10-af53-df82080c38b3",
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
@@ -140,17 +121,13 @@ func TestAuthThing(t *testing.T) {
 				Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
-			err := thingInteractor.Auth(tc.authParam, tc.idParam, tc.tokenParam)
+			err := thingInteractor.Auth(tc.authParam, tc.idParam)
 
 			if tc.authParam == "" {
 				msg := tc.expectedErr.Error()
 				assert.EqualError(t, err, msg)
 			}
 			if tc.idParam == "" {
-				msg := tc.expectedErr.Error()
-				assert.EqualError(t, err, msg)
-			}
-			if tc.tokenParam == "" {
 				msg := tc.expectedErr.Error()
 				assert.EqualError(t, err, msg)
 			}
