@@ -118,6 +118,8 @@ func (mc *MsgHandler) handleConnectorMessages(msg network.InMsg) error {
 		return mc.thingController.RequestData(msg.Body, authorizationHeader.(string))
 	case "data.update":
 		return mc.thingController.UpdateData(msg.Body, authorizationHeader.(string))
+	case "data.publish":
+		return mc.thingController.PublishData(msg.Body, authorizationHeader.(string))
 	case "device.registered":
 		// Ignore message
 	}
