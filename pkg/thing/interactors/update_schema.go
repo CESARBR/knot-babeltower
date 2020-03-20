@@ -56,27 +56,32 @@ var rules = map[int]schemaType{
 
 // UpdateSchema receive the new sensor schema and update it on the thing's service
 func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList []entities.Schema) error {
-
 	if !i.isValidSchema(schemaList) {
-		return ErrSchemaInvalid
+		err := i.notifyClient(thingID, ErrSchemaInvalid)
+		return err
 	}
+	i.logger.Info("UpdateSchema: Schema validated.")
 
 	err := i.thingProxy.UpdateSchema(authorization, thingID, schemaList)
 	if err != nil {
-		return err
+		sendErr := i.notifyClient(thingID, err)
+		return sendErr
 	}
+	i.logger.Info("UpdateSchema: Schema updated.")
 
-	i.logger.Info("Schema updated")
-
-	err = i.clientPublisher.SendUpdatedSchema(thingID, nil)
+	err = i.notifyClient(thingID, err)
 	if err != nil {
+		// TODO: handle error when publishing message to queue.
 		return err
 	}
+	i.logger.Info("UpdateSchema: Message sent to client.")
 
 	err = i.connectorPublisher.SendUpdateSchema(thingID, schemaList)
 	if err != nil {
+		// TODO: handle error when publishing message to queue.
 		return err
 	}
+	i.logger.Info("UpdateSchema: Message sent to connector.")
 
 	return nil
 }
@@ -87,12 +92,22 @@ func (i *ThingInteractor) isValidSchema(schemaList []entities.Schema) bool {
 	for _, schema := range schemaList {
 		err := validate.Struct(schema)
 		if err != nil {
-			fmt.Println(err)
 			return false
 		}
 	}
 
 	return true
+}
+
+func (i *ThingInteractor) notifyClient(thingID string, err error) error {
+	sendErr := i.clientPublisher.SendUpdatedSchema(thingID, err)
+	if sendErr != nil {
+		if err != nil {
+			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)
+		}
+		return fmt.Errorf("error sending response to client: %w", sendErr)
+	}
+	return err
 }
 
 func schemaValidation(sl validator.StructLevel) {
