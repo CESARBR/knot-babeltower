@@ -20,6 +20,7 @@ type UpdateSchemaTestCase struct {
 	name           string
 	authorization  string
 	thingID        string
+	errMsg         *string
 	schemaList     []entities.Schema
 	isSchemaValid  bool
 	expectedErr    error
@@ -34,6 +35,7 @@ var tCases = []UpdateSchemaTestCase{
 		"schema successfully updated on the thing's proxy",
 		"authorization token",
 		"19cf40c23012ce1c",
+		nil,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -54,6 +56,7 @@ var tCases = []UpdateSchemaTestCase{
 		"failed to update the schema on the thing's proxy",
 		"authorization token",
 		"29cf40c23012ce1c",
+		&errThingProxyFailed,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -74,6 +77,7 @@ var tCases = []UpdateSchemaTestCase{
 		"schema response successfully sent",
 		"authorization token",
 		"39cf40c23012ce1c",
+		nil,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -94,6 +98,7 @@ var tCases = []UpdateSchemaTestCase{
 		"failed to send updated schema response",
 		"authorization token",
 		"49cf40c23012ce1c",
+		&errPublisherClientFailed,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -114,6 +119,7 @@ var tCases = []UpdateSchemaTestCase{
 		"failed to send update schema to connector",
 		"authorization token",
 		"59cf40c23012ce1c",
+		&errPublisherConnectorFailed,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -134,6 +140,7 @@ var tCases = []UpdateSchemaTestCase{
 		"invalid schema type ID",
 		"authorization token",
 		"69cf40c23012ce1c",
+		&errSchemaInvalid,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -154,6 +161,7 @@ var tCases = []UpdateSchemaTestCase{
 		"invalid schema unit",
 		"authorization token",
 		"79cf40c23012ce1c",
+		&errSchemaInvalid,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -174,6 +182,7 @@ var tCases = []UpdateSchemaTestCase{
 		"invalid schema name",
 		"authorization token",
 		"89cf40c23012ce1c",
+		&errSchemaInvalid,
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -204,7 +213,7 @@ func TestUpdateSchema(t *testing.T) {
 				Return(tc.expectedErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendUpdatedSchema", tc.thingID).
+				On("SendUpdatedSchema", tc.thingID, tc.errMsg).
 				Return(tc.expectedErr).
 				Maybe()
 

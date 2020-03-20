@@ -34,7 +34,8 @@ type SchemaUpdateRequest struct {
 
 // SchemaUpdatedResponse represents the outgoing update schema response message
 type SchemaUpdatedResponse struct {
-	ID string `json:"id"`
+	ID     string  `json:"id"`
+	ErrMsg *string `json:"error"`
 }
 
 // DeviceAuthRequest represents the incoming auth device command
