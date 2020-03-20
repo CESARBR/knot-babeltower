@@ -179,7 +179,7 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 		}
 	}
 
-	return nil, &entities.ErrThingNotFound{ID: ID}
+	return nil, entities.ErrThingNotFound
 }
 
 // Remove removes the indicated thing from the thing's service
@@ -250,7 +250,7 @@ func (p proxy) mapErrorFromStatusCode(code int) error {
 		case http.StatusConflict:
 			err = errorConflict{}
 		case http.StatusForbidden:
-			err = entities.ErrThingForbidden{}
+			err = entities.ErrThingForbidden
 		}
 	}
 	return err
