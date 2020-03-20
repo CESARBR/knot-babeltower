@@ -9,13 +9,13 @@ import (
 // PublishData executes the use case operations to publish data from the things to cloud
 func (i *ThingInteractor) PublishData(authorization, thingID string, data []entities.Data) error {
 	if authorization == "" {
-		return ErrNoAuthToken
+		return ErrAuthNotProvided
 	}
 	if thingID == "" {
-		return ErrNoIDParam
+		return ErrIDNotProvided
 	}
 	if data == nil {
-		return ErrNoDataParam
+		return ErrDataNotProvided
 	}
 
 	err := i.verifyThingData(authorization, thingID, data)

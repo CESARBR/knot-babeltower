@@ -26,13 +26,13 @@ var (
 // UpdateData executes the use case operations to update data in thing
 func (i *ThingInteractor) UpdateData(authorization, thingID string, data []entities.Data) error {
 	if authorization == "" {
-		return ErrNoAuthToken
+		return ErrAuthNotProvided
 	}
 	if thingID == "" {
-		return ErrNoIDParam
+		return ErrIDNotProvided
 	}
 	if data == nil {
-		return ErrNoDataParam
+		return ErrDataNotProvided
 	}
 
 	err := i.verifyThingData(authorization, thingID, data)

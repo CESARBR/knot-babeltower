@@ -177,7 +177,7 @@ func TestGetData(t *testing.T) {
 		thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, nil)
 		err := thingInteractor.RequestData(tc.authorization, tc.thingID, tc.sensorIds)
 		if tc.authorization == "" {
-			assert.EqualError(t, err, "authorization key not provided")
+			assert.EqualError(t, err, ErrAuthNotProvided.Error())
 		}
 
 		tc.fakeThingProxy.AssertExpectations(t)

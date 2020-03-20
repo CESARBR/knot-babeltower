@@ -28,7 +28,7 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
 		&mocks.FakeConnector{},
-		"authorization key not provided",
+		ErrAuthNotProvided.Error(),
 	},
 	{
 		"thing's id not provided",
@@ -38,7 +38,7 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
 		&mocks.FakeConnector{},
-		"thing's id not provided",
+		ErrIDNotProvided.Error(),
 	},
 	{
 		"thing's id not found",

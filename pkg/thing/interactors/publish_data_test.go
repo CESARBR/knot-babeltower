@@ -33,7 +33,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakeConnector{},
-		ErrNoAuthToken,
+		ErrAuthNotProvided,
 	},
 	{
 		"thing's id not provided",
@@ -43,7 +43,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakeConnector{},
-		ErrNoIDParam,
+		ErrIDNotProvided,
 	},
 	{
 		"thing's data token not provided",
@@ -53,7 +53,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakeConnector{},
-		ErrNoDataParam,
+		ErrDataNotProvided,
 	},
 	{
 		"failed to get thing from thing's service",

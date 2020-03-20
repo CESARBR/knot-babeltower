@@ -1,13 +1,9 @@
 package interactors
 
-import (
-	"errors"
-)
-
 // List fetchs the registered things and return them as an array
 func (i *ThingInteractor) List(authorization string) error {
 	if authorization == "" {
-		return errors.New("authorization key not provided")
+		return ErrAuthNotProvided
 	}
 
 	things, err := i.thingProxy.List(authorization)
