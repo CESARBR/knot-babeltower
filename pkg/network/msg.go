@@ -65,3 +65,9 @@ type DataUpdate struct {
 	ID   string          `json:"id"`
 	Data []entities.Data `json:"data"`
 }
+
+// DataPublish represents the incoming publish data command
+type DataPublish struct {
+	ID   string          `json:"id"`
+	Data []entities.Data `json:"data"`
+}
