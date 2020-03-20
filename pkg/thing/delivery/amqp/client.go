@@ -24,7 +24,7 @@ const (
 type ClientPublisher interface {
 	SendRegisteredDevice(thingID, token string, errMsg *string) error
 	SendUnregisteredDevice(thingID string, errMsg *string) error
-	SendUpdatedSchema(thingID string) error
+	SendUpdatedSchema(thingID string, errMsg *string) error
 	SendDevicesList(things []*entities.Thing) error
 	SendAuthStatus(thingID string, errMsg *string) error
 	SendUpdateData(thingID string, data []entities.Data) error
@@ -69,7 +69,7 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *str
 }
 
 // SendUpdatedSchema sends the updated schema response
-func (mp *msgClientPublisher) SendUpdatedSchema(thingID string) error {
+func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, errMsg *string) error {
 	resp := &network.SchemaUpdatedResponse{ID: thingID}
 	msg, err := json.Marshal(resp)
 	if err != nil {

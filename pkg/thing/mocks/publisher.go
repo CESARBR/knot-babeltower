@@ -27,8 +27,8 @@ func (fp *FakePublisher) SendUnregisteredDevice(thingID string, errMsg *string) 
 }
 
 // SendUpdatedSchema provides a mock function to send an update schema response
-func (fp *FakePublisher) SendUpdatedSchema(thingID string) error {
-	ret := fp.Called(thingID)
+func (fp *FakePublisher) SendUpdatedSchema(thingID string, errMsg *string) error {
+	ret := fp.Called(thingID, errMsg)
 	return ret.Error(0)
 }
 
