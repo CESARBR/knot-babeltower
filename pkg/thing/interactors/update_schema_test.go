@@ -9,26 +9,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	errThingProxyFailed         = "failed to update the schema on the thing's proxy"
+	errPublisherClientFailed    = "failed to send updated schema response"
+	errPublisherConnectorFailed = "failed to send update schema to connector"
+	errSchemaInvalid            = "invalid schema"
+)
+
 type UpdateSchemaTestCase struct {
-	name                          string
-	authorization                 string
-	thingID                       string
-	schemaList                    []entities.Schema
-	isSchemaValid                 bool
-	expectedSchemaResponse        error
-	expectedUpdatedSchema         error
-	expectedUpdateSchemaConnector error
-	fakeLogger                    *mocks.FakeLogger
-	fakeThingProxy                *mocks.FakeThingProxy
-	fakePublisher                 *mocks.FakePublisher
-	fakeConnector                 *mocks.FakeConnector
+	name           string
+	authorization  string
+	thingID        string
+	schemaList     []entities.Schema
+	isSchemaValid  bool
+	expectedErr    error
+	fakeLogger     *mocks.FakeLogger
+	fakeThingProxy *mocks.FakeThingProxy
+	fakePublisher  *mocks.FakePublisher
+	fakeConnector  *mocks.FakeConnector
 }
 
 var tCases = []UpdateSchemaTestCase{
 	{
 		"schema successfully updated on the thing's proxy",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"19cf40c23012ce1c",
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -39,8 +44,6 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
-		nil,
-		nil,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -61,9 +64,7 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
-		errors.New("failed to update schema"),
-		nil,
-		nil,
+		errors.New(errThingProxyFailed),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -72,7 +73,7 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"schema response successfully sent",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"39cf40c23012ce1c",
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -83,8 +84,6 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
-		nil,
-		nil,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -94,7 +93,7 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"failed to send updated schema response",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"49cf40c23012ce1c",
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -105,9 +104,7 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
-		nil,
-		nil,
-		errors.New("failed to send updated schema response"),
+		errors.New(errPublisherClientFailed),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -116,7 +113,7 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"failed to send update schema to connector",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"59cf40c23012ce1c",
 		[]entities.Schema{
 			{
 				SensorID:  0,
@@ -127,9 +124,7 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		true,
-		nil,
-		nil,
-		errors.New("failed to send update schema to connector"),
+		errors.New(errPublisherConnectorFailed),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -138,10 +133,10 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"invalid schema type ID",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"69cf40c23012ce1c",
 		[]entities.Schema{
 			{
-				SensorID:  0, // invalid ID
+				SensorID:  0,
 				ValueType: 3,
 				Unit:      0,
 				TypeID:    79999,
@@ -149,8 +144,6 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		false,
-		nil,
-		nil,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -160,10 +153,10 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"invalid schema unit",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"79cf40c23012ce1c",
 		[]entities.Schema{
 			{
-				SensorID:  0, // invalid ID
+				SensorID:  0,
 				ValueType: 3,
 				Unit:      12345,
 				TypeID:    65521,
@@ -171,8 +164,6 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		false,
-		nil,
-		nil,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -182,10 +173,10 @@ var tCases = []UpdateSchemaTestCase{
 	{
 		"invalid schema name",
 		"authorization token",
-		"29cf40c23012ce1c",
+		"89cf40c23012ce1c",
 		[]entities.Schema{
 			{
-				SensorID:  0, // invalid ID
+				SensorID:  0,
 				ValueType: 3,
 				Unit:      0,
 				TypeID:    65521,
@@ -193,8 +184,6 @@ var tCases = []UpdateSchemaTestCase{
 			},
 		},
 		false,
-		nil,
-		nil,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -208,21 +197,21 @@ func TestUpdateSchema(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.fakeThingProxy.
 				On("UpdateSchema", tc.thingID, tc.schemaList).
-				Return(tc.expectedSchemaResponse).
+				Return(tc.expectedErr).
 				Maybe()
 			tc.fakeConnector.
 				On("SendUpdateSchema", tc.thingID, tc.schemaList).
-				Return(tc.expectedUpdateSchemaConnector).
+				Return(tc.expectedErr).
 				Maybe()
 			tc.fakePublisher.
 				On("SendUpdatedSchema", tc.thingID).
-				Return(tc.expectedUpdatedSchema).
+				Return(tc.expectedErr).
 				Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err := thingInteractor.UpdateSchema(tc.authorization, tc.thingID, tc.schemaList)
 			if !tc.isSchemaValid {
-				assert.EqualError(t, err, "Thing's schema is invalid")
+				assert.EqualError(t, err, errSchemaInvalid)
 			}
 
 			tc.fakeThingProxy.AssertExpectations(t)

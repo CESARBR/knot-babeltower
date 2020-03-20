@@ -1,18 +1,17 @@
 package interactors
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/go-playground/validator"
 )
 
-// ErrInvalidSchema represents the error when the schema has a invalid format
-type ErrInvalidSchema struct{}
-
-func (eis *ErrInvalidSchema) Error() string {
-	return "Thing's schema is invalid"
-}
+var (
+	// ErrSchemaInvalid is returned for invalid schema formats.
+	ErrSchemaInvalid = errors.New("invalid schema")
+)
 
 type schemaType struct {
 	valueType interface{}
@@ -59,7 +58,7 @@ var rules = map[int]schemaType{
 func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList []entities.Schema) error {
 
 	if !i.isValidSchema(schemaList) {
-		return &ErrInvalidSchema{}
+		return ErrSchemaInvalid
 	}
 
 	err := i.thingProxy.UpdateSchema(authorization, thingID, schemaList)
