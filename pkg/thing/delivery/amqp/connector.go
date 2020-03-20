@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -13,6 +14,7 @@ const (
 	registerInKey     = "device.register"
 	unregisterInKey   = "device.unregister"
 	updateSchemaInKey = "schema.update"
+	publishDataInKey  = "data.publish"
 )
 
 // ConnectorPublisher handle messages received from a service
@@ -20,6 +22,7 @@ type ConnectorPublisher interface {
 	SendRegisterDevice(string, string) error
 	SendUnregisterDevice(string) error
 	SendUpdateSchema(string, []entities.Schema) error
+	SendPublishData(string, []entities.Data) error
 }
 
 type msgConnectorPublisher struct {
@@ -69,4 +72,15 @@ func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entiti
 		return err
 	}
 	return mp.amqp.PublishPersistentMessage(exchangeConnIn, updateSchemaInKey, bytes)
+}
+
+// SendPublishData sends a publish data message
+func (mp *msgConnectorPublisher) SendPublishData(id string, data []entities.Data) error {
+	mp.logger.Info("Sending publish data message to connector")
+	msg := network.DataPublish{ID: id, Data: data}
+	bytes, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("message parsing error: %w", err)
+	}
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, publishDataInKey, bytes)
 }

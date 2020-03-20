@@ -29,3 +29,9 @@ func (fc *FakeConnector) SendUpdateSchema(id string, schemaList []entities.Schem
 	ret := fc.Called(id, schemaList)
 	return ret.Error(0)
 }
+
+// SendPublishData provides a mock function to send a publish data command to connector
+func (fc *FakeConnector) SendPublishData(id string, data []entities.Data) error {
+	ret := fc.Called(id, data)
+	return ret.Error(0)
+}
