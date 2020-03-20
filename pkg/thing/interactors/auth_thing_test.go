@@ -20,9 +20,6 @@ type AuthThingTestCase struct {
 	fakeConnector  *mocks.FakeConnector
 }
 
-var errMsg1 = "Thing 6c0dcd9833b595f9 not found"
-var errMsg2 = "Forbidden to authenticate thing"
-
 var atCases = []AuthThingTestCase{
 	{
 		"authorization key not provided",
@@ -48,24 +45,24 @@ var atCases = []AuthThingTestCase{
 		"thing 6c0dcd9833b595f9 not found",
 		"authorization-token",
 		"6c0dcd9833b595f9",
-		entities.ErrThingNotFound{ID: "6c0dcd9833b595f9"},
+		errors.New("thing 6c0dcd9833b595f9 not found"),
 		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound{ID: "6c0dcd9833b595f9"}},
-		&mocks.FakePublisher{ErrMsg: &errMsg1},
+		&mocks.FakeThingProxy{ReturnErr: errors.New("thing 6c0dcd9833b595f9 not found")},
+		&mocks.FakePublisher{Err: errors.New("thing 6c0dcd9833b595f9 not found")},
 		&mocks.FakeConnector{},
 	},
 	{
-		"forbidden to authenticate the thing",
+		"forbidden to authenticate thing",
 		"invalid-authorization-token",
 		"8380ba096a091fb9",
-		&entities.ErrThingForbidden{},
+		errors.New("forbidden to authenticate thing"),
 		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{ReturnErr: &entities.ErrThingForbidden{}},
-		&mocks.FakePublisher{ErrMsg: &errMsg2},
+		&mocks.FakeThingProxy{ReturnErr: errors.New("forbidden to authenticate thing")},
+		&mocks.FakePublisher{Err: errors.New("forbidden to authenticate thing")},
 		&mocks.FakeConnector{},
 	},
 	{
-		"allowed to authenticate the thing",
+		"allowed to authenticate thing",
 		"authorization-token",
 		"8380ba096a091fb9",
 		nil,
@@ -79,21 +76,21 @@ var atCases = []AuthThingTestCase{
 		&mocks.FakeConnector{},
 	},
 	{
-		"failed to send the authenticate response",
+		"failed to send authentication response",
 		"authorization-token",
 		"8380ba096a091fb9",
-		errors.New("failed to send authenticate response"),
+		errors.New("failed to send authentication response"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:    "fc3fcf912d0c290a",
 			Token: "token",
 			Name:  "thing",
 		}},
-		&mocks.FakePublisher{SendError: errors.New("failed to send authenticate response")},
+		&mocks.FakePublisher{SendError: errors.New("failed to send authentication response")},
 		&mocks.FakeConnector{},
 	},
 	{
-		"authenticate response successfully sent",
+		"authentication response successfully sent",
 		"authorization-token",
 		"8380ba096a091fb9",
 		nil,
@@ -116,7 +113,7 @@ func TestAuthThing(t *testing.T) {
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendAuthStatus", tc.idParam, tc.fakePublisher.ErrMsg).
+				On("SendAuthStatus", tc.idParam, tc.fakePublisher.Err).
 				Return(tc.fakeConnector.SendError).
 				Maybe()
 

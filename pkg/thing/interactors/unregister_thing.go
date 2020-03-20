@@ -18,10 +18,9 @@ func (i *ThingInteractor) Unregister(authorization, id string) error {
 
 	err := i.thingProxy.Remove(authorization, id)
 	if err != nil {
-		msg := err.Error()
-		sendErr := i.clientPublisher.SendUnregisteredDevice(id, &msg)
+		sendErr := i.clientPublisher.SendUnregisteredDevice(id, err)
 		if sendErr != nil {
-			i.logger.Debug(msg)
+			i.logger.Debug(err)
 			return sendErr
 		}
 		return err

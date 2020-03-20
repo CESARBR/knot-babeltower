@@ -19,9 +19,6 @@ type UnregisterThingTestCase struct {
 	expectedErrMsg string
 }
 
-var unregisterErrMsg1 = "thing's id not found"
-var unregisterErrMsg2 = "unable to unregister thing"
-
 var unregisterAtCases = []UnregisterThingTestCase{
 	{
 		"authorization key not provided",
@@ -49,7 +46,7 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		"thing-id",
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errors.New("thing's id not found")},
-		&mocks.FakePublisher{ErrMsg: &unregisterErrMsg1},
+		&mocks.FakePublisher{Err: errors.New("thing's id not found")},
 		&mocks.FakeConnector{},
 		"thing's id not found",
 	},
@@ -59,7 +56,7 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		"thing-id",
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errors.New("unable to unregister thing")},
-		&mocks.FakePublisher{ErrMsg: &unregisterErrMsg2},
+		&mocks.FakePublisher{Err: errors.New("unable to unregister thing")},
 		&mocks.FakeConnector{},
 		"unable to unregister thing",
 	},
@@ -69,7 +66,10 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		"thing-id",
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errors.New("unable to unregister thing")},
-		&mocks.FakePublisher{ErrMsg: &unregisterErrMsg2, SendError: errors.New("failed to send unregister response")},
+		&mocks.FakePublisher{
+			Err:       errors.New("unable to unregister thing"),
+			SendError: errors.New("failed to send unregister response"),
+		},
 		&mocks.FakeConnector{},
 		"failed to send unregister response",
 	},
@@ -126,7 +126,7 @@ func TestUnregisterThing(t *testing.T) {
 				Return(tc.fakeThingProxy.ReturnErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendUnregisteredDevice", tc.idParam, tc.fakePublisher.ErrMsg).
+				On("SendUnregisteredDevice", tc.idParam, tc.fakePublisher.Err).
 				Return(tc.fakePublisher.SendError).
 				Maybe()
 			tc.fakeConnector.

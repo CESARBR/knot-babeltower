@@ -13,11 +13,11 @@ type registerTestSuite struct {
 	thingID        string
 	thingName      string
 	authorization  string
+	errExpected    error
 	fakeLogger     *mocks.FakeLogger
 	fakePublisher  *mocks.FakePublisher
 	fakeThingProxy *mocks.FakeThingProxy
 	fakeConnector  *mocks.FakeConnector
-	errExpected    error
 }
 
 func TestRegisterThing(t *testing.T) {
@@ -26,51 +26,51 @@ func TestRegisterThing(t *testing.T) {
 			"123",
 			"test",
 			"authorization token",
+			errors.New("mock publisher error"),
 			&mocks.FakeLogger{},
 			&mocks.FakePublisher{ReturnErr: errors.New("mock publisher error")},
 			&mocks.FakeThingProxy{},
 			&mocks.FakeConnector{},
-			errors.New("mock publisher error"),
 		},
 		"TestProxyError": {
 			"123",
 			"test",
 			"authorization token",
+			errors.New("mock proxy error"),
 			&mocks.FakeLogger{},
 			&mocks.FakePublisher{Token: "", SendError: errors.New("mock proxy error")},
 			&mocks.FakeThingProxy{ReturnErr: errors.New("mock proxy error")},
 			&mocks.FakeConnector{},
-			errors.New("mock proxy error"),
 		},
 		"TestIDLenght": {
 			"01234567890123456789",
 			"test",
 			"authorization token",
+			ErrIDLength,
 			&mocks.FakeLogger{},
 			&mocks.FakePublisher{Token: "", SendError: ErrIDLength},
 			&mocks.FakeThingProxy{},
 			&mocks.FakeConnector{},
-			ErrIDLength,
 		},
 		"TestIDInvalid": {
 			"not hex string",
 			"test",
 			"authorization token",
+			ErrIDNotInHex,
 			&mocks.FakeLogger{},
 			&mocks.FakePublisher{Token: "", SendError: ErrIDNotInHex},
 			&mocks.FakeThingProxy{},
 			&mocks.FakeConnector{},
-			ErrIDNotInHex,
 		},
 		"shouldRaiseConnectorSendError": {
 			"123",
 			"test",
 			"authorization token",
+			sharedEntities.ErrEntityExists{},
 			&mocks.FakeLogger{},
 			&mocks.FakePublisher{},
 			&mocks.FakeThingProxy{},
 			&mocks.FakeConnector{SendError: sharedEntities.ErrEntityExists{}},
-			sharedEntities.ErrEntityExists{},
 		},
 	}
 
@@ -78,14 +78,7 @@ func TestRegisterThing(t *testing.T) {
 	for tcName, tc := range testCases {
 		t.Logf("Test case %s", tcName)
 		t.Run(tcName, func(t *testing.T) {
-			var err error
-			var tmp *string
-			if tc.fakePublisher.SendError != nil {
-				tmp = new(string)
-				*tmp = tc.fakePublisher.SendError.Error()
-			}
-
-			tc.fakePublisher.On("SendRegisteredDevice", tc.thingID, tc.fakePublisher.Token, tmp).
+			tc.fakePublisher.On("SendRegisteredDevice", tc.thingID, tc.fakePublisher.Token, tc.fakePublisher.SendError).
 				Return(tc.fakePublisher.ReturnErr)
 			tc.fakeThingProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()
@@ -93,7 +86,7 @@ func TestRegisterThing(t *testing.T) {
 				Return(tc.fakeConnector.SendError).Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
-			err = thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
+			err := thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
 			if err != nil && !assert.IsType(t, errors.Unwrap(err), tc.errExpected) {
 				t.Errorf("Create Thing failed with unexpected error. Error: %s", err)
 				return

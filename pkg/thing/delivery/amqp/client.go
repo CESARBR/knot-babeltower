@@ -22,11 +22,11 @@ const (
 
 // ClientPublisher is the interface with methods that the publisher should have
 type ClientPublisher interface {
-	SendRegisteredDevice(thingID, token string, errMsg *string) error
-	SendUnregisteredDevice(thingID string, errMsg *string) error
-	SendUpdatedSchema(thingID string, errMsg *string) error
+	SendRegisteredDevice(thingID, token string, err error) error
+	SendUnregisteredDevice(thingID string, err error) error
+	SendUpdatedSchema(thingID string, err error) error
 	SendDevicesList(things []*entities.Thing) error
-	SendAuthStatus(thingID string, errMsg *string) error
+	SendAuthStatus(thingID string, err error) error
 	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
 }
@@ -43,8 +43,9 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, errMsg *string) error {
+func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, err error) error {
 	mp.logger.Debug("Sending registered message")
+	errMsg := getErrMsg(err)
 	resp := &network.DeviceRegisteredResponse{ID: thingID, Token: token, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -56,8 +57,9 @@ func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, errMsg
 }
 
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
-func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *string) error {
+func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) error {
 	mp.logger.Debug("Sending unregistered message")
+	errMsg := getErrMsg(err)
 	resp := &network.DeviceUnregisteredResponse{ID: thingID, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -69,8 +71,9 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, errMsg *str
 }
 
 // SendUpdatedSchema sends the updated schema response
-func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, errMsg *string) error {
-	resp := &network.SchemaUpdatedResponse{ID: thingID}
+func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error {
+	errMsg := getErrMsg(err)
+	resp := &network.SchemaUpdatedResponse{ID: thingID, ErrMsg: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -91,7 +94,8 @@ func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing) error {
 }
 
 // SendAuthStatus sends the auth thing status response
-func (mp *msgClientPublisher) SendAuthStatus(thingID string, errMsg *string) error {
+func (mp *msgClientPublisher) SendAuthStatus(thingID string, err error) error {
+	errMsg := getErrMsg(err)
 	resp := &network.DeviceAuthResponse{ID: thingID, ErrMsg: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -121,4 +125,12 @@ func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Dat
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, updateDataOutKey, msg)
+}
+
+func getErrMsg(err error) *string {
+	if err != nil {
+		msg := err.Error()
+		return &msg
+	}
+	return nil
 }

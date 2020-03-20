@@ -57,7 +57,7 @@ func (i *ThingInteractor) verifyThingID(id string) error {
 }
 
 func (i *ThingInteractor) sendResponse(id, token string, err error) error {
-	sendErr := i.clientPublisher.SendRegisteredDevice(id, token, getErrMessagePtr(err))
+	sendErr := i.clientPublisher.SendRegisteredDevice(id, token, err)
 	if sendErr != nil {
 		if err != nil {
 			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)
@@ -65,12 +65,4 @@ func (i *ThingInteractor) sendResponse(id, token string, err error) error {
 		return fmt.Errorf("error sending response to client: %w", sendErr)
 	}
 	return err
-}
-
-func getErrMessagePtr(err error) *string {
-	if err != nil {
-		msg := err.Error()
-		return &msg
-	}
-	return nil
 }

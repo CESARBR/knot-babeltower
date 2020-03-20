@@ -16,8 +16,7 @@ func (i *ThingInteractor) Auth(authorization, id string) error {
 	_, err := i.thingProxy.Get(authorization, id)
 	if err != nil {
 		i.logger.Error(err)
-		msg := err.Error()
-		err = i.clientPublisher.SendAuthStatus(id, &msg)
+		err = i.clientPublisher.SendAuthStatus(id, err)
 		return err
 	}
 
