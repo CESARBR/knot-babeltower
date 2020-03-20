@@ -120,6 +120,5 @@ func (mc *ThingController) PublishData(body []byte, authorization string) error 
 		return fmt.Errorf("message body parsing error: %w", err)
 	}
 
-	// TODO: call publish data interactor
-	return nil
+	return mc.thingInteractor.PublishData(authorization, msg.ID, msg.Data)
 }
