@@ -1,30 +1,40 @@
-(Thanks for sending a pull request! Please fill out the blanks below.)
+<!--
+This Pull Request Template is a modified version from Vuejs's:
+https://raw.githubusercontent.com/vuejs/vue/dev/.github/PULL_REQUEST_TEMPLATE.md
+-->
 
-What does this implement/fix? Explain your changes
----------------------------------------------------
-...
+<!-- PULL REQUEST TEMPLATE -->
+<!-- (Update "[ ]" to "[x]" to check a box) -->
 
-Does this close any currently open issues?
-------------------------------------------
-(Use the special github keywords to reference issues: <https://help.github.com/en/articles/closing-issues-using-keywords>)
+**Describe what this PR introduces:** (if necessary, link currently open issues with [special keywords](https://help.github.com/en/articles/closing-issues-using-keywords))
 
-...
+**What kind of change does this PR introduce?** (check at least one)
 
-Any relevant logs, error output, etc?
--------------------------------------
-(If it's long, please paste to <https://pastebin.com/> and insert the link here.)
+- [ ] Bug fix
+- [ ] Feature
+- [ ] Code style update
+- [ ] Refactor
+- [ ] Build-related changes
+- [ ] Other, please describe:
 
-Any other comments\?
--------------------
-...
+**Does this PR introduce any breaking changes?** (check one)
 
-Where has this been tested?
----------------------------
-(Describe your environment setup here.)
-npm install remark-lint
+- [ ] Yes
+- [ ] No
 
-**Operating System/Platform:** ...
+If yes, please describe the impact and migration path for existing applications:
 
-**Go Version:** ...
+**The PR fulfills these requirements:**
 
-(Add more information here if needed.)
+- [ ] Related issues are referenced in the PR (e.g. `fix #xxx[,#xxx]`, where "xxx" is the issue number)
+- [ ] All tests are passing
+- [ ] New/updated tests are included
+
+**Testing environment:**
+
+- Operating System/Platform:
+- Go version:
+
+If you have relevant logs, error output and etc, please attach them.
+
+**Other information:**
