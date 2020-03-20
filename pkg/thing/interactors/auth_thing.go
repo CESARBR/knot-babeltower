@@ -1,16 +1,12 @@
 package interactors
 
-import (
-	"errors"
-)
-
 // Auth is responsible to implement the thing's authentication use case
 func (i *ThingInteractor) Auth(authorization, id string) error {
 	if authorization == "" {
-		return errors.New("authorization key not provided")
+		return ErrAuthNotProvided
 	}
 	if id == "" {
-		return errors.New("thing's id not provided")
+		return ErrIDNotProvided
 	}
 
 	_, err := i.thingProxy.Get(authorization, id)

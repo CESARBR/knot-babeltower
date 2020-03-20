@@ -1,7 +1,6 @@
 package interactors
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
@@ -24,7 +23,7 @@ func (ise *invalidSensorErr) Error() string {
 // RequestData executes the use case operations to request data from the thing
 func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds []int) error {
 	if authorization == "" {
-		return errors.New("authorization key not provided")
+		return ErrAuthNotProvided
 	}
 
 	thing, err := i.thingProxy.Get(authorization, thingID)

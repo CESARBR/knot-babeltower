@@ -26,7 +26,7 @@ var ltCases = []listThingsTestCase{
 	{
 		"authorization key not passed",
 		"",
-		errors.New("authorization key not provided"),
+		ErrAuthNotProvided,
 		[]*entities.Thing{},
 		nil,
 		nil,
@@ -88,7 +88,7 @@ func TestListThings(t *testing.T) {
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err := thingInteractor.List(tc.authorization)
 			if tc.authorization == "" {
-				assert.EqualError(t, err, "authorization key not provided")
+				assert.EqualError(t, err, ErrAuthNotProvided.Error())
 				return
 			}
 

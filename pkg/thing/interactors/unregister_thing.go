@@ -1,19 +1,15 @@
 package interactors
 
-import (
-	"errors"
-)
-
 // Unregister runs the use case to remove a registered thing
 func (i *ThingInteractor) Unregister(authorization, id string) error {
 	i.logger.Debug("Executing unregister thing use case")
 
 	if authorization == "" {
-		return errors.New("authorization key not provided")
+		return ErrAuthNotProvided
 	}
 
 	if id == "" {
-		return errors.New("thing's id not provided")
+		return ErrIDNotProvided
 	}
 
 	err := i.thingProxy.Remove(authorization, id)
