@@ -38,9 +38,9 @@ var ltCases = []listThingsTestCase{
 	{
 		"failed to list things from thing's service",
 		"authorization token",
-		errors.New("Thing's service unavailable"),
+		errors.New("thing's service unavailable"),
 		[]*entities.Thing{},
-		errors.New("Thing's service unavailable"),
+		errors.New("thing's service unavailable"),
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
@@ -62,10 +62,10 @@ var ltCases = []listThingsTestCase{
 	{
 		"failed to publish list things response",
 		"authorization key",
-		errors.New("Message queue unavailable"),
+		errors.New("message queue unavailable"),
 		[]*entities.Thing{},
 		nil,
-		errors.New("Message queue unavailable"),
+		errors.New("message queue unavailable"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -92,7 +92,7 @@ func TestListThings(t *testing.T) {
 				return
 			}
 
-			if err != nil && !assert.IsType(t, err, tc.expectedUseCaseResponse) {
+			if err != nil && !errors.As(err, &tc.expectedUseCaseResponse) {
 				t.Errorf("failed to list the devices. Error: %s", err)
 				return
 			}
