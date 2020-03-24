@@ -9,13 +9,15 @@ func (i *ThingInteractor) List(authorization string) error {
 	}
 
 	things, err := i.thingProxy.List(authorization)
+	sendErr := i.clientPublisher.SendDevicesList(things, err)
 	if err != nil {
+		if sendErr != nil {
+			return fmt.Errorf("error getting list of things: %v, %w", sendErr, err)
+		}
 		return fmt.Errorf("error getting list of things: %w", err)
 	}
-
-	err = i.clientPublisher.SendDevicesList(things)
-	if err != nil {
-		return fmt.Errorf("error sending response to client: %w", err)
+	if sendErr != nil {
+		return fmt.Errorf("error sending response to client: %w", sendErr)
 	}
 
 	i.logger.Info("devices obtained")
