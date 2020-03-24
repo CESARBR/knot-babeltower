@@ -53,6 +53,7 @@ type DeviceAuthResponse struct {
 // DeviceListResponse represents the outgoing list devices command response
 type DeviceListResponse struct {
 	Things []*entities.Thing `json:"devices"`
+	ErrMsg *string           `json:"error"`
 }
 
 // DataRequest represents the incoming request data command

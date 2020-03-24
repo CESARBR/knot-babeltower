@@ -81,7 +81,7 @@ func TestListThings(t *testing.T) {
 				Return(tc.expectedProxyResponseThings, tc.expectedProxyResponseError).
 				Maybe()
 			tc.fakePublisher.
-				On("SendDevicesList", tc.expectedProxyResponseThings).
+				On("SendDevicesList", tc.expectedProxyResponseThings, tc.expectedProxyResponseError).
 				Return(tc.expectedPublisherResponse).
 				Maybe()
 

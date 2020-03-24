@@ -25,7 +25,7 @@ type ClientPublisher interface {
 	SendRegisteredDevice(thingID, token string, err error) error
 	SendUnregisteredDevice(thingID string, err error) error
 	SendUpdatedSchema(thingID string, err error) error
-	SendDevicesList(things []*entities.Thing) error
+	SendDevicesList(things []*entities.Thing, err error) error
 	SendAuthStatus(thingID string, err error) error
 	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
@@ -83,8 +83,9 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error
 }
 
 // SendDevicesList sends the list devices command response
-func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing) error {
-	resp := &network.DeviceListResponse{Things: things}
+func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing, err error) error {
+	errMsg := getErrMsg(err)
+	resp := &network.DeviceListResponse{Things: things, ErrMsg: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
