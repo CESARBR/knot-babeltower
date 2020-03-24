@@ -6,20 +6,6 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
-type invalidSensorErr struct {
-	errors []error
-}
-
-func (ise *invalidSensorErr) Error() string {
-	msg := ""
-
-	for _, e := range ise.errors {
-		msg = msg + e.Error() + "\n"
-	}
-
-	return msg
-}
-
 // RequestData executes the use case operations to request data from the thing
 func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds []int) error {
 	if authorization == "" {
@@ -62,16 +48,10 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 // validateSensors validates a slice of sensor ids against the thing's registered schema
 // that represents the sensors and actuators associated to it.
 func validateSensors(sensorIds []int, schema []entities.Schema) error {
-	var errs []error
-
 	for _, id := range sensorIds {
 		if !sensorExists(schema, id) {
-			errs = append(errs, fmt.Errorf("sensor %d isn't registered", id))
+			return ErrSensorInvalid
 		}
-	}
-
-	if len(errs) > 0 {
-		return &invalidSensorErr{errs}
 	}
 
 	return nil

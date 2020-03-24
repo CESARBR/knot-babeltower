@@ -6,23 +6,6 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
-var (
-	// ErrNoAuthToken error occur when no authorization token is provided
-	ErrNoAuthToken = fmt.Errorf("missing authorization token")
-
-	// ErrNoIDParam error occur when no thing's id is provided
-	ErrNoIDParam = fmt.Errorf("missing thing's id")
-
-	// ErrNoDataParam error occur when no thing's data is provided
-	ErrNoDataParam = fmt.Errorf("missing thing's data")
-
-	// ErrNoSchema error occur when the thing has no schema yet
-	ErrNoSchema = fmt.Errorf("thing has no schema")
-
-	// ErrDataInvalid error occur when the provided data mismatch the thing's schema
-	ErrDataInvalid = fmt.Errorf("data is incompatible with thing's schema")
-)
-
 // UpdateData executes the use case operations to update data in thing
 func (i *ThingInteractor) UpdateData(authorization, thingID string, data []entities.Data) error {
 	if authorization == "" {
@@ -56,7 +39,7 @@ func (i *ThingInteractor) verifyThingData(authorization, thingID string, data []
 	}
 
 	if thing.Schema == nil {
-		return ErrNoSchema
+		return ErrSchemaUndefined
 	}
 
 	for _, d := range data {

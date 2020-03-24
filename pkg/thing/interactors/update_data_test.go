@@ -86,7 +86,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			Name:  "thing",
 		}},
 		&mocks.FakePublisher{},
-		ErrNoSchema,
+		ErrSchemaUndefined,
 	},
 	{
 		"data value doesn't match with thing's schema",

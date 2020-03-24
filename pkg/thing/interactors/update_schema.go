@@ -1,16 +1,10 @@
 package interactors
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/go-playground/validator"
-)
-
-var (
-	// ErrSchemaInvalid is returned for invalid schema formats.
-	ErrSchemaInvalid = errors.New("invalid schema")
 )
 
 type schemaType struct {
