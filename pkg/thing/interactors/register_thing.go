@@ -1,17 +1,8 @@
 package interactors
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
-)
-
-var (
-	// ErrIDLength error occur when the thing's id have more than 16 ascii characters
-	ErrIDLength = errors.New("id length exceeds 16 characters")
-
-	// ErrIDNotInHex error occur when the thing's id is not formatted in hexadecimal base
-	ErrIDNotInHex = errors.New("id is not in hexadecimal format")
 )
 
 // Register runs the use case to create a new thing
@@ -60,7 +51,7 @@ func (i *ThingInteractor) verifyThingID(id string) error {
 
 	_, err := strconv.ParseUint(id, 16, 64)
 	if err != nil {
-		return ErrIDNotInHex
+		return ErrIDNotHex
 	}
 
 	return nil

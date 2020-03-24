@@ -77,7 +77,7 @@ var publishDataUseCases = []PublishDataTestCase{
 			Name:  "thing",
 		}},
 		&mocks.FakeConnector{},
-		ErrNoSchema,
+		ErrSchemaUndefined,
 	},
 	{
 		"data value doesn't match with thing's schema",
