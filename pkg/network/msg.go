@@ -34,8 +34,8 @@ type SchemaUpdateRequest struct {
 
 // SchemaUpdatedResponse represents the outgoing update schema response message
 type SchemaUpdatedResponse struct {
-	ID     string  `json:"id"`
-	ErrMsg *string `json:"error"`
+	ID    string  `json:"id"`
+	Error *string `json:"error"`
 }
 
 // DeviceAuthRequest represents the incoming auth device command
@@ -46,14 +46,14 @@ type DeviceAuthRequest struct {
 
 // DeviceAuthResponse represents the outgoing auth device command response
 type DeviceAuthResponse struct {
-	ID     string  `json:"id"`
-	ErrMsg *string `json:"error"`
+	ID    string  `json:"id"`
+	Error *string `json:"error"`
 }
 
 // DeviceListResponse represents the outgoing list devices command response
 type DeviceListResponse struct {
 	Things []*entities.Thing `json:"devices"`
-	ErrMsg *string           `json:"error"`
+	Error  *string           `json:"error"`
 }
 
 // DataRequest represents the incoming request data command

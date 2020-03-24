@@ -73,7 +73,7 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) 
 // SendUpdatedSchema sends the updated schema response
 func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error {
 	errMsg := getErrMsg(err)
-	resp := &network.SchemaUpdatedResponse{ID: thingID, ErrMsg: errMsg}
+	resp := &network.SchemaUpdatedResponse{ID: thingID, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error
 // SendDevicesList sends the list devices command response
 func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing, err error) error {
 	errMsg := getErrMsg(err)
-	resp := &network.DeviceListResponse{Things: things, ErrMsg: errMsg}
+	resp := &network.DeviceListResponse{Things: things, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing, err erro
 // SendAuthStatus sends the auth thing status response
 func (mp *msgClientPublisher) SendAuthStatus(thingID string, err error) error {
 	errMsg := getErrMsg(err)
-	resp := &network.DeviceAuthResponse{ID: thingID, ErrMsg: errMsg}
+	resp := &network.DeviceAuthResponse{ID: thingID, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
