@@ -58,8 +58,3 @@ clean:
 	@rm -f ${BINARY}-$(OS)-${GOARCH}
 	@rm -f coverage.out
 	@rm -rf vendor
-
-.PHONY: deps
-deps:
-	go mod download
-	go mod vendor

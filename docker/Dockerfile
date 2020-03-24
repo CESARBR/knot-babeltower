@@ -23,7 +23,6 @@ COPY . .
 
 # Install project development tools and dependencies
 RUN go get github.com/ahmetb/govvv
-RUN make deps
 
 # Build the application
 RUN make bin
