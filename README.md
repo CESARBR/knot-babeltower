@@ -20,8 +20,8 @@
 
 ### Requirements
 
-*   Go version 1.13+.
-*   Be sure the local packages binaries path is in the system's `PATH` environment variable:
+- Go version 1.13+.
+- Be sure the local packages binaries path is in the system's `PATH` environment variable:
 
 ```bash
 $ export PATH=$PATH:<your_go_workspace>/bin
@@ -33,14 +33,13 @@ You can set the `ENV` environment variable to `development` and update the `inte
 
 The configuration parameters are the following (the environment variable name is in parenthesis):
 
-*   `server`
-    *   `port` (`SERVER_PORT`) **Number** Server port number. (Default: 80)
+- `server`
+  - `port` (`SERVER_PORT`) **Number** Server port number. (Default: 80)
 
 ### Setup
 
 ```bash
 make tools
-make deps
 ```
 
 ### Compiling and running
@@ -55,7 +54,7 @@ make run
 
 ### Requirements
 
-*   Install docker engine (<https://docs.docker.com/install/>)
+- Install docker engine (<https://docs.docker.com/install/>)
 
 ### Building and Running
 
