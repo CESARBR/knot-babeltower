@@ -25,6 +25,12 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 	if authorization == "" {
 		return ErrAuthNotProvided
 	}
+	if thingID == "" {
+		return ErrIDNotProvided
+	}
+	if sensorIds == nil {
+		return ErrSensorsNotProvided
+	}
 
 	thing, err := i.thingProxy.Get(authorization, thingID)
 	if err != nil {
