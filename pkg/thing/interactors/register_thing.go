@@ -16,6 +16,16 @@ var (
 
 // Register runs the use case to create a new thing
 func (i *ThingInteractor) Register(authorization, id, name string) error {
+	if authorization == "" {
+		return ErrAuthNotProvided
+	}
+	if id == "" {
+		return ErrIDNotProvided
+	}
+	if name == "" {
+		return ErrNameNotProvided
+	}
+
 	i.logger.Debug("Executing register thing use case")
 	err := i.verifyThingID(id)
 	if err != nil {
