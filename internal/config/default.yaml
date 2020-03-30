@@ -13,4 +13,4 @@ rabbitmq:
 
 things:
   hostname: localhost
-  port: 8280
+  port: 8182

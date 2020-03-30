@@ -3,14 +3,3 @@ server:
 
 logger:
   level: debug
-
-users:
-  hostname: localhost
-  port: 8180
-
-rabbitmq:
-  url: amqp://localhost/
-
-things:
-  hostname: localhost
-  port: 8082
