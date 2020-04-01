@@ -12,7 +12,8 @@ const (
 	queueNameConnOut         = "connOut-messages"
 	exchangeConnOut          = "connOut"
 	bindingKeyDevice         = "device.*"
-	bindingKeyData           = "data.*"
+	bindingKeyPublishData    = "data.publish"
+	bindingKeyDataCommands   = "data.*"
 	bindingKeyDeviceCommands = "device.cmd.*"
 	bindingKeySchema         = "schema.*"
 )
@@ -63,9 +64,10 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
 	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
+	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyPublishData)
 
 	// Subscribe to messages received from the connector service
-	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyData)
+	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDataCommands)
 	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDevice)
 
 	return err
@@ -105,6 +107,8 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg) error {
 		return mc.thingController.AuthDevice(msg.Body, authorizationHeader.(string))
 	case "device.cmd.list":
 		return mc.thingController.ListDevices(authorizationHeader.(string))
+	case "data.publish":
+		return mc.thingController.PublishData(msg.Body, authorizationHeader.(string))
 	}
 
 	return nil
@@ -118,8 +122,6 @@ func (mc *MsgHandler) handleConnectorMessages(msg network.InMsg) error {
 		return mc.thingController.RequestData(msg.Body, authorizationHeader.(string))
 	case "data.update":
 		return mc.thingController.UpdateData(msg.Body, authorizationHeader.(string))
-	case "data.publish":
-		return mc.thingController.PublishData(msg.Body, authorizationHeader.(string))
 	case "device.registered":
 		// Ignore message
 	}
