@@ -15,7 +15,7 @@ import (
 type errorConflict struct{ error }
 
 func (err errorConflict) Error() string {
-	return "Error conflict"
+	return "error conflict"
 }
 
 // ThingProxy proxy a request to the thing service interface
@@ -75,13 +75,13 @@ type RequestOptions struct {
 func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingProxy {
 	url := fmt.Sprintf("http://%s:%d", hostname, port)
 
-	logger.Debug("Proxy setup to " + url)
+	logger.Debug("proxy setup to " + url)
 	return proxy{url, logger}
 }
 
 // Create register a thing on service and return the id generated
 func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
-	p.logger.Debug("Proxying request to create thing")
+	p.logger.Debug("proxying request to create thing")
 	t := p.getRemoteThingRepr(id, name, nil)
 	body, err := json.Marshal(t)
 	if err != nil {

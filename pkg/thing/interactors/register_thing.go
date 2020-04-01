@@ -17,7 +17,7 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 		return ErrNameNotProvided
 	}
 
-	i.logger.Debug("Executing register thing use case")
+	i.logger.Debug("executing register thing use case")
 	err := i.verifyThingID(id)
 	if err != nil {
 		sendErr := i.sendResponse(id, "", err)

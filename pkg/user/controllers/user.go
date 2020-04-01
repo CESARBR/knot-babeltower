@@ -51,25 +51,25 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var user entities.User
 
-	uc.logger.Debug("Handle request to create user")
+	uc.logger.Debug("handle request to create user")
 
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&user)
 	if err != nil {
-		uc.logger.Error("Failed to parse request body")
+		uc.logger.Error("failed to parse request body")
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
 
 	err = uc.createUserInteractor.Execute(user)
 	if err != nil {
-		uc.logger.Errorf("Failed to create user")
+		uc.logger.Errorf("failed to create user")
 		der := &DetailedErrorResponse{err.Error()}
 		uc.writeResponse(w, mapErrorToStatusCode(err), der)
 		return
 	}
 
-	uc.logger.Infof("User %s created", user.Email)
+	uc.logger.Infof("user %s created", user.Email)
 	uc.writeResponse(w, http.StatusCreated, nil)
 }
 
@@ -87,20 +87,20 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 	var user entities.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		uc.logger.Error("Failed to parse request body")
+		uc.logger.Error("failed to parse request body")
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
 
 	token, err := uc.createTokenInteractor.Execute(user)
 	if err != nil {
-		uc.logger.Errorf("Failed to create user's token: %s", err)
+		uc.logger.Errorf("failed to create user's token: %s", err)
 		der := &DetailedErrorResponse{err.Error()}
 		uc.writeResponse(w, mapErrorToStatusCode(err), der)
 		return
 	}
 
-	uc.logger.Infof("User's %s token created", user.Email)
+	uc.logger.Infof("user's %s token created", user.Email)
 	ctr := &CreateTokenResponse{token}
 	uc.writeResponse(w, http.StatusCreated, ctr)
 }
@@ -114,14 +114,14 @@ func (uc *UserController) writeResponse(w http.ResponseWriter, statusCode int, m
 
 	js, err := json.Marshal(msg)
 	if err != nil {
-		uc.logger.Errorf("Unable to marshal json: %s", err)
+		uc.logger.Errorf("unable to marshal json: %s", err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(js)
 	if err != nil {
-		uc.logger.Errorf("Unable to write to connection HTTP: %s", err)
+		uc.logger.Errorf("unable to write to connection HTTP: %s", err)
 		return
 	}
 }

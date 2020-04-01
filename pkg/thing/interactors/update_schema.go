@@ -64,28 +64,28 @@ func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList
 		err := i.notifyClient(thingID, ErrSchemaInvalid)
 		return err
 	}
-	i.logger.Info("UpdateSchema: Schema validated.")
+	i.logger.Info("updateSchema: schema validated")
 
 	err := i.thingProxy.UpdateSchema(authorization, thingID, schemaList)
 	if err != nil {
 		sendErr := i.notifyClient(thingID, err)
 		return sendErr
 	}
-	i.logger.Info("UpdateSchema: Schema updated.")
+	i.logger.Info("updateSchema: schema updated")
 
 	err = i.notifyClient(thingID, err)
 	if err != nil {
 		// TODO: handle error when publishing message to queue.
 		return err
 	}
-	i.logger.Info("UpdateSchema: Message sent to client.")
+	i.logger.Info("updateSchema: message sent to client")
 
 	err = i.connectorPublisher.SendUpdateSchema(thingID, schemaList)
 	if err != nil {
 		// TODO: handle error when publishing message to queue.
 		return err
 	}
-	i.logger.Info("UpdateSchema: Message sent to connector.")
+	i.logger.Info("updateSchema: message sent to connector")
 
 	return nil
 }

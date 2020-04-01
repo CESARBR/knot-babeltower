@@ -37,7 +37,7 @@ func NewMsgConnectorPublisher(logger logging.Logger, amqp *network.Amqp) Connect
 
 // SendRegisterDevice sends a register message
 func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) error {
-	mp.logger.Debug("Sending register message")
+	mp.logger.Debug("sending register message")
 
 	msg := network.DeviceRegisterRequest{ID: id, Name: name}
 	bytes, err := json.Marshal(msg)
@@ -51,7 +51,7 @@ func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) erro
 
 // SendUnregisterDevice sends an unregister message
 func (mp *msgConnectorPublisher) SendUnregisterDevice(id string) error {
-	mp.logger.Debug("Sending unregister message")
+	mp.logger.Debug("sending unregister message")
 	msg := network.DeviceUnregisterRequest{ID: id}
 	bytes, err := json.Marshal(msg)
 	if err != nil {
@@ -64,7 +64,7 @@ func (mp *msgConnectorPublisher) SendUnregisterDevice(id string) error {
 
 // SendUpdateSchema sends an update schema message
 func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entities.Schema) error {
-	mp.logger.Info("Sending update schema message to connector")
+	mp.logger.Info("sending update schema message to connector")
 	msg := network.SchemaUpdateRequest{ID: id, Schema: schemaList}
 	bytes, err := json.Marshal(msg)
 	if err != nil {
@@ -76,7 +76,7 @@ func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entiti
 
 // SendPublishData sends a publish data message
 func (mp *msgConnectorPublisher) SendPublishData(id string, data []entities.Data) error {
-	mp.logger.Info("Sending publish data message to connector")
+	mp.logger.Info("sending publish data message to connector")
 	msg := network.DataPublish{ID: id, Data: data}
 	bytes, err := json.Marshal(msg)
 	if err != nil {

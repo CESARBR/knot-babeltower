@@ -31,7 +31,7 @@ func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingController *c
 
 // Start starts to listen messages
 func (mc *MsgHandler) Start(started chan bool) {
-	mc.logger.Debug("Msg handler started")
+	mc.logger.Debug("message handler started")
 	msgChan := make(chan network.InMsg)
 	err := mc.subscribeToMessages(msgChan)
 	if err != nil {
@@ -47,7 +47,7 @@ func (mc *MsgHandler) Start(started chan bool) {
 
 // Stop stops to listen for messages
 func (mc *MsgHandler) Stop() {
-	mc.logger.Debug("Msg handler stopped")
+	mc.logger.Debug("message handler stopped")
 }
 
 func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
@@ -75,8 +75,8 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 	for {
 		var err error
 		msg := <-msgChan
-		mc.logger.Infof("Exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
-		mc.logger.Infof("Message received: %s", string(msg.Body))
+		mc.logger.Infof("exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
+		mc.logger.Infof("message received: %s", string(msg.Body))
 
 		if msg.Exchange == exchangeFogIn {
 			err = mc.handleClientMessages(msg)

@@ -74,9 +74,9 @@ func TestRegisterThing(t *testing.T) {
 		},
 	}
 
-	t.Logf("Number of test cases: %d", len(testCases))
+	t.Logf("number of test cases: %d", len(testCases))
 	for tcName, tc := range testCases {
-		t.Logf("Test case %s", tcName)
+		t.Logf("test case %s", tcName)
 		t.Run(tcName, func(t *testing.T) {
 			tc.fakePublisher.On("SendRegisteredDevice", tc.thingID, tc.fakePublisher.Token, tc.fakePublisher.SendError).
 				Return(tc.fakePublisher.ReturnErr)
@@ -88,14 +88,14 @@ func TestRegisterThing(t *testing.T) {
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
 			err := thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
 			if err != nil && !assert.IsType(t, errors.Unwrap(err), tc.errExpected) {
-				t.Errorf("Create Thing failed with unexpected error. Error: %s", err)
+				t.Errorf("create thing failed with unexpected error. Error: %s", err)
 				return
 			}
 
 			tc.fakePublisher.AssertExpectations(t)
 			tc.fakeThingProxy.AssertExpectations(t)
 			tc.fakeConnector.AssertExpectations(t)
-			t.Log("Create thing ok")
+			t.Log("create thing ok")
 		})
 	}
 }

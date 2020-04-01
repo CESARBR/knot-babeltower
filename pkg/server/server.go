@@ -36,7 +36,7 @@ func NewServer(port int, logger logging.Logger, userController *controllers.User
 // Start starts the http server
 func (s *Server) Start(started chan bool) {
 	routers := s.createRouters()
-	s.logger.Infof("Listening on %d", s.port)
+	s.logger.Infof("listening on %d", s.port)
 	started <- true
 	s.srv = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: s.logRequest(routers)}
 	err := s.srv.ListenAndServe()
@@ -85,7 +85,7 @@ func (s *Server) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	response, _ := json.Marshal(&Health{Status: "online"})
 	_, err := w.Write(response)
 	if err != nil {
-		s.logger.Errorf("Error sending response, %s\n", err)
+		s.logger.Errorf("error sending response, %s\n", err)
 	}
 }
 
