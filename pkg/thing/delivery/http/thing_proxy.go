@@ -151,10 +151,11 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
-func (p proxy) List(authorization string) (things []*entities.Thing, err error) {
+func (p proxy) List(authorization string) ([]*entities.Thing, error) {
+	things := []*entities.Thing{}
 	pagThings, err := p.getPaginatedThings(authorization)
 	if err != nil {
-		return nil, nil
+		return things, err
 	}
 
 	for _, t := range pagThings {
