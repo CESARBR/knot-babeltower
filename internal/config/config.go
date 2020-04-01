@@ -49,7 +49,7 @@ func readFile(name string) {
 	logger := logging.NewLogrus("error").Get("Config")
 	viper.SetConfigName(name)
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Fatalf("Error reading config file, %s", err)
+		logger.Fatalf("error reading config file, %s", err)
 	}
 }
 
@@ -65,7 +65,7 @@ func Load() Config {
 	if os.Getenv("ENV") == "development" {
 		readFile("development")
 		if err := viper.MergeInConfig(); err != nil {
-			logger.Fatalf("Error reading config file, %s", err)
+			logger.Fatalf("error reading config file, %s", err)
 		}
 	}
 
@@ -74,7 +74,7 @@ func Load() Config {
 	viper.AutomaticEnv()
 
 	if err := viper.Unmarshal(&configuration); err != nil {
-		logger.Fatalf("Error unmarshalling configuration, %s", err)
+		logger.Fatalf("error unmarshalling configuration, %s", err)
 	}
 
 	return configuration

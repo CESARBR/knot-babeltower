@@ -44,7 +44,7 @@ func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPubl
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
 func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, err error) error {
-	mp.logger.Debug("Sending registered message")
+	mp.logger.Debug("sending registered message")
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceRegisteredResponse{ID: thingID, Token: token, Error: errMsg}
 	msg, err := json.Marshal(resp)
@@ -58,7 +58,7 @@ func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, err er
 
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
 func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) error {
-	mp.logger.Debug("Sending unregistered message")
+	mp.logger.Debug("sending unregistered message")
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceUnregisteredResponse{ID: thingID, Error: errMsg}
 	msg, err := json.Marshal(resp)

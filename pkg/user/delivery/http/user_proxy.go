@@ -33,13 +33,13 @@ type TokenResponse struct {
 func NewUserProxy(logger logging.Logger, hostname string, port uint16) *Proxy {
 	url := fmt.Sprintf("http://%s:%d", hostname, port)
 
-	logger.Debug("Proxy setup to " + url)
+	logger.Debug("proxy setup to " + url)
 	return &Proxy{url, logger}
 }
 
 // Create proxy the http request to user service
 func (p *Proxy) Create(user entities.User) (err error) {
-	p.logger.Debug("Proxying request to create user")
+	p.logger.Debug("proxying request to create user")
 	/**
 	 * Add Timeout in http.Client to avoid blocking the request.
 	 */
@@ -56,7 +56,7 @@ func (p *Proxy) Create(user entities.User) (err error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusConflict {
-		msg := fmt.Sprintf("User %s exists", user.Email)
+		msg := fmt.Sprintf("user %s exists", user.Email)
 		return shared.ErrEntityExists{Msg: msg}
 	}
 

@@ -51,7 +51,7 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 		return err
 	}
 
-	mc.logger.Info("Update schema message received")
+	mc.logger.Info("update schema message received")
 	mc.logger.Debug(authorizationHeader, updateSchemaReq)
 
 	err = mc.thingInteractor.UpdateSchema(authorizationHeader, updateSchemaReq.ID, updateSchemaReq.Schema)
@@ -77,7 +77,7 @@ func (mc *ThingController) AuthDevice(body []byte, authorization string) error {
 		return err
 	}
 
-	mc.logger.Info("Auth device command received")
+	mc.logger.Info("auth device command received")
 	mc.logger.Debug(authorization, authThingReq)
 	return mc.thingInteractor.Auth(authorization, authThingReq.ID)
 }
@@ -91,7 +91,7 @@ func (mc *ThingController) RequestData(body []byte, authorization string) error 
 		return err
 	}
 
-	mc.logger.Info("Request data command received")
+	mc.logger.Info("request data command received")
 	mc.logger.Debug(authorization, requestDataReq)
 	err = mc.thingInteractor.RequestData(authorization, requestDataReq.ID, requestDataReq.SensorIds)
 	if err != nil {

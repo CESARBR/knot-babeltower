@@ -2,7 +2,7 @@ package interactors
 
 // Unregister runs the use case to remove a registered thing
 func (i *ThingInteractor) Unregister(authorization, id string) error {
-	i.logger.Debug("Executing unregister thing use case")
+	i.logger.Debug("executing unregister thing use case")
 
 	if authorization == "" {
 		return ErrAuthNotProvided

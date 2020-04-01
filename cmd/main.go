@@ -21,7 +21,7 @@ import (
 
 func monitorSignals(sigs chan os.Signal, quit chan bool, logger logging.Logger) {
 	signal := <-sigs
-	logger.Infof("Signal %s received", signal)
+	logger.Infof("signal %s received", signal)
 	quit <- true
 }
 
@@ -30,7 +30,7 @@ func main() {
 	logrus := logging.NewLogrus(config.Logger.Level)
 
 	logger := logrus.Get("Main")
-	logger.Info("Starting KNoT Babeltower")
+	logger.Info("starting KNoT Babeltower")
 
 	// Signal Handler
 	sigs := make(chan os.Signal, 1)
@@ -77,7 +77,7 @@ func main() {
 		select {
 		case started := <-serverStartedChan:
 			if started {
-				logger.Info("Server started")
+				logger.Info("server started")
 			}
 		case started := <-amqpStartedChan:
 			if started {
@@ -86,7 +86,7 @@ func main() {
 			}
 		case started := <-msgStartedChan:
 			if started {
-				logger.Info("Msg handler started")
+				logger.Info("message handler started")
 			} else {
 				quit <- true
 			}

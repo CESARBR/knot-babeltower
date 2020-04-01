@@ -71,7 +71,7 @@ func TestCreateUser(t *testing.T) {
 			"123",
 			&FakeCreateUserLogger{},
 			&FakeUserProxy{},
-			shared.ErrEntityExists{Msg: "User exists"},
+			shared.ErrEntityExists{Msg: "user exists"},
 			shared.ErrEntityExists{Msg: "mocked msg"},
 		},
 	}
@@ -85,12 +85,12 @@ func TestCreateUser(t *testing.T) {
 
 			err := createUserInteractor.Execute(user)
 			if err != nil && !assert.IsType(t, err, tc.expected) {
-				t.Errorf("Create User failed. Error: %s", err)
+				t.Errorf("create user failed. Error: %s", err)
 				tc.fakeUserProxy.AssertExpectations(t)
 				return
 			}
 
-			t.Logf("Create user ok")
+			t.Logf("create user ok")
 			tc.fakeUserProxy.AssertExpectations(t)
 		})
 	}
