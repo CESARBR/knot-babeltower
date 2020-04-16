@@ -3,6 +3,8 @@ package interactors
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
 // Register runs the use case to create a new thing
@@ -17,10 +19,16 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 		return ErrNameNotProvided
 	}
 
-	i.logger.Debug("executing register thing use case")
 	err := i.verifyThingID(id)
 	if err != nil {
 		sendErr := i.sendResponse(id, "", err)
+		return fmt.Errorf("error registering thing: %w", sendErr)
+	}
+
+	// verify if thing is already registered
+	_, err = i.thingProxy.Get(authorization, id)
+	if err == nil {
+		sendErr := i.sendResponse(id, "", entities.ErrThingExists)
 		return fmt.Errorf("error registering thing: %w", sendErr)
 	}
 
