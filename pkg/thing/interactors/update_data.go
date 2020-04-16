@@ -2,6 +2,7 @@ package interactors
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
@@ -55,9 +56,10 @@ func validateSchema(data entities.Data, schema []entities.Schema) bool {
 	for _, s := range schema {
 		if s.SensorID == data.SensorID {
 			switch data.Value.(type) {
-			case int:
-				return s.ValueType == 1 // int
 			case float64:
+				if data.Value == math.Trunc(data.Value.(float64)) { // check if number is integer
+					return s.ValueType == 1 // int
+				}
 				return s.ValueType == 2 // float
 			case bool:
 				return s.ValueType == 3 // bool

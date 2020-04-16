@@ -98,7 +98,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		"data sensorId doesn't match with thing's schema",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 1, Value: 5}},
+		[]entities.Data{entities.Data{SensorID: 1, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -113,7 +113,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		"error publishing message in connector exchange",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 0, Value: 5}},
+		[]entities.Data{entities.Data{SensorID: 0, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -128,7 +128,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		"message successfully sent to connector exchange",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 0, Value: 5}},
+		[]entities.Data{entities.Data{SensorID: 0, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
