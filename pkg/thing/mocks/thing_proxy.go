@@ -9,6 +9,7 @@ import (
 type FakeThingProxy struct {
 	mock.Mock
 	ReturnErr error
+	CreateErr error
 	Thing     *entities.Thing
 }
 

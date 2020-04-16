@@ -4,89 +4,136 @@ import (
 	"errors"
 	"testing"
 
-	sharedEntities "github.com/CESARBR/knot-babeltower/pkg/entities"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
-type registerTestSuite struct {
-	thingID        string
-	thingName      string
-	authorization  string
+type registerTestCase struct {
+	name           string
+	authParam      string
+	idParam        string
+	nameParam      string
 	errExpected    error
+	thingExpected  *entities.Thing
 	fakeLogger     *mocks.FakeLogger
-	fakePublisher  *mocks.FakePublisher
 	fakeThingProxy *mocks.FakeThingProxy
+	fakePublisher  *mocks.FakePublisher
 	fakeConnector  *mocks.FakeConnector
 }
 
-func TestRegisterThing(t *testing.T) {
-	testCases := map[string]registerTestSuite{
-		"TestPublisherError": {
-			"123",
-			"test",
-			"authorization token",
-			errors.New("mock publisher error"),
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{ReturnErr: errors.New("mock publisher error")},
-			&mocks.FakeThingProxy{},
-			&mocks.FakeConnector{},
-		},
-		"TestProxyError": {
-			"123",
-			"test",
-			"authorization token",
-			errors.New("mock proxy error"),
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{Token: "", SendError: errors.New("mock proxy error")},
-			&mocks.FakeThingProxy{ReturnErr: errors.New("mock proxy error")},
-			&mocks.FakeConnector{},
-		},
-		"TestIDLenght": {
-			"01234567890123456789",
-			"test",
-			"authorization token",
-			ErrIDLength,
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{Token: "", SendError: ErrIDLength},
-			&mocks.FakeThingProxy{},
-			&mocks.FakeConnector{},
-		},
-		"TestIDInvalid": {
-			"not hex string",
-			"test",
-			"authorization token",
-			ErrIDNotHex,
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{Token: "", SendError: ErrIDNotHex},
-			&mocks.FakeThingProxy{},
-			&mocks.FakeConnector{},
-		},
-		"shouldRaiseConnectorSendError": {
-			"123",
-			"test",
-			"authorization token",
-			sharedEntities.ErrEntityExists{},
-			&mocks.FakeLogger{},
-			&mocks.FakePublisher{},
-			&mocks.FakeThingProxy{},
-			&mocks.FakeConnector{SendError: sharedEntities.ErrEntityExists{}},
-		},
+var (
+	errRegisterResponse = errors.New("error sending response to client")
+	errThingCreation    = errors.New("error in thing's service")
+	thing               = &entities.Thing{
+		ID:    "fc3fcf912d0c290a",
+		Token: "authorization-token",
+		Name:  "thing",
 	}
+)
 
-	t.Logf("number of test cases: %d", len(testCases))
-	for tcName, tc := range testCases {
-		t.Logf("test case %s", tcName)
-		t.Run(tcName, func(t *testing.T) {
-			tc.fakePublisher.On("SendRegisteredDevice", tc.thingID, tc.fakePublisher.Token, tc.fakePublisher.SendError).
-				Return(tc.fakePublisher.ReturnErr)
-			tc.fakeThingProxy.On("Create", tc.thingID, tc.thingName, tc.authorization).
-				Return(tc.fakePublisher.Token, tc.fakeThingProxy.ReturnErr).Maybe()
-			tc.fakeConnector.On("SendRegisterDevice", tc.thingID, tc.thingName).
+var registerThingUseCases = []registerTestCase{
+	{
+		"thing's ID has wrong lenght",
+		"authorization-token",
+		"01234567890123456789",
+		"knot-thing",
+		ErrIDLength,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{SendError: ErrIDLength},
+		&mocks.FakeConnector{},
+	},
+	{
+		"thing's ID isn't hexadecimal",
+		"authorization-token",
+		"not hex string",
+		"test",
+		ErrIDNotHex,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{SendError: ErrIDNotHex},
+		&mocks.FakeConnector{},
+	},
+	{
+		"thing already registered on thing's service",
+		"authorization-token",
+		"fc3fcf912d0c290a",
+		"test",
+		entities.ErrThingExists,
+		thing,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{SendError: entities.ErrThingExists},
+		&mocks.FakeConnector{SendError: entities.ErrThingExists},
+	},
+	{
+		"failed to create a thing on the thing's service",
+		"authorization-token",
+		"fc3fcf912d0c290a",
+		"knot-thing",
+		errThingCreation,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound, CreateErr: errThingCreation},
+		&mocks.FakePublisher{Token: "", SendError: errThingCreation},
+		&mocks.FakeConnector{},
+	},
+	{
+		"thing successfully created on thing's service",
+		"authorization-token",
+		"fc3fcf912d0c290a",
+		"knot-thing",
+		nil,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
+	},
+	{
+		"failed to send register response",
+		"authorization-token",
+		"fc3fcf912d0c290a",
+		"knot-thing",
+		errRegisterResponse,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
+		&mocks.FakePublisher{ReturnErr: errRegisterResponse},
+		&mocks.FakeConnector{},
+	},
+	{
+		"register response successfully sent",
+		"authorization-token",
+		"fc3fcf912d0c290a",
+		"knot-thing",
+		nil,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
+		&mocks.FakePublisher{},
+		&mocks.FakeConnector{},
+	},
+}
+
+func TestRegisterThing(t *testing.T) {
+	for _, tc := range registerThingUseCases {
+		t.Logf("Running Test Casee: %s", tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			tc.fakeThingProxy.On("Get", tc.authParam, tc.idParam).
+				Return(tc.thingExpected, tc.fakeThingProxy.ReturnErr).Maybe()
+			tc.fakePublisher.On("SendRegisteredDevice", tc.idParam, tc.fakePublisher.Token, tc.fakePublisher.SendError).
+				Return(tc.fakePublisher.ReturnErr).Maybe()
+			tc.fakeThingProxy.On("Create", tc.idParam, tc.nameParam, tc.authParam).
+				Return(tc.fakePublisher.Token, tc.fakeThingProxy.CreateErr).Maybe()
+			tc.fakeConnector.On("SendRegisterDevice", tc.idParam, tc.nameParam).
 				Return(tc.fakeConnector.SendError).Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
-			err := thingInteractor.Register(tc.authorization, tc.thingID, tc.thingName)
+			err := thingInteractor.Register(tc.authParam, tc.idParam, tc.nameParam)
 			if err != nil && !assert.IsType(t, errors.Unwrap(err), tc.errExpected) {
 				t.Errorf("create thing failed with unexpected error. Error: %s", err)
 				return
