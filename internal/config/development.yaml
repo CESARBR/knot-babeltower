@@ -3,3 +3,14 @@ server:
 
 logger:
   level: debug
+
+users:
+  hostname: users
+  port: 8180
+
+rabbitmq:
+  url: amqp://knot:knot@rabbitmq/
+
+things:
+  hostname: things
+  port: 8182
