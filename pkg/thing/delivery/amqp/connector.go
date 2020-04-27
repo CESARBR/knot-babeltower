@@ -46,7 +46,7 @@ func (mp *msgConnectorPublisher) SendRegisterDevice(id string, name string) erro
 		return err
 	}
 	// TODO: receive message
-	return mp.amqp.PublishPersistentMessage(exchangeConnIn, registerInKey, bytes)
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, "topic", registerInKey, bytes)
 }
 
 // SendUnregisterDevice sends an unregister message
@@ -59,7 +59,7 @@ func (mp *msgConnectorPublisher) SendUnregisterDevice(id string) error {
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeConnIn, unregisterInKey, bytes)
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, "topic", unregisterInKey, bytes)
 }
 
 // SendUpdateSchema sends an update schema message
@@ -71,7 +71,7 @@ func (mp *msgConnectorPublisher) SendUpdateSchema(id string, schemaList []entiti
 		mp.logger.Error(err)
 		return err
 	}
-	return mp.amqp.PublishPersistentMessage(exchangeConnIn, updateSchemaInKey, bytes)
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, "topic", updateSchemaInKey, bytes)
 }
 
 // SendPublishData sends a publish data message
@@ -82,5 +82,5 @@ func (mp *msgConnectorPublisher) SendPublishData(id string, data []entities.Data
 	if err != nil {
 		return fmt.Errorf("message parsing error: %w", err)
 	}
-	return mp.amqp.PublishPersistentMessage(exchangeConnIn, publishDataInKey, bytes)
+	return mp.amqp.PublishPersistentMessage(exchangeConnIn, "topic", publishDataInKey, bytes)
 }

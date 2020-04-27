@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	queueNameFogIn           = "fogIn-messages"
+	queueFogIn               = "fogIn-messages"
 	exchangeFogIn            = "fogIn"
-	queueNameConnOut         = "connOut-messages"
+	exchangeTypeFogIn        = "topic"
+	queueConnOut             = "connOut-messages"
 	exchangeConnOut          = "connOut"
+	exchangeTypeConnOut      = "topic"
 	bindingKeyDevice         = "device.*"
 	bindingKeyPublishData    = "data.publish"
 	bindingKeyDataCommands   = "data.*"
@@ -55,22 +57,22 @@ func (mc *MsgHandler) Stop() {
 
 func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	var err error
-	subscribe := func(msgChan chan network.InMsg, queueName, exchange, key string) {
+	subscribe := func(msgChan chan network.InMsg, queue, exchange, kind, key string) {
 		if err != nil {
 			return
 		}
-		err = mc.amqp.OnMessage(msgChan, queueName, exchange, key)
+		err = mc.amqp.OnMessage(msgChan, queue, exchange, kind, key)
 	}
 
 	// Subscribe to messages received from any client
-	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDevice)
-	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeySchema)
-	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyDeviceCommands)
-	subscribe(msgChan, queueNameFogIn, exchangeFogIn, bindingKeyPublishData)
+	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyDevice)
+	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeySchema)
+	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyDeviceCommands)
+	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyPublishData)
 
 	// Subscribe to messages received from the connector service
-	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDataCommands)
-	subscribe(msgChan, queueNameConnOut, exchangeConnOut, bindingKeyDevice)
+	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDataCommands)
+	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDevice)
 
 	return err
 }
