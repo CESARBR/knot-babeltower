@@ -14,12 +14,12 @@ import (
 type ThingController struct {
 	logger          logging.Logger
 	thingInteractor interactors.Interactor
-	clientPublisher amqp.ClientPublisher
+	sender          amqp.Sender
 }
 
 // NewThingController constructs the ThingController
-func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, clientPublisher amqp.ClientPublisher) *ThingController {
-	return &ThingController{logger, thingInteractor, clientPublisher}
+func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, sender amqp.Sender) *ThingController {
+	return &ThingController{logger, thingInteractor, sender}
 }
 
 // Register handles the register device request and execute its use case
@@ -70,14 +70,14 @@ func (mc *ThingController) ListDevices(authorization, corrID string) error {
 	mc.logger.Info("list devices command received")
 	things, err := mc.thingInteractor.List(authorization)
 	if err != nil {
-		sendErr := mc.clientPublisher.SendDevicesList(things, err)
+		sendErr := mc.sender.SendListResponse(things, corrID, err)
 		if sendErr != nil {
 			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
 		}
 		return err
 	}
 
-	sendErr := mc.clientPublisher.SendDevicesList(things, err)
+	sendErr := mc.sender.SendListResponse(things, corrID, err)
 	if sendErr != nil {
 		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
 	}
@@ -97,14 +97,14 @@ func (mc *ThingController) AuthDevice(body []byte, authorization, corrID string)
 	mc.logger.Info("auth device command received")
 	err = mc.thingInteractor.Auth(authorization, authThingReq.ID)
 	if err != nil {
-		sendErr := mc.clientPublisher.SendAuthStatus(authThingReq.ID, err)
+		sendErr := mc.sender.SendAuthResponse(authThingReq.ID, corrID, err)
 		if sendErr != nil {
 			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
 		}
 		return err
 	}
 
-	sendErr := mc.clientPublisher.SendAuthStatus(authThingReq.ID, err)
+	sendErr := mc.sender.SendAuthResponse(authThingReq.ID, corrID, err)
 	if sendErr != nil {
 		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
 	}

@@ -10,12 +10,11 @@ import (
 )
 
 const (
+	exchangeDevices   = "device"
 	exchangeFogOut    = "fogOut"
 	registerOutKey    = "device.registered"
 	unregisterOutKey  = "device.unregistered"
 	schemaOutKey      = "schema.updated"
-	listThingsOutKey  = "device.list"
-	authDeviceOutKey  = "device.auth"
 	updateDataOutKey  = "data.update"
 	requestDataOutKey = "data.request"
 )
@@ -25,10 +24,14 @@ type ClientPublisher interface {
 	SendRegisteredDevice(thingID, token string, err error) error
 	SendUnregisteredDevice(thingID string, err error) error
 	SendUpdatedSchema(thingID string, err error) error
-	SendDevicesList(things []*entities.Thing, err error) error
-	SendAuthStatus(thingID string, err error) error
 	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
+}
+
+// Sender represents the operations to send commands response
+type Sender interface {
+	SendAuthResponse(thingID, corrID string, err error) error
+	SendListResponse(things []*entities.Thing, corrID string, err error) error
 }
 
 // msgClientPublisher handle messages received from a service
@@ -37,9 +40,20 @@ type msgClientPublisher struct {
 	amqp   *network.Amqp
 }
 
+// commandSender handle messages received from a service
+type commandSender struct {
+	logger logging.Logger
+	amqp   *network.Amqp
+}
+
 // NewMsgClientPublisher constructs the msgClientPublisher
 func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPublisher {
 	return &msgClientPublisher{logger, amqp}
+}
+
+// NewCommandSender creates a new commandSender instance
+func NewCommandSender(logger logging.Logger, amqp *network.Amqp) Sender {
+	return &commandSender{logger, amqp}
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
@@ -82,30 +96,6 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", schemaOutKey, msg)
 }
 
-// SendDevicesList sends the list devices command response
-func (mp *msgClientPublisher) SendDevicesList(things []*entities.Thing, err error) error {
-	errMsg := getErrMsg(err)
-	resp := &network.DeviceListResponse{Things: things, Error: errMsg}
-	msg, err := json.Marshal(resp)
-	if err != nil {
-		return err
-	}
-
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", listThingsOutKey, msg)
-}
-
-// SendAuthStatus sends the auth thing status response
-func (mp *msgClientPublisher) SendAuthStatus(thingID string, err error) error {
-	errMsg := getErrMsg(err)
-	resp := &network.DeviceAuthResponse{ID: thingID, Error: errMsg}
-	msg, err := json.Marshal(resp)
-	if err != nil {
-		return err
-	}
-
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", authDeviceOutKey, msg)
-}
-
 // SendRequestData sends request data command
 func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) error {
 	resp := &network.DataRequest{ID: thingID, SensorIds: sensorIds}
@@ -126,6 +116,30 @@ func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Dat
 	}
 
 	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", updateDataOutKey, msg)
+}
+
+// SendAuthResponse sends the auth thing status response
+func (cs *commandSender) SendAuthResponse(thingID string, corrID string, err error) error {
+	errMsg := getErrMsg(err)
+	resp := &network.DeviceAuthResponse{ID: thingID, Error: errMsg}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, "direct", corrID, msg)
+}
+
+// SendListResponse sends the list devices command response
+func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID string, err error) error {
+	errMsg := getErrMsg(err)
+	resp := &network.DeviceListResponse{Things: things, Error: errMsg}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, "direct", corrID, msg)
 }
 
 func getErrMsg(err error) *string {

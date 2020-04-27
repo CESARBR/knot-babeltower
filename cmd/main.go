@@ -46,6 +46,7 @@ func main() {
 	// AMQP Publishers
 	clientPublisher := thingDeliveryAMQP.NewMsgClientPublisher(logrus.Get("ClientPublisher"), amqp)
 	connectorPublisher := thingDeliveryAMQP.NewMsgConnectorPublisher(logrus.Get("ConnectorPublisher"), amqp)
+	commandSender := thingDeliveryAMQP.NewCommandSender(logrus.Get("Command Sender"), amqp)
 
 	// Services
 	userProxy := userDeliveryHTTP.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
@@ -57,7 +58,7 @@ func main() {
 	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy, connectorPublisher)
 
 	// Controllers
-	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor, clientPublisher)
+	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor, commandSender)
 	userController := userControllers.NewUserController(logrus.Get("UserController"), createUser, createToken)
 
 	// Server
