@@ -17,6 +17,5 @@ func (i *ThingInteractor) List(authorization string) ([]*entities.Thing, error) 
 		return nil, fmt.Errorf("error getting list of things: %w", err)
 	}
 
-	i.logger.Info("devices obtained")
 	return things, nil
 }

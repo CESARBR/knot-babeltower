@@ -32,18 +32,6 @@ func (fp *FakePublisher) SendUpdatedSchema(thingID string, err error) error {
 	return ret.Error(0)
 }
 
-// SendDevicesList provides a mock function to send a list things response
-func (fp *FakePublisher) SendDevicesList(things []*entities.Thing, err error) error {
-	args := fp.Called(things, err)
-	return args.Error(0)
-}
-
-// SendAuthStatus provides a mock function to send auth thing command response
-func (fp *FakePublisher) SendAuthStatus(thingID string, err error) error {
-	args := fp.Called(thingID, err)
-	return args.Error(0)
-}
-
 // SendUpdateData provides a mock function to send an update data command
 func (fp *FakePublisher) SendUpdateData(thingID string, data []entities.Data) error {
 	args := fp.Called(thingID, data)
