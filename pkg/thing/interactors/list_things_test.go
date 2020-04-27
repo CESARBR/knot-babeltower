@@ -10,66 +10,69 @@ import (
 )
 
 type listThingsTestCase struct {
-	name                        string
+	// descriptive name, e.g. argument not provided
+	name string
+
+	// dependencies outputs and operation under test results
 	authorization               string
-	expectedUseCaseResponse     error
-	expectedProxyResponseThings []*entities.Thing
 	expectedProxyResponseError  error
-	expectedPublisherResponse   error
-	fakeLogger                  *mocks.FakeLogger
-	fakeThingProxy              *mocks.FakeThingProxy
-	fakePublisher               *mocks.FakePublisher
-	fakeConnector               *mocks.FakeConnector
+	expectedProxyResponseThings []*entities.Thing
+	expectedErrorResult         error
+	expectedThingsResult        []*entities.Thing
+
+	// mocked dependencies
+	fakeLogger     *mocks.FakeLogger
+	fakeThingProxy *mocks.FakeThingProxy
+}
+
+var things = []*entities.Thing{
+	{
+		ID:    "8a6f2fe9da74485f",
+		Token: "token",
+		Name:  "temperature",
+	},
 }
 
 var ltCases = []listThingsTestCase{
 	{
 		"authorization token not provided",
 		"",
-		ErrAuthNotProvided,
-		[]*entities.Thing{},
 		nil,
+		nil,
+		ErrAuthNotProvided,
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 	{
 		"failed to list things from thing's service",
 		"authorization-token",
 		errors.New("thing's service unavailable"),
-		[]*entities.Thing{},
+		nil,
 		errors.New("thing's service unavailable"),
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 	{
-		"things successfully published to message queue",
+		"things successfully received from the thing's service",
+		"authorization-token",
+		nil,
+		things,
+		nil,
+		things,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+	},
+	{
+		"return empty list when there is no thing registered on thing's service",
 		"authorization-token",
 		nil,
 		[]*entities.Thing{},
 		nil,
-		nil,
-		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
-	},
-	{
-		"failed to publish list things response",
-		"authorization-token",
-		errors.New("message queue unavailable"),
 		[]*entities.Thing{},
-		nil,
-		errors.New("message queue unavailable"),
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 }
 
@@ -80,25 +83,24 @@ func TestListThings(t *testing.T) {
 				On("List", tc.authorization).
 				Return(tc.expectedProxyResponseThings, tc.expectedProxyResponseError).
 				Maybe()
-			tc.fakePublisher.
-				On("SendDevicesList", tc.expectedProxyResponseThings, tc.expectedProxyResponseError).
-				Return(tc.expectedPublisherResponse).
-				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
-			err := thingInteractor.List(tc.authorization)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy, nil)
+			things, err := thingInteractor.List(tc.authorization)
 			if tc.authorization == "" {
 				assert.EqualError(t, err, ErrAuthNotProvided.Error())
 				return
 			}
 
-			if err != nil && !errors.As(err, &tc.expectedUseCaseResponse) {
+			if err != nil && !errors.As(err, &tc.expectedErrorResult) {
 				t.Errorf("failed to list the devices. Error: %s", err)
 				return
 			}
 
+			if tc.expectedProxyResponseError == nil {
+				assert.Equal(t, things, tc.expectedThingsResult)
+			}
+
 			tc.fakeThingProxy.AssertExpectations(t)
-			tc.fakePublisher.AssertExpectations(t)
 		})
 	}
 }

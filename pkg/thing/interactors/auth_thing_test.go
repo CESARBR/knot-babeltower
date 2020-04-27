@@ -1,7 +1,6 @@
 package interactors
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
@@ -16,8 +15,6 @@ type AuthThingTestCase struct {
 	expectedErr    error
 	fakeLogger     *mocks.FakeLogger
 	fakeThingProxy *mocks.FakeThingProxy
-	fakePublisher  *mocks.FakePublisher
-	fakeConnector  *mocks.FakeConnector
 }
 
 var atCases = []AuthThingTestCase{
@@ -28,8 +25,6 @@ var atCases = []AuthThingTestCase{
 		ErrAuthNotProvided,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 	{
 		"thing's id not provided",
@@ -38,8 +33,6 @@ var atCases = []AuthThingTestCase{
 		ErrIDNotProvided,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 	{
 		"thing 6c0dcd9833b595f9 not found",
@@ -48,8 +41,6 @@ var atCases = []AuthThingTestCase{
 		entities.ErrThingNotFound,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
-		&mocks.FakePublisher{Err: entities.ErrThingNotFound},
-		&mocks.FakeConnector{},
 	},
 	{
 		"forbidden to authenticate thing",
@@ -58,8 +49,6 @@ var atCases = []AuthThingTestCase{
 		entities.ErrThingForbidden,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingForbidden},
-		&mocks.FakePublisher{Err: entities.ErrThingForbidden},
-		&mocks.FakeConnector{},
 	},
 	{
 		"allowed to authenticate thing",
@@ -72,36 +61,6 @@ var atCases = []AuthThingTestCase{
 			Token: "token",
 			Name:  "thing",
 		}},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
-	},
-	{
-		"failed to send authentication response",
-		"authorization-token",
-		"8380ba096a091fb9",
-		errors.New("failed to send authentication response"),
-		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{Thing: &entities.Thing{
-			ID:    "fc3fcf912d0c290a",
-			Token: "token",
-			Name:  "thing",
-		}},
-		&mocks.FakePublisher{SendError: errors.New("failed to send authentication response")},
-		&mocks.FakeConnector{},
-	},
-	{
-		"authentication response successfully sent",
-		"authorization-token",
-		"8380ba096a091fb9",
-		nil,
-		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{Thing: &entities.Thing{
-			ID:    "fc3fcf912d0c290a",
-			Token: "token",
-			Name:  "thing",
-		}},
-		&mocks.FakePublisher{},
-		&mocks.FakeConnector{},
 	},
 }
 
@@ -112,12 +71,8 @@ func TestAuthThing(t *testing.T) {
 				On("Get", tc.authParam, tc.idParam).
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
-			tc.fakePublisher.
-				On("SendAuthStatus", tc.idParam, tc.fakePublisher.Err).
-				Return(tc.fakeConnector.SendError).
-				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeConnector)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy, nil)
 			err := thingInteractor.Auth(tc.authParam, tc.idParam)
 
 			if tc.authParam == "" {
@@ -130,7 +85,6 @@ func TestAuthThing(t *testing.T) {
 			}
 
 			tc.fakeThingProxy.AssertExpectations(t)
-			tc.fakePublisher.AssertExpectations(t)
 		})
 	}
 }
