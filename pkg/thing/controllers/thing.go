@@ -6,6 +6,7 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 )
 
@@ -13,11 +14,12 @@ import (
 type ThingController struct {
 	logger          logging.Logger
 	thingInteractor interactors.Interactor
+	clientPublisher amqp.ClientPublisher
 }
 
 // NewThingController constructs the ThingController
-func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor) *ThingController {
-	return &ThingController{logger, thingInteractor}
+func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, clientPublisher amqp.ClientPublisher) *ThingController {
+	return &ThingController{logger, thingInteractor, clientPublisher}
 }
 
 // Register handles the register device request and execute its use case
@@ -65,7 +67,22 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 
 // ListDevices handles the list devices request and execute its use case
 func (mc *ThingController) ListDevices(authorization, corrID string) error {
-	return mc.thingInteractor.List(authorization)
+	mc.logger.Info("list devices command received")
+	things, err := mc.thingInteractor.List(authorization)
+	if err != nil {
+		sendErr := mc.clientPublisher.SendDevicesList(things, err)
+		if sendErr != nil {
+			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+		}
+		return err
+	}
+
+	sendErr := mc.clientPublisher.SendDevicesList(things, err)
+	if sendErr != nil {
+		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+	}
+
+	return nil
 }
 
 // AuthDevice handles the auth device request and execute its use case
@@ -78,8 +95,21 @@ func (mc *ThingController) AuthDevice(body []byte, authorization, corrID string)
 	}
 
 	mc.logger.Info("auth device command received")
-	mc.logger.Debug(authorization, authThingReq)
-	return mc.thingInteractor.Auth(authorization, authThingReq.ID)
+	err = mc.thingInteractor.Auth(authorization, authThingReq.ID)
+	if err != nil {
+		sendErr := mc.clientPublisher.SendAuthStatus(authThingReq.ID, err)
+		if sendErr != nil {
+			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+		}
+		return err
+	}
+
+	sendErr := mc.clientPublisher.SendAuthStatus(authThingReq.ID, err)
+	if sendErr != nil {
+		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+	}
+
+	return nil
 }
 
 // RequestData handles the request data request and execute its use case
