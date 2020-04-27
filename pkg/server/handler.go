@@ -8,6 +8,18 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/thing/controllers"
 )
 
+// API definition to enable receiving request-reply commands from the clients
+// The operations supported for this type of events are device authentication
+// and list registered devices, as can be seen on the documentation:
+// https://github.com/CESARBR/knot-babeltower/blob/master/docs/events.md
+const (
+	exchangeDevices       = "devices"
+	exchangeDevicesType   = "direct"
+	queueNameCommands     = "babeltower-command-messages"
+	bindingKeyAuthDevice  = "device.auth"
+	bindingKeyListDevices = "device.list"
+)
+
 const (
 	queueFogIn               = "fogIn-messages"
 	exchangeFogIn            = "fogIn"
@@ -74,6 +86,10 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDataCommands)
 	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDevice)
 
+	// Subscribe to request-reply messages received from any client
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyAuthDevice)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyListDevices)
+
 	return err
 }
 
@@ -94,6 +110,8 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 			err = mc.handleClientMessages(msg, token)
 		} else if msg.Exchange == exchangeConnOut {
 			err = mc.handleConnectorMessages(msg, token)
+		} else if msg.Exchange == exchangeDevices {
+			err = mc.handleCommandMessages(msg, token)
 		}
 
 		if err != nil {
@@ -112,10 +130,6 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 		return mc.thingController.Unregister(msg.Body, token)
 	case "schema.update":
 		return mc.thingController.UpdateSchema(msg.Body, token)
-	case "device.cmd.auth":
-		return mc.thingController.AuthDevice(msg.Body, token)
-	case "device.cmd.list":
-		return mc.thingController.ListDevices(token)
 	case "data.publish":
 		return mc.thingController.PublishData(msg.Body, token)
 	}
@@ -132,6 +146,22 @@ func (mc *MsgHandler) handleConnectorMessages(msg network.InMsg, token string) e
 		return mc.thingController.UpdateData(msg.Body, token)
 	case "device.registered":
 		// Ignore message
+	}
+
+	return nil
+}
+
+func (mc *MsgHandler) handleCommandMessages(msg network.InMsg, token string) error {
+	corrID, ok := msg.Headers["correlation-id"].(string)
+	if !ok {
+		return errors.New("correlation ID not provided")
+	}
+
+	switch msg.RoutingKey {
+	case "device.auth":
+		return mc.thingController.AuthDevice(msg.Body, token, corrID)
+	case "device.list":
+		return mc.thingController.ListDevices(token, corrID)
 	}
 
 	return nil

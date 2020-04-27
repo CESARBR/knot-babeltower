@@ -64,12 +64,12 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 }
 
 // ListDevices handles the list devices request and execute its use case
-func (mc *ThingController) ListDevices(authorization string) error {
+func (mc *ThingController) ListDevices(authorization, corrID string) error {
 	return mc.thingInteractor.List(authorization)
 }
 
 // AuthDevice handles the auth device request and execute its use case
-func (mc *ThingController) AuthDevice(body []byte, authorization string) error {
+func (mc *ThingController) AuthDevice(body []byte, authorization, corrID string) error {
 	var authThingReq network.DeviceAuthRequest
 	err := json.Unmarshal(body, &authThingReq)
 	if err != nil {
