@@ -184,7 +184,7 @@ func TestUpdateSchema(t *testing.T) {
 				Return(tc.expectedErr).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, nil)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
 			err := thingInteractor.UpdateSchema(tc.authorization, tc.thingID, tc.schemaList)
 			if !tc.isSchemaValid {
 				assert.EqualError(t, err, errSchemaInvalid.Error())

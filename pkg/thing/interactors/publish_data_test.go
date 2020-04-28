@@ -107,7 +107,7 @@ func TestPublishData(t *testing.T) {
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy, nil)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy)
 			err := thingInteractor.PublishData(tc.authParam, tc.idParam, tc.dataParam)
 
 			assert.EqualValues(t, errors.Is(err, tc.expectedError), true)
