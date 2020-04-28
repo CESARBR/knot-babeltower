@@ -125,7 +125,7 @@ func TestRegisterThing(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.fakeThingProxy.On("Get", tc.authParam, tc.idParam).
 				Return(tc.thingExpected, tc.fakeThingProxy.ReturnErr).Maybe()
-			tc.fakePublisher.On("SendRegisteredDevice", tc.idParam, tc.fakePublisher.Token, tc.fakePublisher.SendError).
+			tc.fakePublisher.On("SendRegisteredDevice", tc.idParam, tc.nameParam, tc.fakePublisher.Token, tc.fakePublisher.SendError).
 				Return(tc.fakePublisher.ReturnErr).Maybe()
 			tc.fakeThingProxy.On("Create", tc.idParam, tc.nameParam, tc.authParam).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.CreateErr).Maybe()

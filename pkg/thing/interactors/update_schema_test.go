@@ -213,7 +213,7 @@ func TestUpdateSchema(t *testing.T) {
 				Return(tc.expectedErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendUpdatedSchema", tc.thingID, tc.err).
+				On("SendUpdatedSchema", tc.thingID, tc.schemaList, tc.err).
 				Return(tc.expectedErr).
 				Maybe()
 

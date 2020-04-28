@@ -11,6 +11,7 @@ type DeviceRegisterRequest struct {
 // DeviceRegisteredResponse represents the outgoing register device response message
 type DeviceRegisteredResponse struct {
 	ID    string  `json:"id"`
+	Name  string  `json:"name"`
 	Token string  `json:"token"`
 	Error *string `json:"error"`
 }
@@ -34,8 +35,9 @@ type SchemaUpdateRequest struct {
 
 // SchemaUpdatedResponse represents the outgoing update schema response message
 type SchemaUpdatedResponse struct {
-	ID    string  `json:"id"`
-	Error *string `json:"error"`
+	ID     string            `json:"id"`
+	Schema []entities.Schema `json:"schema,omitempty"`
+	Error  *string           `json:"error"`
 }
 
 // DeviceAuthRequest represents the incoming auth device command

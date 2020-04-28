@@ -21,20 +21,20 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 
 	err := i.verifyThingID(id)
 	if err != nil {
-		sendErr := i.sendResponse(id, "", err)
+		sendErr := i.sendResponse(id, name, "", err)
 		return fmt.Errorf("error registering thing: %w", sendErr)
 	}
 
 	// verify if thing is already registered
 	_, err = i.thingProxy.Get(authorization, id)
 	if err == nil {
-		sendErr := i.sendResponse(id, "", entities.ErrThingExists)
+		sendErr := i.sendResponse(id, name, "", entities.ErrThingExists)
 		return fmt.Errorf("error registering thing: %w", sendErr)
 	}
 
 	// Get the id generated as a token and send in the response
 	token, err := i.thingProxy.Create(id, name, authorization)
-	sendErr := i.sendResponse(id, token, err)
+	sendErr := i.sendResponse(id, name, token, err)
 	if err != nil {
 		// it was not possible to create a thing, so returns without send request to connector
 		return fmt.Errorf("error registering thing: %w", sendErr)
@@ -65,8 +65,8 @@ func (i *ThingInteractor) verifyThingID(id string) error {
 	return nil
 }
 
-func (i *ThingInteractor) sendResponse(id, token string, err error) error {
-	sendErr := i.clientPublisher.SendRegisteredDevice(id, token, err)
+func (i *ThingInteractor) sendResponse(id, name, token string, err error) error {
+	sendErr := i.clientPublisher.SendRegisteredDevice(id, name, token, err)
 	if sendErr != nil {
 		if err != nil {
 			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)

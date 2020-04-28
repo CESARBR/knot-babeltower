@@ -15,8 +15,8 @@ type FakePublisher struct {
 }
 
 // SendRegisteredDevice provides a mock function to send a register device response
-func (fp *FakePublisher) SendRegisteredDevice(thingID, token string, err error) error {
-	ret := fp.Called(thingID, token, err)
+func (fp *FakePublisher) SendRegisteredDevice(thingID, name, token string, err error) error {
+	ret := fp.Called(thingID, name, token, err)
 	return ret.Error(0)
 }
 
@@ -27,8 +27,8 @@ func (fp *FakePublisher) SendUnregisteredDevice(thingID string, err error) error
 }
 
 // SendUpdatedSchema provides a mock function to send an update schema response
-func (fp *FakePublisher) SendUpdatedSchema(thingID string, err error) error {
-	ret := fp.Called(thingID, err)
+func (fp *FakePublisher) SendUpdatedSchema(thingID string, schema []entities.Schema, err error) error {
+	ret := fp.Called(thingID, schema, err)
 	return ret.Error(0)
 }
 
@@ -44,8 +44,8 @@ func (fp *FakePublisher) SendRequestData(thingID string, sensorIds []int) error 
 	return args.Error(0)
 }
 
-// SendPublishedData provides a mock function to send a publish data command to connector
-func (fp *FakePublisher) SendPublishedData(id string, data []entities.Data) error {
-	ret := fp.Called(id, data)
-	return ret.Error(0)
+// SendPublishedData provides a mock function to send a request data command
+func (fp *FakePublisher) SendPublishedData(thingID string, data []entities.Data) error {
+	args := fp.Called(thingID, data)
+	return args.Error(0)
 }

@@ -12,22 +12,20 @@ import (
 const (
 	exchangeDevices           = "device"
 	exchangeDevicesType       = "direct"
-	exchangeFogOut            = "fogOut"
-	exchangeFogOutType        = "topic"
 	exchangeDataPublished     = "data.published"
 	exchangeDataPublishedType = "fanout"
 	registerOutKey            = "device.registered"
 	unregisterOutKey          = "device.unregistered"
-	schemaOutKey              = "schema.updated"
-	updateDataOutKey          = "data.update"
-	requestDataOutKey         = "data.request"
+	schemaOutKey              = "device.schema.updated"
+	updateDataKey             = "data.update"
+	requestDataKey            = "data.request"
 )
 
-// ClientPublisher is the interface with methods that the publisher should have
+// ClientPublisher provides methods to send events to the clients
 type ClientPublisher interface {
-	SendRegisteredDevice(thingID, token string, err error) error
+	SendRegisteredDevice(thingID, name, token string, err error) error
 	SendUnregisteredDevice(thingID string, err error) error
-	SendUpdatedSchema(thingID string, err error) error
+	SendUpdatedSchema(thingID string, schema []entities.Schema, err error) error
 	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
 	SendPublishedData(thingID string, data []entities.Data) error
@@ -62,17 +60,17 @@ func NewCommandSender(logger logging.Logger, amqp *network.Amqp) Sender {
 }
 
 // SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, err error) error {
+func (mp *msgClientPublisher) SendRegisteredDevice(thingID, name, token string, err error) error {
 	mp.logger.Debug("sending registered message")
 	errMsg := getErrMsg(err)
-	resp := &network.DeviceRegisteredResponse{ID: thingID, Token: token, Error: errMsg}
+	resp := &network.DeviceRegisteredResponse{ID: thingID, Name: name, Token: token, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		mp.logger.Error(err)
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, registerOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, registerOutKey, msg)
 }
 
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
@@ -86,19 +84,19 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) 
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, unregisterOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, unregisterOutKey, msg)
 }
 
 // SendUpdatedSchema sends the updated schema response
-func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error {
+func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, schema []entities.Schema, err error) error {
 	errMsg := getErrMsg(err)
-	resp := &network.SchemaUpdatedResponse{ID: thingID, Error: errMsg}
+	resp := &network.SchemaUpdatedResponse{ID: thingID, Schema: schema, Error: errMsg}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, schemaOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, schemaOutKey, msg)
 }
 
 // SendRequestData sends request data command
@@ -109,7 +107,8 @@ func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) e
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, requestDataOutKey, msg)
+	routingKey := "device." + thingID + "." + requestDataKey
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg)
 }
 
 // SendUpdateData send update data command
@@ -120,7 +119,8 @@ func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Dat
 		return fmt.Errorf("message parsing error: %w", err)
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, updateDataOutKey, msg)
+	routingKey := "device." + thingID + "." + updateDataKey
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg)
 }
 
 // SendAuthResponse sends the auth thing status response
