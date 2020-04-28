@@ -97,7 +97,7 @@ func (i *ThingInteractor) isValidSchema(schemaList []entities.Schema) bool {
 }
 
 func (i *ThingInteractor) notifyClient(thingID string, schemaList []entities.Schema, err error) error {
-	sendErr := i.clientPublisher.SendUpdatedSchema(thingID, schemaList, err)
+	sendErr := i.publisher.PublishUpdatedSchema(thingID, schemaList, err)
 	if sendErr != nil {
 		if err != nil {
 			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)

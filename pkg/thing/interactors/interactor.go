@@ -22,15 +22,15 @@ type Interactor interface {
 // ThingInteractor represents the thing interactor capabilities, it's composed
 // by the necessary dependencies
 type ThingInteractor struct {
-	logger          logging.Logger
-	clientPublisher amqp.ClientPublisher
-	thingProxy      http.ThingProxy
+	logger     logging.Logger
+	publisher  amqp.Publisher
+	thingProxy http.ThingProxy
 }
 
 // NewThingInteractor creates a new ThingInteractor instance
 func NewThingInteractor(
 	logger logging.Logger,
-	publisher amqp.ClientPublisher,
+	publisher amqp.Publisher,
 	thingProxy http.ThingProxy,
 ) *ThingInteractor {
 	return &ThingInteractor{logger, publisher, thingProxy}

@@ -158,7 +158,7 @@ func TestUpdateData(t *testing.T) {
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendUpdateData", tc.idParam, tc.dataParam).
+				On("PublishUpdateData", tc.idParam, tc.dataParam).
 				Return(tc.fakePublisher.ReturnErr).
 				Maybe()
 

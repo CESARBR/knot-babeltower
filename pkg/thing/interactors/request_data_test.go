@@ -169,7 +169,7 @@ func TestGetData(t *testing.T) {
 				Return(tc.expectedThing, tc.expectedThingError).
 				Maybe()
 			tc.fakePublisher.
-				On("SendRequestData", tc.thingID, tc.sensorIds).
+				On("PublishRequestData", tc.thingID, tc.sensorIds).
 				Return(tc.expectedRequestDataResponse).
 				Maybe()
 		})

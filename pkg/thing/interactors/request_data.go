@@ -35,7 +35,7 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 		return err
 	}
 
-	err = i.clientPublisher.SendRequestData(thingID, sensorIds)
+	err = i.publisher.PublishRequestData(thingID, sensorIds)
 	if err != nil {
 		i.logger.Error(err)
 		return err

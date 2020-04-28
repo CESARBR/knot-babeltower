@@ -104,7 +104,7 @@ func TestUnregisterThing(t *testing.T) {
 				Return(tc.fakeThingProxy.ReturnErr).
 				Maybe()
 			tc.fakePublisher.
-				On("SendUnregisteredDevice", tc.idParam, tc.fakePublisher.Err).
+				On("PublishUnregisteredDevice", tc.idParam, tc.fakePublisher.Err).
 				Return(tc.fakePublisher.SendError).
 				Maybe()
 
