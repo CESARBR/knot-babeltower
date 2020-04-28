@@ -13,25 +13,20 @@ import (
 // and list registered devices, as can be seen on the documentation:
 // https://github.com/CESARBR/knot-babeltower/blob/master/docs/events.md
 const (
-	exchangeDevices       = "devices"
-	exchangeDevicesType   = "direct"
-	queueNameCommands     = "babeltower-command-messages"
-	bindingKeyAuthDevice  = "device.auth"
-	bindingKeyListDevices = "device.list"
-)
-
-const (
-	queueFogIn               = "fogIn-messages"
-	exchangeFogIn            = "fogIn"
-	exchangeTypeFogIn        = "topic"
-	queueConnOut             = "connOut-messages"
-	exchangeConnOut          = "connOut"
-	exchangeTypeConnOut      = "topic"
-	bindingKeyDevice         = "device.*"
-	bindingKeyPublishData    = "data.publish"
-	bindingKeyDataCommands   = "data.*"
-	bindingKeyDeviceCommands = "device.cmd.*"
-	bindingKeySchema         = "schema.*"
+	exchangeDevices            = "device"
+	exchangeDevicesType        = "direct"
+	exchangeDataSentType       = "fanout"
+	exchangeDataSent           = "data.sent"
+	queueNameCommands          = "babeltower-command-messages"
+	queueNameEvents            = "babeltower-event-messages"
+	bindingKeyAuthDevice       = "device.auth"
+	bindingKeyListDevices      = "device.list"
+	bindingKeyRegisterDevice   = "device.register"
+	bindingKeyUnregisterDevice = "device.unregister"
+	bindingKeyRequestData      = "data.request"
+	bindingKeyUpdateData       = "data.update"
+	bindingKeySchemaSent       = "device.schema.sent"
+	bindingKeyEmpty            = ""
 )
 
 // MsgHandler handle messages received from a service
@@ -76,19 +71,19 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 		err = mc.amqp.OnMessage(msgChan, queue, exchange, kind, key)
 	}
 
-	// Subscribe to messages received from any client
-	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyDevice)
-	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeySchema)
-	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyDeviceCommands)
-	subscribe(msgChan, queueFogIn, exchangeFogIn, exchangeTypeFogIn, bindingKeyPublishData)
-
-	// Subscribe to messages received from the connector service
-	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDataCommands)
-	subscribe(msgChan, queueConnOut, exchangeConnOut, exchangeTypeConnOut, bindingKeyDevice)
+	// Subscribe to general direct commands
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRegisterDevice)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUnregisterDevice)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRequestData)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUpdateData)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeySchemaSent)
 
 	// Subscribe to request-reply messages received from any client
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyAuthDevice)
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyListDevices)
+
+	// Subscribe to broadcasted data events
+	subscribe(msgChan, queueNameEvents, exchangeDataSent, exchangeDataSentType, bindingKeyEmpty)
 
 	return err
 }
@@ -106,12 +101,15 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 			continue
 		}
 
-		if msg.Exchange == exchangeFogIn {
+		if msg.RoutingKey == bindingKeyAuthDevice || msg.RoutingKey == bindingKeyListDevices {
+			// handling request-reply command messages, which requires specific validations such as if correlation_id was correctly received
+			err = mc.handleRequestReplyCommands(msg, token)
+		} else if msg.Exchange == exchangeDataSent {
+			// handling broadcasted data events
+			err = mc.handleBroadcastedData(msg, token)
+		} else {
+			// handling general direct commands
 			err = mc.handleClientMessages(msg, token)
-		} else if msg.Exchange == exchangeConnOut {
-			err = mc.handleConnectorMessages(msg, token)
-		} else if msg.Exchange == exchangeDevices {
-			err = mc.handleCommandMessages(msg, token)
 		}
 
 		if err != nil {
@@ -128,30 +126,18 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 		return mc.thingController.Register(msg.Body, token)
 	case "device.unregister":
 		return mc.thingController.Unregister(msg.Body, token)
-	case "schema.update":
+	case "device.schema.sent":
 		return mc.thingController.UpdateSchema(msg.Body, token)
-	case "data.publish":
-		return mc.thingController.PublishData(msg.Body, token)
-	}
-
-	return nil
-}
-
-func (mc *MsgHandler) handleConnectorMessages(msg network.InMsg, token string) error {
-
-	switch msg.RoutingKey {
 	case "data.request":
 		return mc.thingController.RequestData(msg.Body, token)
 	case "data.update":
 		return mc.thingController.UpdateData(msg.Body, token)
-	case "device.registered":
-		// Ignore message
 	}
 
 	return nil
 }
 
-func (mc *MsgHandler) handleCommandMessages(msg network.InMsg, token string) error {
+func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string) error {
 	corrID, ok := msg.Headers["correlation-id"].(string)
 	if !ok {
 		return errors.New("correlation ID not provided")
@@ -165,4 +151,8 @@ func (mc *MsgHandler) handleCommandMessages(msg network.InMsg, token string) err
 	}
 
 	return nil
+}
+
+func (mc *MsgHandler) handleBroadcastedData(msg network.InMsg, token string) error {
+	return mc.thingController.PublishData(msg.Body, token)
 }
