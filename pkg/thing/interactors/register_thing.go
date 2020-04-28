@@ -36,17 +36,7 @@ func (i *ThingInteractor) Register(authorization, id, name string) error {
 	token, err := i.thingProxy.Create(id, name, authorization)
 	sendErr := i.sendResponse(id, name, token, err)
 	if err != nil {
-		// it was not possible to create a thing, so returns without send request to connector
 		return fmt.Errorf("error registering thing: %w", sendErr)
-	}
-
-	err = i.connectorPublisher.SendRegisterDevice(id, name)
-	if err != nil {
-		if sendErr != nil {
-			// an error ocurred also on replying to client (on sendResponse method)
-			return fmt.Errorf("error sending request to connector: %v: %w", err, sendErr)
-		}
-		return fmt.Errorf("error sending request to connector: %w", err)
 	}
 
 	return sendErr
