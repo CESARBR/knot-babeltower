@@ -43,3 +43,9 @@ func (fp *FakePublisher) SendRequestData(thingID string, sensorIds []int) error 
 	args := fp.Called(thingID, sensorIds)
 	return args.Error(0)
 }
+
+// SendPublishedData provides a mock function to send a publish data command to connector
+func (fp *FakePublisher) SendPublishedData(id string, data []entities.Data) error {
+	ret := fp.Called(id, data)
+	return ret.Error(0)
+}
