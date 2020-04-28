@@ -10,13 +10,17 @@ import (
 )
 
 const (
-	exchangeDevices   = "device"
-	exchangeFogOut    = "fogOut"
-	registerOutKey    = "device.registered"
-	unregisterOutKey  = "device.unregistered"
-	schemaOutKey      = "schema.updated"
-	updateDataOutKey  = "data.update"
-	requestDataOutKey = "data.request"
+	exchangeDevices           = "device"
+	exchangeDevicesType       = "direct"
+	exchangeFogOut            = "fogOut"
+	exchangeFogOutType        = "topic"
+	exchangeDataPublished     = "data.published"
+	exchangeDataPublishedType = "fanout"
+	registerOutKey            = "device.registered"
+	unregisterOutKey          = "device.unregistered"
+	schemaOutKey              = "schema.updated"
+	updateDataOutKey          = "data.update"
+	requestDataOutKey         = "data.request"
 )
 
 // ClientPublisher is the interface with methods that the publisher should have
@@ -26,6 +30,7 @@ type ClientPublisher interface {
 	SendUpdatedSchema(thingID string, err error) error
 	SendUpdateData(thingID string, data []entities.Data) error
 	SendRequestData(thingID string, sensorIds []int) error
+	SendPublishedData(thingID string, data []entities.Data) error
 }
 
 // Sender represents the operations to send commands response
@@ -67,7 +72,7 @@ func (mp *msgClientPublisher) SendRegisteredDevice(thingID, token string, err er
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", registerOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, registerOutKey, msg)
 }
 
 // SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
@@ -81,7 +86,7 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) 
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", unregisterOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, unregisterOutKey, msg)
 }
 
 // SendUpdatedSchema sends the updated schema response
@@ -93,7 +98,7 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, err error) error
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", schemaOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, schemaOutKey, msg)
 }
 
 // SendRequestData sends request data command
@@ -104,7 +109,7 @@ func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) e
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", requestDataOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, requestDataOutKey, msg)
 }
 
 // SendUpdateData send update data command
@@ -115,7 +120,7 @@ func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Dat
 		return fmt.Errorf("message parsing error: %w", err)
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeFogOut, "topic", updateDataOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeFogOut, exchangeFogOutType, updateDataOutKey, msg)
 }
 
 // SendAuthResponse sends the auth thing status response
@@ -127,7 +132,7 @@ func (cs *commandSender) SendAuthResponse(thingID string, corrID string, err err
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, "direct", corrID, msg)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg)
 }
 
 // SendListResponse sends the list devices command response
@@ -139,7 +144,18 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID strin
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, "direct", corrID, msg)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg)
+}
+
+// SendUpdateData send update data command
+func (mp *msgClientPublisher) SendPublishedData(thingID string, data []entities.Data) error {
+	resp := &network.DataUpdate{ID: thingID, Data: data}
+	msg, err := json.Marshal(resp)
+	if err != nil {
+		return fmt.Errorf("message parsing error: %w", err)
+	}
+
+	return mp.amqp.PublishPersistentMessage(exchangeDataPublished, exchangeDataPublishedType, "", msg)
 }
 
 func getErrMsg(err error) *string {
