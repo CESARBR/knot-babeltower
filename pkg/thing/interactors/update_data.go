@@ -24,7 +24,7 @@ func (i *ThingInteractor) UpdateData(authorization, thingID string, data []entit
 		return fmt.Errorf("error validating thing's data: %w", err)
 	}
 
-	err = i.clientPublisher.SendUpdateData(thingID, data)
+	err = i.publisher.PublishUpdateData(thingID, data)
 	if err != nil {
 		return fmt.Errorf("error sending message to client: %w", err)
 	}

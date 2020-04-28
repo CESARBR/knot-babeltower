@@ -180,7 +180,7 @@ func TestUpdateSchema(t *testing.T) {
 				Maybe()
 
 			tc.fakePublisher.
-				On("SendUpdatedSchema", tc.thingID, tc.schemaList, tc.err).
+				On("PublishUpdatedSchema", tc.thingID, tc.schemaList, tc.err).
 				Return(tc.expectedErr).
 				Maybe()
 

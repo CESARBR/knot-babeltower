@@ -21,14 +21,14 @@ const (
 	requestDataKey            = "data.request"
 )
 
-// ClientPublisher provides methods to send events to the clients
-type ClientPublisher interface {
-	SendRegisteredDevice(thingID, name, token string, err error) error
-	SendUnregisteredDevice(thingID string, err error) error
-	SendUpdatedSchema(thingID string, schema []entities.Schema, err error) error
-	SendUpdateData(thingID string, data []entities.Data) error
-	SendRequestData(thingID string, sensorIds []int) error
-	SendPublishedData(thingID string, data []entities.Data) error
+// Publisher provides methods to send events to the clients
+type Publisher interface {
+	PublishRegisteredDevice(thingID, name, token string, err error) error
+	PublishUnregisteredDevice(thingID string, err error) error
+	PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error
+	PublishUpdateData(thingID string, data []entities.Data) error
+	PublishRequestData(thingID string, sensorIds []int) error
+	PublishPublishedData(thingID string, data []entities.Data) error
 }
 
 // Sender represents the operations to send commands response
@@ -50,7 +50,7 @@ type commandSender struct {
 }
 
 // NewMsgClientPublisher constructs the msgClientPublisher
-func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) ClientPublisher {
+func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) Publisher {
 	return &msgClientPublisher{logger, amqp}
 }
 
@@ -59,8 +59,8 @@ func NewCommandSender(logger logging.Logger, amqp *network.Amqp) Sender {
 	return &commandSender{logger, amqp}
 }
 
-// SendRegisterDevice publishes the registered device's credentials to the device registration queue
-func (mp *msgClientPublisher) SendRegisteredDevice(thingID, name, token string, err error) error {
+// PublishRegisterDevice publishes the registered device's credentials to the device registration queue
+func (mp *msgClientPublisher) PublishRegisteredDevice(thingID, name, token string, err error) error {
 	mp.logger.Debug("sending registered message")
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceRegisteredResponse{ID: thingID, Name: name, Token: token, Error: errMsg}
@@ -73,8 +73,8 @@ func (mp *msgClientPublisher) SendRegisteredDevice(thingID, name, token string, 
 	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, registerOutKey, msg)
 }
 
-// SendUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
-func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) error {
+// PublishUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
+func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID string, err error) error {
 	mp.logger.Debug("sending unregistered message")
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceUnregisteredResponse{ID: thingID, Error: errMsg}
@@ -87,8 +87,8 @@ func (mp *msgClientPublisher) SendUnregisteredDevice(thingID string, err error) 
 	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, unregisterOutKey, msg)
 }
 
-// SendUpdatedSchema sends the updated schema response
-func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, schema []entities.Schema, err error) error {
+// PublishUpdatedSchema sends the updated schema response
+func (mp *msgClientPublisher) PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error {
 	errMsg := getErrMsg(err)
 	resp := &network.SchemaUpdatedResponse{ID: thingID, Schema: schema, Error: errMsg}
 	msg, err := json.Marshal(resp)
@@ -99,8 +99,8 @@ func (mp *msgClientPublisher) SendUpdatedSchema(thingID string, schema []entitie
 	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, schemaOutKey, msg)
 }
 
-// SendRequestData sends request data command
-func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) error {
+// PublishRequestData sends request data command
+func (mp *msgClientPublisher) PublishRequestData(thingID string, sensorIds []int) error {
 	resp := &network.DataRequest{ID: thingID, SensorIds: sensorIds}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -111,8 +111,8 @@ func (mp *msgClientPublisher) SendRequestData(thingID string, sensorIds []int) e
 	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg)
 }
 
-// SendUpdateData send update data command
-func (mp *msgClientPublisher) SendUpdateData(thingID string, data []entities.Data) error {
+// PublishUpdateData send update data command
+func (mp *msgClientPublisher) PublishUpdateData(thingID string, data []entities.Data) error {
 	resp := &network.DataUpdate{ID: thingID, Data: data}
 	msg, err := json.Marshal(resp)
 	if err != nil {
@@ -147,8 +147,8 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID strin
 	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg)
 }
 
-// SendUpdateData send update data command
-func (mp *msgClientPublisher) SendPublishedData(thingID string, data []entities.Data) error {
+// PublishUpdateData send update data command
+func (mp *msgClientPublisher) PublishPublishedData(thingID string, data []entities.Data) error {
 	resp := &network.DataUpdate{ID: thingID, Data: data}
 	msg, err := json.Marshal(resp)
 	if err != nil {
