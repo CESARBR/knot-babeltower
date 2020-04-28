@@ -108,7 +108,7 @@ func TestUnregisterThing(t *testing.T) {
 				Return(tc.fakePublisher.SendError).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, nil)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
 			err := thingInteractor.Unregister(tc.authParam, tc.idParam)
 
 			if err != nil {
