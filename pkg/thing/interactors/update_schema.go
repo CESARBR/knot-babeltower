@@ -80,13 +80,6 @@ func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList
 	}
 	i.logger.Info("updateSchema: message sent to client")
 
-	err = i.connectorPublisher.SendUpdateSchema(thingID, schemaList)
-	if err != nil {
-		// TODO: handle error when publishing message to queue.
-		return err
-	}
-	i.logger.Info("updateSchema: message sent to connector")
-
 	return nil
 }
 
