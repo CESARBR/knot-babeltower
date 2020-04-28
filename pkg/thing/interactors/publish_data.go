@@ -23,9 +23,9 @@ func (i *ThingInteractor) PublishData(authorization, thingID string, data []enti
 		return fmt.Errorf("error validating thing's data: %w", err)
 	}
 
-	err = i.connectorPublisher.SendPublishData(thingID, data)
+	err = i.clientPublisher.SendPublishedData(thingID, data)
 	if err != nil {
-		return fmt.Errorf("error sending message to connector: %w", err)
+		return fmt.Errorf("error sending message to client: %w", err)
 	}
 
 	i.logger.Info("publish data message successfully sent")
