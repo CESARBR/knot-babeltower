@@ -22,13 +22,7 @@ func (i *ThingInteractor) Unregister(authorization, id string) error {
 		return err
 	}
 
-	sendErr := i.connectorPublisher.SendUnregisterDevice(id)
-	if sendErr != nil {
-		// TODO handle error at sending unregister message to connector
-		i.logger.Error(sendErr)
-	}
-
-	sendErr = i.clientPublisher.SendUnregisteredDevice(id, nil)
+	sendErr := i.clientPublisher.SendUnregisteredDevice(id, nil)
 	if sendErr != nil {
 		return sendErr
 	}
