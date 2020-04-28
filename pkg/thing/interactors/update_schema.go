@@ -61,19 +61,19 @@ func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList
 	}
 
 	if !i.isValidSchema(schemaList) {
-		err := i.notifyClient(thingID, ErrSchemaInvalid)
+		err := i.notifyClient(thingID, schemaList, ErrSchemaInvalid)
 		return err
 	}
 	i.logger.Info("updateSchema: schema validated")
 
 	err := i.thingProxy.UpdateSchema(authorization, thingID, schemaList)
 	if err != nil {
-		sendErr := i.notifyClient(thingID, err)
+		sendErr := i.notifyClient(thingID, schemaList, err)
 		return sendErr
 	}
 	i.logger.Info("updateSchema: schema updated")
 
-	err = i.notifyClient(thingID, err)
+	err = i.notifyClient(thingID, schemaList, err)
 	if err != nil {
 		// TODO: handle error when publishing message to queue.
 		return err
@@ -103,8 +103,8 @@ func (i *ThingInteractor) isValidSchema(schemaList []entities.Schema) bool {
 	return true
 }
 
-func (i *ThingInteractor) notifyClient(thingID string, err error) error {
-	sendErr := i.clientPublisher.SendUpdatedSchema(thingID, err)
+func (i *ThingInteractor) notifyClient(thingID string, schemaList []entities.Schema, err error) error {
+	sendErr := i.clientPublisher.SendUpdatedSchema(thingID, schemaList, err)
 	if sendErr != nil {
 		if err != nil {
 			return fmt.Errorf("error sending response to client: %v: %w", sendErr, err)
