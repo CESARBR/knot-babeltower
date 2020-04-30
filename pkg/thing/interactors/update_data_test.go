@@ -135,7 +135,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 	},
 	{
 		"message successfuly send to client exchange",
-		"authorization token",
+		"authorization-token",
 		"thing-id",
 		[]entities.Data{entities.Data{SensorID: 0, Value: float64(5)}},
 		&mocks.FakeLogger{},

@@ -22,7 +22,7 @@ type AuthThingTestCase struct {
 
 var atCases = []AuthThingTestCase{
 	{
-		"authorization key not provided",
+		"authorization token not provided",
 		"",
 		"8380ba096a091fb9",
 		ErrAuthNotProvided,

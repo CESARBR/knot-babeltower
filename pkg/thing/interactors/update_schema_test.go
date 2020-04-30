@@ -33,7 +33,7 @@ type UpdateSchemaTestCase struct {
 var tCases = []UpdateSchemaTestCase{
 	{
 		"schema successfully updated on the thing's proxy",
-		"authorization token",
+		"authorization-token",
 		"19cf40c23012ce1c",
 		nil,
 		[]entities.Schema{
@@ -54,7 +54,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"failed to update the schema on the thing's proxy",
-		"authorization token",
+		"authorization-token",
 		"29cf40c23012ce1c",
 		errThingProxyFailed,
 		[]entities.Schema{
@@ -75,7 +75,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"schema response successfully sent",
-		"authorization token",
+		"authorization-token",
 		"39cf40c23012ce1c",
 		nil,
 		[]entities.Schema{
@@ -96,7 +96,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"failed to send updated schema response",
-		"authorization token",
+		"authorization-token",
 		"49cf40c23012ce1c",
 		errPublisherClientFailed,
 		[]entities.Schema{
@@ -117,7 +117,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"failed to send update schema to connector",
-		"authorization token",
+		"authorization-token",
 		"59cf40c23012ce1c",
 		errPublisherConnectorFailed,
 		[]entities.Schema{
@@ -138,7 +138,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"invalid schema type ID",
-		"authorization token",
+		"authorization-token",
 		"69cf40c23012ce1c",
 		errSchemaInvalid,
 		[]entities.Schema{
@@ -159,7 +159,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"invalid schema unit",
-		"authorization token",
+		"authorization-token",
 		"79cf40c23012ce1c",
 		errSchemaInvalid,
 		[]entities.Schema{
@@ -180,7 +180,7 @@ var tCases = []UpdateSchemaTestCase{
 	},
 	{
 		"invalid schema name",
-		"authorization token",
+		"authorization-token",
 		"89cf40c23012ce1c",
 		errSchemaInvalid,
 		[]entities.Schema{

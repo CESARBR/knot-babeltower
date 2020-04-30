@@ -24,7 +24,7 @@ type listThingsTestCase struct {
 
 var ltCases = []listThingsTestCase{
 	{
-		"authorization key not passed",
+		"authorization token not provided",
 		"",
 		ErrAuthNotProvided,
 		[]*entities.Thing{},
@@ -37,7 +37,7 @@ var ltCases = []listThingsTestCase{
 	},
 	{
 		"failed to list things from thing's service",
-		"authorization token",
+		"authorization-token",
 		errors.New("thing's service unavailable"),
 		[]*entities.Thing{},
 		errors.New("thing's service unavailable"),
@@ -49,7 +49,7 @@ var ltCases = []listThingsTestCase{
 	},
 	{
 		"things successfully published to message queue",
-		"authorization token",
+		"authorization-token",
 		nil,
 		[]*entities.Thing{},
 		nil,
@@ -61,7 +61,7 @@ var ltCases = []listThingsTestCase{
 	},
 	{
 		"failed to publish list things response",
-		"authorization key",
+		"authorization-token",
 		errors.New("message queue unavailable"),
 		[]*entities.Thing{},
 		nil,

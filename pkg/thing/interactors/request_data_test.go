@@ -24,7 +24,7 @@ type GetDataTestCase struct {
 
 var gdCases = []GetDataTestCase{
 	{
-		"authorization key not provided",
+		"authorization token not provided",
 		"",
 		"",
 		nil,
@@ -36,8 +36,8 @@ var gdCases = []GetDataTestCase{
 		&mocks.FakePublisher{},
 	},
 	{
-		"failed to authenticate with provided key",
-		"authorization-key",
+		"failed to authenticate with provided token",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		nil,
 		nil,
@@ -49,7 +49,7 @@ var gdCases = []GetDataTestCase{
 	},
 	{
 		"thing doesn't exists on thing's service",
-		"authorization-key",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		nil,
 		nil,
@@ -61,7 +61,7 @@ var gdCases = []GetDataTestCase{
 	},
 	{
 		"thing successfully obtained from the thing's service",
-		"authorization-key",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		[]int{2},
 		&entities.Thing{
@@ -86,7 +86,7 @@ var gdCases = []GetDataTestCase{
 	},
 	{
 		"thing hasn't schema for the requested sensor",
-		"authorization-key",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		[]int{1}, // the sensor id 1 can't be mapped to thing's schema
 		&entities.Thing{
@@ -111,7 +111,7 @@ var gdCases = []GetDataTestCase{
 	},
 	{
 		"failed to send quest data command to message queue",
-		"authorization key",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		[]int{1},
 		&entities.Thing{
@@ -136,7 +136,7 @@ var gdCases = []GetDataTestCase{
 	},
 	{
 		"request data command successfully sent",
-		"authorization key",
+		"authorization-token",
 		"fc3fcf912d0c290a",
 		[]int{1},
 		&entities.Thing{

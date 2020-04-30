@@ -21,7 +21,7 @@ type UnregisterThingTestCase struct {
 
 var unregisterAtCases = []UnregisterThingTestCase{
 	{
-		"authorization key not provided",
+		"authorization token not provided",
 		"",
 		"thing-id",
 		&mocks.FakeLogger{},
