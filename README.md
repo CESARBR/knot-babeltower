@@ -1,7 +1,7 @@
 # KNoT Babeltower
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9140aa8c06934071ad6e3cf3b1b148ff)](https://www.codacy.com/manual/joaoaneto/knot-babeltower?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CESARBR/knot-babeltower&amp;utm_campaign=Badge_Grade)
-
+![Build and test](https://github.com/cesarbr/knot-babeltower/workflows/Build%20and%20test/badge.svg)
 ## Contents
 
 - [Basic installation and usage](#basic-installation-and-usage)
