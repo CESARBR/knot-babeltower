@@ -70,8 +70,8 @@ type DataUpdate struct {
 	Data []entities.Data `json:"data"`
 }
 
-// DataPublish represents the incoming publish data command
-type DataPublish struct {
+// DataSent represents the data received from the things
+type DataSent struct {
 	ID   string          `json:"id"`
 	Data []entities.Data `json:"data"`
 }

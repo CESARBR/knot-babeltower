@@ -144,7 +144,7 @@ func (mc *ThingController) UpdateData(body []byte, authorization string) error {
 
 // PublishData handles the publish data request and execute its use case
 func (mc *ThingController) PublishData(body []byte, authorization string) error {
-	msg := network.DataPublish{}
+	msg := network.DataSent{}
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return fmt.Errorf("message body parsing error: %w", err)
