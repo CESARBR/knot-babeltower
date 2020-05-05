@@ -122,15 +122,15 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) error {
 
 	switch msg.RoutingKey {
-	case "device.register":
+	case bindingKeyRegisterDevice:
 		return mc.thingController.Register(msg.Body, token)
-	case "device.unregister":
+	case bindingKeyUnregisterDevice:
 		return mc.thingController.Unregister(msg.Body, token)
-	case "device.schema.sent":
+	case bindingKeySchemaSent:
 		return mc.thingController.UpdateSchema(msg.Body, token)
-	case "data.request":
+	case bindingKeyRequestData:
 		return mc.thingController.RequestData(msg.Body, token)
-	case "data.update":
+	case bindingKeyUpdateData:
 		return mc.thingController.UpdateData(msg.Body, token)
 	}
 
@@ -144,9 +144,9 @@ func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string
 	}
 
 	switch msg.RoutingKey {
-	case "device.auth":
+	case bindingKeyAuthDevice:
 		return mc.thingController.AuthDevice(msg.Body, token, corrID)
-	case "device.list":
+	case bindingKeyListDevices:
 		return mc.thingController.ListDevices(token, corrID)
 	}
 
