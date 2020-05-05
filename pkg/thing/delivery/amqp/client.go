@@ -28,7 +28,7 @@ type Publisher interface {
 	PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error
 	PublishUpdateData(thingID string, data []entities.Data) error
 	PublishRequestData(thingID string, sensorIds []int) error
-	PublishPublishedData(thingID string, data []entities.Data) error
+	PublishPublishedData(thingID, token string, data []entities.Data) error
 }
 
 // Sender represents the operations to send commands response
@@ -70,7 +70,7 @@ func (mp *msgClientPublisher) PublishRegisteredDevice(thingID, name, token strin
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, registerOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, registerOutKey, msg, nil)
 }
 
 // PublishUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
@@ -84,7 +84,7 @@ func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID string, err erro
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, unregisterOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, unregisterOutKey, msg, nil)
 }
 
 // PublishUpdatedSchema sends the updated schema response
@@ -96,7 +96,7 @@ func (mp *msgClientPublisher) PublishUpdatedSchema(thingID string, schema []enti
 		return err
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, schemaOutKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, schemaOutKey, msg, nil)
 }
 
 // PublishRequestData sends request data command
@@ -108,7 +108,7 @@ func (mp *msgClientPublisher) PublishRequestData(thingID string, sensorIds []int
 	}
 
 	routingKey := "device." + thingID + "." + requestDataKey
-	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg, nil)
 }
 
 // PublishUpdateData send update data command
@@ -120,7 +120,7 @@ func (mp *msgClientPublisher) PublishUpdateData(thingID string, data []entities.
 	}
 
 	routingKey := "device." + thingID + "." + updateDataKey
-	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, routingKey, msg, nil)
 }
 
 // SendAuthResponse sends the auth thing status response
@@ -132,7 +132,7 @@ func (cs *commandSender) SendAuthResponse(thingID string, corrID string, err err
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg, nil)
 }
 
 // SendListResponse sends the list devices command response
@@ -144,18 +144,21 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID strin
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg, nil)
 }
 
 // PublishUpdateData send update data command
-func (mp *msgClientPublisher) PublishPublishedData(thingID string, data []entities.Data) error {
-	resp := &network.DataUpdate{ID: thingID, Data: data}
+func (mp *msgClientPublisher) PublishPublishedData(thingID, token string, data []entities.Data) error {
+	resp := &network.DataSent{ID: thingID, Data: data}
+	headers := map[string]interface{}{
+		"Authorization": token,
+	}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return fmt.Errorf("message parsing error: %w", err)
 	}
 
-	return mp.amqp.PublishPersistentMessage(exchangeDataPublished, exchangeDataPublishedType, "", msg)
+	return mp.amqp.PublishPersistentMessage(exchangeDataPublished, exchangeDataPublishedType, "", msg, headers)
 }
 
 func getErrMsg(err error) *string {

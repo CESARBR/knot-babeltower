@@ -56,7 +56,7 @@ func (a *Amqp) Stop() {
 }
 
 // PublishPersistentMessage sends a persistent message to RabbitMQ
-func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, body []byte) error {
+func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, body []byte, headers amqp.Table) error {
 	err := a.declareExchange(exchange, exchangeType)
 	if err != nil {
 		a.logger.Error(err)
@@ -69,7 +69,7 @@ func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, body
 		false, // mandatory
 		false, // immediate
 		amqp.Publishing{
-			Headers:         amqp.Table{},
+			Headers:         headers,
 			ContentType:     "text/plain",
 			ContentEncoding: "",
 			Body:            body,
