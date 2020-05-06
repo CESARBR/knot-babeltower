@@ -8,11 +8,11 @@ This document describes the events `babeltower` is able to receive and send. The
   - [device.register](#device-register)
   - [device.unregister](#device-unregister)
   - [device.schema.sent](#device-schema-sent)
+  - [device.list](#device-list)
+  - [device.auth](#device-auth)
   - [data.sent](#data-sent)
   - [data.request](#data-request)
   - [data.update](#data-update)
-  - [device.list](#device-list)
-  - [device.auth](#device-auth)
 
 - [Subscribe](#Subscribe) (external clients can subscribe to):
   - [device.registered](#device-registered)
@@ -109,6 +109,60 @@ Event-command to remove a thing from the things registry. The operation response
 
 </details>
 
+### **device.schema.sent** <a name="device-schema-sent"></a>
+
+Event that represents a device sending its schema to the services that are interested. After receiving this event, `babeltower` updates the thing's schema on the registry and send a [`device.schema.updated`](#device-schema-updated) event.
+
+<details>
+  <summary>Headers</summary>
+
+  - `token` **String** user's token
+
+</details>
+
+<details>
+  <summary>Payload</summary>
+
+  JSON in the following format:
+
+  - `id` **String** thing's ID
+  - `schema` **Array** schema items, each one formed by:
+    - `sensorId` **Number** sensor ID
+    - `typeId` **Number** semantic value type (voltage, current, temperature, etc)
+    - `valueType` **Number** data value type (boolean, integer, etc)
+    - `unit` **Number** sensor unit (V, A, W, etc)
+    - `name` **String** sensor name
+
+  The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html).
+
+  Example:
+
+  ```json
+  {
+    "id": "fbe64efa6c7f717e",
+    "schema": [{
+      "sensorId": 1,
+      "typeId": 0xFFF1,
+      "valueType": 3,
+      "unit": 0,
+      "name": "Door lock"
+    }]
+  }
+  ```
+</details>
+
+<details>
+  <summary>AMQP Binding</summary>
+
+  - Exchange:
+    - Type: direct
+    - Name: device
+    - Durable: `true`
+    - Auto-delete: `false`
+  - Routing key: device.schema.sent
+
+</details>
+
 ### **device.list** <a name="device-list"></a>
 
 Event-command to list the registered things. It follows the request/reply pattern. After obtaining the things, `babeltower` will send a reply message by using the `correlation_id` property, which wass received in the request header, as reply message's `routing_key`. Because of that, considering the **requestor** has created and sent this `correlation_id` in the request, it can also subscribe to receive events that arrive with a `routing_key` equivalent to the `correlation_id`. Therefore, the reply is received by the application that has sent the request, in a **one-to-one** manner.
@@ -190,60 +244,6 @@ Event-command to verify if a thing is authenticated based on its credentials. It
     - Durable: `true`
     - Auto-delete: `false`
   - Routing key: `correlation_id`
-
-</details>
-
-### **device.schema.sent** <a name="device-schema-sent"></a>
-
-Event that represents a device sending its schema to the services that are interested. After receiving this event, `babeltower` updates the thing's schema on the registry and send a [`device.schema.updated`](#device-schema-updated) event.
-
-<details>
-  <summary>Headers</summary>
-
-  - `token` **String** user's token
-
-</details>
-
-<details>
-  <summary>Payload</summary>
-
-  JSON in the following format:
-
-  - `id` **String** thing's ID
-  - `schema` **Array** schema items, each one formed by:
-    - `sensorId` **Number** sensor ID
-    - `valueType` **Number** semantic value type (voltage, current, temperature, etc)
-    - `unit` **Number** sensor unit (V, A, W, W, etc)
-    - `typeId` **Number** data value type (boolean, integer, etc)
-    - `name` **String** sensor name
-
-  The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html?highlight=typeid).
-
-  Example:
-
-  ```json
-  {
-    "id": "fbe64efa6c7f717e",
-    "schema": [{
-      "sensorId": 1,
-      "valueType": 0xFFF1,
-      "unit": 0,
-      "typeId": 3,
-      "name": "Door lock"
-    }]
-  }
-  ```
-</details>
-
-<details>
-  <summary>AMQP Binding</summary>
-
-  - Exchange:
-    - Type: direct
-    - Name: device
-    - Durable: `true`
-    - Auto-delete: `false`
-  - Routing key: device.schema.sent
 
 </details>
 
