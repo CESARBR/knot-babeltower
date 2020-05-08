@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	shared "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
@@ -71,8 +70,8 @@ func TestCreateUser(t *testing.T) {
 			"123",
 			&FakeCreateUserLogger{},
 			&FakeUserProxy{},
-			shared.ErrEntityExists{Msg: "user exists"},
-			shared.ErrEntityExists{Msg: "mocked msg"},
+			entities.ErrUserExists,
+			entities.ErrUserExists,
 		},
 	}
 

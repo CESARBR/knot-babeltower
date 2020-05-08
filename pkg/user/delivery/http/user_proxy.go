@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	shared "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
@@ -55,12 +54,7 @@ func (p *Proxy) Create(user entities.User) (err error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusConflict {
-		msg := fmt.Sprintf("user %s exists", user.Email)
-		return shared.ErrEntityExists{Msg: msg}
-	}
-
-	return nil
+	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
 // CreateToken genereates a token for the specified user
@@ -79,8 +73,9 @@ func (p *Proxy) CreateToken(user entities.User) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusForbidden {
-		return "", entities.ErrInvalidCredentials{Msg: "invalid credentials"}
+	err = p.mapErrorFromStatusCode(resp.StatusCode)
+	if err != nil {
+		return "", err
 	}
 
 	tr := &TokenResponse{}
@@ -91,4 +86,19 @@ func (p *Proxy) CreateToken(user entities.User) (string, error) {
 	}
 
 	return tr.Token, nil
+}
+
+func (p *Proxy) mapErrorFromStatusCode(code int) error {
+	var err error
+
+	if code != http.StatusCreated {
+		switch code {
+		case http.StatusForbidden:
+			err = entities.ErrUserForbidden
+		case http.StatusConflict:
+			err = entities.ErrUserExists
+		}
+	}
+
+	return err
 }
