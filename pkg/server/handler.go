@@ -29,6 +29,14 @@ const (
 	bindingKeyEmpty            = ""
 )
 
+var (
+	errMissingChannel       = errors.New("missing channel")
+	errMissingMsgChannel    = errors.New("missing message channel")
+	errAuthorizationToken   = errors.New("authorization token not provided")
+	errUnsupportedMsg       = errors.New("unsupported message")
+	errUnexpectedRoutingKey = errors.New("unexpected routing key")
+)
+
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
 	logger          logging.Logger
@@ -43,18 +51,40 @@ func NewMsgHandler(logger logging.Logger, amqp network.AmqpReceiver, thingContro
 
 // Start starts to listen messages
 func (mc *MsgHandler) Start(started chan bool) {
+	err := mc.start(started, make(chan network.InMsg))
+	if err != nil {
+		mc.logger.Error(err)
+	}
+}
+
+func (mc *MsgHandler) start(started chan bool, msgChan chan network.InMsg) error {
 	mc.logger.Debug("message handler started")
-	msgChan := make(chan network.InMsg)
+	if started == nil {
+		return errMissingChannel
+	}
+
+	if msgChan == nil {
+		return errMissingMsgChannel
+	}
+
 	err := mc.subscribeToMessages(msgChan)
 	if err != nil {
 		mc.logger.Error(err)
 		started <- false
-		return
+		return err
 	}
 
-	go mc.onMsgReceived(msgChan)
+	go func() {
+		for {
+			err := mc.onMsgReceived(msgChan)
+			if err != nil {
+				mc.logger.Error(err)
+			}
+		}
+	}()
 
 	started <- true
+	return nil
 }
 
 // Stop stops to listen for messages
@@ -88,35 +118,32 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	return err
 }
 
-func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
-	for {
-		var err error
-		msg := <-msgChan
-		mc.logger.Infof("exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
-		mc.logger.Infof("message received: %s", string(msg.Body))
+func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) (err error) {
+	msg := <-msgChan
+	mc.logger.Infof("exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
+	mc.logger.Infof("message received: %s", string(msg.Body))
 
-		token, ok := msg.Headers["Authorization"].(string)
-		if !ok {
-			mc.logger.Error(errors.New("authorization token not provided"))
-			continue
-		}
-
-		if msg.RoutingKey == bindingKeyAuthDevice || msg.RoutingKey == bindingKeyListDevices {
-			// handling request-reply command messages, which requires specific validations such as if reply_to was correctly received
-			err = mc.handleRequestReplyCommands(msg, token)
-		} else if msg.Exchange == exchangeDataSent {
-			// handling broadcasted data events
-			err = mc.handleBroadcastedData(msg, token)
-		} else {
-			// handling general direct commands
-			err = mc.handleClientMessages(msg, token)
-		}
-
-		if err != nil {
-			mc.logger.Error(err)
-			continue
-		}
+	token, ok := msg.Headers["Authorization"].(string)
+	if !ok {
+		return errAuthorizationToken
 	}
+
+	if msg.Exchange != exchangeDataSent && msg.Exchange != exchangeDevices {
+		return errUnsupportedMsg
+	}
+
+	if msg.RoutingKey == bindingKeyAuthDevice || msg.RoutingKey == bindingKeyListDevices {
+		// handling request-reply command messages, which requires specific validations such as if correlation_id was correctly received
+		err = mc.handleRequestReplyCommands(msg, token)
+	} else if msg.Exchange == exchangeDataSent {
+		// handling broadcasted data events
+		err = mc.handleBroadcastedData(msg, token)
+	} else {
+		// handling general direct commands
+		err = mc.handleClientMessages(msg, token)
+	}
+
+	return err
 }
 
 func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) error {
@@ -132,9 +159,9 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 		return mc.thingController.RequestData(msg.Body, token)
 	case bindingKeyUpdateData:
 		return mc.thingController.UpdateData(msg.Body, token)
+	default:
+		return errUnexpectedRoutingKey
 	}
-
-	return nil
 }
 
 func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string) error {
