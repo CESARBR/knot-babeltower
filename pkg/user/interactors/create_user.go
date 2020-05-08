@@ -19,11 +19,9 @@ func NewCreateUser(logger logging.Logger, userProxy http.UserProxy) *CreateUser 
 
 // Execute runs the use case
 func (cu *CreateUser) Execute(user entities.User) (err error) {
-	cu.logger.Debug("executing Create User interactor")
-
 	err = cu.userProxy.Create(user)
 	if err != nil {
-		cu.logger.Errorf("send request error: %s", err.Error())
+		cu.logger.Errorf("failed to create a new user: %s", err.Error())
 	}
 
 	return err

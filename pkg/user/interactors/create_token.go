@@ -23,7 +23,7 @@ func NewCreateToken(logger logging.Logger, userProxy http.UserProxy) *CreateToke
 func (ct *CreateToken) Execute(user entities.User) (token string, err error) {
 	token, err = ct.userProxy.CreateToken(user)
 	if err != nil {
-		ct.logger.Errorf("send request error: %s", err.Error())
+		ct.logger.Errorf("failed to create an user's token: %s", err.Error())
 		return "", err
 	}
 
