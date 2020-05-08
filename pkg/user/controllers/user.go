@@ -6,7 +6,6 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 
-	shared "github.com/CESARBR/knot-babeltower/pkg/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/user/interactors"
 )
@@ -127,11 +126,11 @@ func (uc *UserController) writeResponse(w http.ResponseWriter, statusCode int, m
 }
 
 func mapErrorToStatusCode(err error) int {
-	switch err.(type) {
-	case shared.ErrEntityExists:
-		return http.StatusConflict
-	case entities.ErrInvalidCredentials:
+	switch err {
+	case entities.ErrUserForbidden:
 		return http.StatusForbidden
+	case entities.ErrUserExists:
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}
