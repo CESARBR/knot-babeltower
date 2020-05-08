@@ -131,6 +131,8 @@ func mapErrorToStatusCode(err error) int {
 		return http.StatusForbidden
 	case entities.ErrUserExists:
 		return http.StatusConflict
+	case entities.ErrUserBadRequest:
+		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}

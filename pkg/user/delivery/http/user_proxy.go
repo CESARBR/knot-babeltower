@@ -97,6 +97,8 @@ func (p *Proxy) mapErrorFromStatusCode(code int) error {
 			err = entities.ErrUserForbidden
 		case http.StatusConflict:
 			err = entities.ErrUserExists
+		case http.StatusBadRequest:
+			err = entities.ErrUserBadRequest
 		}
 	}
 
