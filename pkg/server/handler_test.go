@@ -334,3 +334,109 @@ func TestOnMsgReceived(t *testing.T) {
 		})
 	}
 }
+
+func TestSubscribeToMessagesCalls(t *testing.T) {
+	type fields struct {
+		logger          logging.Logger
+		amqp            *mocks.FakeAmqpReceiver
+		thingController *mocks.FakeController
+	}
+	type mockArgs struct {
+		queue          string
+		exchange       string
+		exchangeType   string
+		key            string
+		expectedReturn error
+	}
+	type args struct {
+		msgChan       chan network.InMsg
+		subscribeArgs []mockArgs
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		expectedErr  bool
+		verifyCalled bool
+	}{
+		{
+			"Happy path correct call",
+			fields{
+				&mocks.FakeLogger{},
+				&mocks.FakeAmqpReceiver{},
+				&mocks.FakeController{},
+			},
+			args{
+				make(chan network.InMsg),
+				[]mockArgs{
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRegisterDevice, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUnregisterDevice, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRequestData, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUpdateData, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeySchemaSent, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyAuthDevice, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyListDevices, nil},
+					{queueNameEvents, exchangeDataSent, exchangeDataSentType, bindingKeyEmpty, nil},
+				},
+			},
+			false,
+			true,
+		},
+		{
+			"when first subscribe mock returns error should return error and not call the other subscribes",
+			fields{
+				&mocks.FakeLogger{},
+				&mocks.FakeAmqpReceiver{},
+				&mocks.FakeController{},
+			},
+			args{
+				make(chan network.InMsg),
+				[]mockArgs{
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRegisterDevice, errors.New("missing routing key argument on subscribe")},
+				},
+			},
+			true,
+			true,
+		},
+		{
+			"when any middle subscribe mock returns error should return error and not call the following subscribes",
+			fields{
+				&mocks.FakeLogger{},
+				&mocks.FakeAmqpReceiver{},
+				&mocks.FakeController{},
+			},
+			args{
+				make(chan network.InMsg),
+				[]mockArgs{
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRegisterDevice, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUnregisterDevice, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRequestData, nil},
+					{queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUpdateData, errors.New("missing routing key argument on subscribe")},
+				},
+			},
+			true,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := &MsgHandler{
+				logger:          tt.fields.logger,
+				amqp:            tt.fields.amqp,
+				thingController: tt.fields.thingController,
+			}
+			if tt.verifyCalled {
+				for _, item := range tt.args.subscribeArgs {
+					tt.fields.amqp.On("OnMessage", tt.args.msgChan, item.queue, item.exchange, item.exchangeType, item.key).Once().Return(item.expectedReturn)
+				}
+			}
+			if err := mc.subscribeToMessages(tt.args.msgChan); (err != nil) != tt.expectedErr {
+				t.Errorf("MsgHandler.subscribeToMessages() error = %v, expectedErr %v", err, tt.expectedErr)
+			}
+
+			if tt.verifyCalled {
+				tt.fields.amqp.AssertExpectations(t)
+			}
+		})
+	}
+}
