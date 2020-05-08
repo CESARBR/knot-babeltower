@@ -11,28 +11,27 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
-// UserProxy proxy a request to the user service interface
+// UserProxy represents the interface to the user's proxy operations
 type UserProxy interface {
 	Create(user entities.User) (err error)
 	CreateToken(user entities.User) (string, error)
 }
 
-// Proxy proxy a request to the user service
+// Proxy is responsible for implementing the user's proxy operations
 type Proxy struct {
 	url    string
 	logger logging.Logger
 }
 
-// TokenResponse represents the creating token response from the users service
+// TokenResponse represents the create token response from the user's service
 type TokenResponse struct {
 	Token string `json:"token"`
 }
 
-// NewUserProxy creates a proxy to the users service
+// NewUserProxy creates a new Proxy instance
 func NewUserProxy(logger logging.Logger, hostname string, port uint16) *Proxy {
 	url := fmt.Sprintf("http://%s:%d", hostname, port)
-
-	logger.Debug("proxy setup to " + url)
+	logger.Debug("user proxy configured to " + url)
 	return &Proxy{url, logger}
 }
 
@@ -57,17 +56,17 @@ func (p *Proxy) Create(user entities.User) (err error) {
 	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
-// CreateToken genereates a token for the specified user
+// CreateToken creates a valid token for the specified user
 func (p *Proxy) CreateToken(user entities.User) (string, error) {
 	var resp *http.Response
 
-	parsedCredentials, err := json.Marshal(user)
+	credentials, err := json.Marshal(user)
 	if err != nil {
 		return "", err
 	}
 
 	client := &http.Client{}
-	resp, err = client.Post(p.url+"/tokens", "application/json", bytes.NewBuffer(parsedCredentials))
+	resp, err = client.Post(p.url+"/tokens", "application/json", bytes.NewBuffer(credentials))
 	if err != nil {
 		return "", err
 	}
