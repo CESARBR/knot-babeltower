@@ -9,6 +9,24 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// QueueService is the interface that handles remote queue service
+type QueueService interface {
+	Start(started chan bool)
+	Stop()
+	GetSender() AmqpSender
+	GetReceiver() AmqpReceiver
+}
+
+// AmqpSender is the interface to publish amqp messages
+type AmqpSender interface {
+	PublishPersistentMessage(exchange, exchangeType, key string, msg MessageSerializer, options *MessageOptions) error
+}
+
+// AmqpReceiver is the interface to receive amqp messages
+type AmqpReceiver interface {
+	OnMessage(msgChan chan InMsg, queueName, exchangeName, exchangeType, key string) error
+}
+
 // Amqp handles the connection, queues and exchanges declared
 type Amqp struct {
 	url     string
@@ -37,6 +55,16 @@ type MessageOptions struct {
 // NewAmqp constructs the AMQP connection handler
 func NewAmqp(url string, logger logging.Logger) *Amqp {
 	return &Amqp{url, logger, nil, nil, nil}
+}
+
+// GetSender returns the sender
+func (a *Amqp) GetSender() AmqpSender {
+	return a
+}
+
+// GetReceiver returns the receiver
+func (a *Amqp) GetReceiver() AmqpReceiver {
+	return a
 }
 
 // Start starts the handler

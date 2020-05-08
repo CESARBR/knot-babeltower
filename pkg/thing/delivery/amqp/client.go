@@ -37,22 +37,22 @@ type Sender interface {
 // msgClientPublisher handle messages received from a service
 type msgClientPublisher struct {
 	logger logging.Logger
-	amqp   *network.Amqp
+	amqp   network.AmqpSender
 }
 
 // commandSender handle messages received from a service
 type commandSender struct {
 	logger logging.Logger
-	amqp   *network.Amqp
+	amqp   network.AmqpSender
 }
 
 // NewMsgClientPublisher constructs the msgClientPublisher
-func NewMsgClientPublisher(logger logging.Logger, amqp *network.Amqp) Publisher {
+func NewMsgClientPublisher(logger logging.Logger, amqp network.AmqpSender) Publisher {
 	return &msgClientPublisher{logger, amqp}
 }
 
 // NewCommandSender creates a new commandSender instance
-func NewCommandSender(logger logging.Logger, amqp *network.Amqp) Sender {
+func NewCommandSender(logger logging.Logger, amqp network.AmqpSender) Sender {
 	return &commandSender{logger, amqp}
 }
 

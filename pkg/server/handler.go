@@ -32,12 +32,12 @@ const (
 // MsgHandler handle messages received from a service
 type MsgHandler struct {
 	logger          logging.Logger
-	amqp            *network.Amqp
-	thingController *controllers.ThingController
+	amqp            network.AmqpReceiver
+	thingController controllers.ThingController
 }
 
 // NewMsgHandler creates a new MsgHandler instance with the necessary dependencies
-func NewMsgHandler(logger logging.Logger, amqp *network.Amqp, thingController *controllers.ThingController) *MsgHandler {
+func NewMsgHandler(logger logging.Logger, amqp network.AmqpReceiver, thingController controllers.ThingController) *MsgHandler {
 	return &MsgHandler{logger, amqp, thingController}
 }
 
