@@ -59,7 +59,7 @@ func NewCommandSender(logger logging.Logger, amqp *network.Amqp) Sender {
 	return &commandSender{logger, amqp}
 }
 
-// PublishRegisterDevice publishes the registered device's credentials to the device registration queue
+// PublishRegisteredDevice publishes the registered device's credentials to the device registration queue
 func (mp *msgClientPublisher) PublishRegisteredDevice(thingID, name, token string, err error) error {
 	mp.logger.Debug("sending registered message")
 	errMsg := getErrMsg(err)
@@ -73,7 +73,7 @@ func (mp *msgClientPublisher) PublishRegisteredDevice(thingID, name, token strin
 	return mp.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, registerOutKey, msg, nil)
 }
 
-// PublishUnregisterDevice publishes the unregistered device's id and error message to the device unregistered queue
+// PublishUnregisteredDevice publishes the unregistered device's id and error message to the device unregistered queue
 func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID string, err error) error {
 	mp.logger.Debug("sending unregistered message")
 	errMsg := getErrMsg(err)
@@ -147,7 +147,7 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID strin
 	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg, nil)
 }
 
-// PublishUpdateData send update data command
+// PublishPublishedData send update data command
 func (mp *msgClientPublisher) PublishPublishedData(thingID, token string, data []entities.Data) error {
 	resp := &network.DataSent{ID: thingID, Data: data}
 	headers := map[string]interface{}{
