@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/CESARBR/knot-babeltower/pkg/mocks"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
-	"github.com/CESARBR/knot-babeltower/pkg/thing/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

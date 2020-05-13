@@ -3,7 +3,7 @@ package mocks
 import "github.com/stretchr/testify/mock"
 
 // FakeLogger represents a mocking type for the logging service
-type FakeLogger struct{
+type FakeLogger struct {
 	mock.Mock
 }
 

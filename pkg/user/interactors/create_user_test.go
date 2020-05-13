@@ -4,83 +4,54 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 
+	"github.com/CESARBR/knot-babeltower/pkg/mocks"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
-type FakeCreateUserLogger struct {
+type CreateUserTestCase struct {
+	name          string
+	email         string
+	password      string
+	expected      error
+	fakeLogger    *mocks.FakeLogger
+	fakeUserProxy *mocks.FakeUserProxy
 }
 
-type FakeUserProxy struct {
-	mock.Mock
-}
-
-func (fl *FakeCreateUserLogger) Info(...interface{}) {}
-
-func (fl *FakeCreateUserLogger) Infof(string, ...interface{}) {}
-
-func (fl *FakeCreateUserLogger) Debug(...interface{}) {}
-
-func (fl *FakeCreateUserLogger) Warn(...interface{}) {}
-
-func (fl *FakeCreateUserLogger) Error(...interface{}) {}
-
-func (fl *FakeCreateUserLogger) Errorf(string, ...interface{}) {}
-
-func (fup *FakeUserProxy) Create(user entities.User) (err error) {
-	ret := fup.Called(user)
-
-	rf, ok := ret.Get(0).(func(entities.User) error)
-	if ok {
-		err = rf(user)
-	} else {
-		err = ret.Error(0)
-	}
-
-	return err
-}
-
-func (fup *FakeUserProxy) CreateToken(user entities.User) (string, error) {
-	return "", nil
+var cuCases = []CreateUserTestCase{
+	{
+		"user successfully created",
+		"user@user.com",
+		"123456789abcdef",
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeUserProxy{},
+	},
+	{
+		"failed to create user when already exists",
+		"fake@email.com",
+		"123456789abcdef",
+		entities.ErrUserExists,
+		&mocks.FakeLogger{},
+		&mocks.FakeUserProxy{Err: entities.ErrUserExists},
+	},
+	{
+		"failed to create user when e-mail or password format are invalid",
+		"user",
+		"123456789abcdef",
+		entities.ErrUserBadRequest,
+		&mocks.FakeLogger{},
+		&mocks.FakeUserProxy{Err: entities.ErrUserBadRequest},
+	},
 }
 
 func TestCreateUser(t *testing.T) {
-	testCases := []struct {
-		name          string
-		email         string
-		password      string
-		fakeLogger    *FakeCreateUserLogger
-		fakeUserProxy *FakeUserProxy
-		proxyError    error
-		expected      error
-	}{
-		{
-			"shouldCallLogger",
-			"fake@email.com",
-			"123",
-			&FakeCreateUserLogger{},
-			&FakeUserProxy{},
-			nil,
-			nil,
-		},
-		{
-			"shouldRaiseEntitiesExists",
-			"fake@email.com",
-			"123",
-			&FakeCreateUserLogger{},
-			&FakeUserProxy{},
-			entities.ErrUserExists,
-			entities.ErrUserExists,
-		},
-	}
-
-	for _, tc := range testCases {
+	for _, tc := range cuCases {
 		t.Run(tc.name, func(t *testing.T) {
 			createUserInteractor := NewCreateUser(tc.fakeLogger, tc.fakeUserProxy)
 			user := entities.User{Email: tc.email, Password: tc.password}
 			tc.fakeUserProxy.On("Create", user).
-				Return(tc.proxyError).Once()
+				Return(tc.fakeUserProxy.Err).Once()
 
 			err := createUserInteractor.Execute(user)
 			if err != nil && !assert.IsType(t, err, tc.expected) {
