@@ -33,8 +33,8 @@ type Publisher interface {
 
 // Sender represents the operations to send commands response
 type Sender interface {
-	SendAuthResponse(thingID, corrID string, err error) error
-	SendListResponse(things []*entities.Thing, corrID string, err error) error
+	SendAuthResponse(thingID, replyTo, corrID string, err error) error
+	SendListResponse(things []*entities.Thing, replyTo, corrID string, err error) error
 }
 
 // msgClientPublisher handle messages received from a service
@@ -124,27 +124,33 @@ func (mp *msgClientPublisher) PublishUpdateData(thingID string, data []entities.
 }
 
 // SendAuthResponse sends the auth thing status response
-func (cs *commandSender) SendAuthResponse(thingID string, corrID string, err error) error {
+func (cs *commandSender) SendAuthResponse(thingID string, replyTo, corrID string, err error) error {
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceAuthResponse{ID: thingID, Error: errMsg}
+	headers := map[string]interface{}{
+		"correlation_id": corrID,
+	}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg, nil)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, replyTo, msg, headers)
 }
 
 // SendListResponse sends the list devices command response
-func (cs *commandSender) SendListResponse(things []*entities.Thing, corrID string, err error) error {
+func (cs *commandSender) SendListResponse(things []*entities.Thing, replyTo, corrID string, err error) error {
 	errMsg := getErrMsg(err)
 	resp := &network.DeviceListResponse{Things: things, Error: errMsg}
+	headers := map[string]interface{}{
+		"correlation_id": corrID,
+	}
 	msg, err := json.Marshal(resp)
 	if err != nil {
 		return err
 	}
 
-	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, corrID, msg, nil)
+	return cs.amqp.PublishPersistentMessage(exchangeDevices, exchangeDevicesType, replyTo, msg, headers)
 }
 
 // PublishPublishedData send update data command

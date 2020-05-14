@@ -102,7 +102,7 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		}
 
 		if msg.RoutingKey == bindingKeyAuthDevice || msg.RoutingKey == bindingKeyListDevices {
-			// handling request-reply command messages, which requires specific validations such as if correlation_id was correctly received
+			// handling request-reply command messages, which requires specific validations such as if reply_to was correctly received
 			err = mc.handleRequestReplyCommands(msg, token)
 		} else if msg.Exchange == exchangeDataSent {
 			// handling broadcasted data events
@@ -138,16 +138,21 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 }
 
 func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string) error {
-	corrID, ok := msg.Headers["correlation-id"].(string)
+	replyTo, ok := msg.Headers["reply_to"].(string)
 	if !ok {
-		return errors.New("correlation ID not provided")
+		return errors.New("reply_to property not provided")
+	}
+
+	corrID, ok := msg.Headers["correlation_id"].(string)
+	if !ok {
+		return errors.New("correlation_id property not provided")
 	}
 
 	switch msg.RoutingKey {
 	case bindingKeyAuthDevice:
-		return mc.thingController.AuthDevice(msg.Body, token, corrID)
+		return mc.thingController.AuthDevice(msg.Body, token, replyTo, corrID)
 	case bindingKeyListDevices:
-		return mc.thingController.ListDevices(token, corrID)
+		return mc.thingController.ListDevices(token, replyTo, corrID)
 	}
 
 	return nil
