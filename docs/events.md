@@ -165,14 +165,14 @@ Event that represents a device sending its schema to the services that are inter
 
 ### **device.list** <a name="device-list"></a>
 
-Event-command to list the registered things. It follows the request/reply pattern. After obtaining the things, `babeltower` will send a reply message by using the `correlation_id` property, which wass received in the request header, as reply message's `routing_key`. Because of that, considering the **requestor** has created and sent this `correlation_id` in the request, it can also subscribe to receive events that arrive with a `routing_key` equivalent to the `correlation_id`. Therefore, the reply is received by the application that has sent the request, in a **one-to-one** manner.
+Event-command to list the registered things. It follows the request/reply pattern. After obtaining the things, `babeltower` will send a reply message by using the `reply_to` property, which was received in the request header, as reply message's `routing_key`. Because of that, considering the **requestor** has created and sent this `reply_to` in the request, it can also subscribe to receive events that arrive in a queue associated with the `reply_to`. Therefore, the reply is received by the application that has sent the request, in a **one-to-one** manner.
 
 <details>
   <summary>Headers</summary>
 
   - `token` **String** user's token
-  - `correlation_id` **String** ID to correlate request/reply
-  - `reply_to` **String** queue that will process the reply
+  - `reply_to` **String** reply's queue name
+  - `correlation_id` **String** ID to correlate reply-request after message arrived in the queue
 
 </details>
 
@@ -200,20 +200,20 @@ Event-command to list the registered things. It follows the request/reply patter
     - Name: device
     - Durable: `true`
     - Auto-delete: `false`
-  - Routing key: `correlation_id`
+  - Routing key: `reply_to`
 
 </details>
 
 ### **device.auth** <a name="device-auth"></a>
 
-Event-command to verify if a thing is authenticated based on its credentials. It follows the request/reply pattern. After authenticating the device, `babeltower` will send a reply message by using the `correlation_id` property, which is received in the request header, as reply message's `routing_key`. Because of that, considering the **requestor** has created and sent this `correlation_id` in the request, it can also subscribe to receive events that arrive with a `routing_key` equivalent to the `correlation_id`. Therefore, the reply is received by the application that has sent the request, in a **one-to-one** manner.
+Event-command to verify if a thing is authenticated based on its credentials. It follows the request/reply pattern. After authenticating the device, `babeltower` will send a reply message by using the `reply_to` property, which is received in the request header, as reply message's `routing_key`. Because of that, considering the **requestor** has created and sent this `reply_to` in the request, it can also subscribe to receive events that arrive in a queue associated with the `reply_to`. Therefore, the reply is received by the application that has sent the request, in a **one-to-one** manner.
 
 <details>
   <summary>Headers</summary>
 
   - `token` **String** user's token
-  - `correlation_id` **String** ID to correlate reply/response
-  - `reply_to` **String** queue that will process the reply
+  - `reply_to` **String** reply's queue name
+  - `correlation_id` **String** ID to correlate reply-request after message arrived in the queue
 
 </details>
 
@@ -243,7 +243,7 @@ Event-command to verify if a thing is authenticated based on its credentials. It
     - Name: device
     - Durable: `true`
     - Auto-delete: `false`
-  - Routing key: `correlation_id`
+  - Routing key: `reply_to`
 
 </details>
 
