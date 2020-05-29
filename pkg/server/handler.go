@@ -138,21 +138,11 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 }
 
 func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string) error {
-	replyTo, ok := msg.Headers["reply_to"].(string)
-	if !ok {
-		return errors.New("reply_to property not provided")
-	}
-
-	corrID, ok := msg.Headers["correlation_id"].(string)
-	if !ok {
-		return errors.New("correlation_id property not provided")
-	}
-
 	switch msg.RoutingKey {
 	case bindingKeyAuthDevice:
-		return mc.thingController.AuthDevice(msg.Body, token, replyTo, corrID)
+		return mc.thingController.AuthDevice(msg.Body, token, msg.ReplyTo, msg.CorrelationId)
 	case bindingKeyListDevices:
-		return mc.thingController.ListDevices(token, replyTo, corrID)
+		return mc.thingController.ListDevices(token, msg.ReplyTo, msg.CorrelationId)
 	}
 
 	return nil
