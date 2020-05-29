@@ -18,10 +18,12 @@ type Amqp struct {
 
 // InMsg represents the message received from the AMQP broker
 type InMsg struct {
-	Exchange   string
-	RoutingKey string
-	Headers    map[string]interface{}
-	Body       []byte
+	Exchange      string
+	RoutingKey    string
+	ReplyTo       string
+	CorrelationId string
+	Headers       map[string]interface{}
+	Body          []byte
 }
 
 // NewAmqp constructs the AMQP connection handler
@@ -196,6 +198,6 @@ func (a *Amqp) declareQueue(name string) error {
 
 func convertDeliveryToInMsg(deliveries <-chan amqp.Delivery, outMsg chan InMsg) {
 	for d := range deliveries {
-		outMsg <- InMsg{d.Exchange, d.RoutingKey, d.Headers, d.Body}
+		outMsg <- InMsg{d.Exchange, d.RoutingKey, d.ReplyTo, d.CorrelationId, d.Headers, d.Body}
 	}
 }

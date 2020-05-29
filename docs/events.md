@@ -171,8 +171,6 @@ Event-command to list the registered things. It follows the request/reply patter
   <summary>Headers</summary>
 
   - `token` **String** user's token
-  - `reply_to` **String** reply's queue name
-  - `correlation_id` **String** ID to correlate reply-request after message arrived in the queue
 
 </details>
 
@@ -200,7 +198,9 @@ Event-command to list the registered things. It follows the request/reply patter
     - Name: device
     - Durable: `true`
     - Auto-delete: `false`
-  - Routing key: `reply_to`
+  - Routing key: `device.list`
+  - Reply To: <queueName> reply's queue name
+  - Correlation Id: <corrID> ID to correlate reply-request after message arrived in the queue
 
 </details>
 
@@ -212,8 +212,6 @@ Event-command to verify if a thing is authenticated based on its credentials. It
   <summary>Headers</summary>
 
   - `token` **String** user's token
-  - `reply_to` **String** reply's queue name
-  - `correlation_id` **String** ID to correlate reply-request after message arrived in the queue
 
 </details>
 
@@ -243,7 +241,9 @@ Event-command to verify if a thing is authenticated based on its credentials. It
     - Name: device
     - Durable: `true`
     - Auto-delete: `false`
-  - Routing key: `reply_to`
+  - Routing key: `device.auth`
+  - Reply To: <queueName> reply's queue name
+  - Correlation Id: <corrID> ID to correlate reply-request after message arrived in the queue
 
 </details>
 
