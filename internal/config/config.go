@@ -25,6 +25,12 @@ type Users struct {
 	Port     uint16
 }
 
+// Authn represents the authn service to proxy request
+type Authn struct {
+	Hostname string
+	Port     uint16
+}
+
 // RabbitMQ represents the rabbitmq configuration properties
 type RabbitMQ struct {
 	URL string
@@ -41,6 +47,7 @@ type Config struct {
 	Server
 	Logger
 	Users
+	Authn
 	RabbitMQ
 	Things
 }

@@ -8,6 +8,10 @@ users:
   hostname: users
   port: 8180
 
+authn:
+  hostname: authn
+  port: 8183
+
 rabbitmq:
   url: amqp://knot:knot@rabbitmq/
 
