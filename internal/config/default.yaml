@@ -8,6 +8,10 @@ users:
   hostname: localhost
   port: 8180
 
+authn:
+  hostname: localhost
+  port: 8183
+
 rabbitmq:
   url: amqp://localhost/
 
