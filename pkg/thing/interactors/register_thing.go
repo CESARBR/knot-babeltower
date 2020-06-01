@@ -10,7 +10,8 @@ import (
 // Register runs the use case to create a new thing
 func (i *ThingInteractor) Register(authorization, id, name string) error {
 	if authorization == "" {
-		return ErrAuthNotProvided
+		sendErr := i.sendResponse(id, name, "", ErrAuthNotProvided)
+		return sendErr
 	}
 	if id == "" {
 		return ErrIDNotProvided

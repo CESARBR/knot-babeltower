@@ -7,6 +7,7 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 )
 
@@ -79,6 +80,18 @@ func (mc *thingController) UpdateSchema(body []byte, authorizationHeader string)
 // ListDevices handles the list devices request and execute its use case
 func (mc *thingController) ListDevices(authorization, replyTo, corrID string) error {
 	mc.logger.Info("list devices command received")
+	if replyTo == "" {
+		sendErr := mc.sender.SendListResponse([]*entities.Thing{}, replyTo, corrID, interactors.ErrReplyToNotProvided)
+		if sendErr != nil {
+			return fmt.Errorf("error sending response: %v: %w", interactors.ErrReplyToNotProvided, sendErr)
+		}
+		return interactors.ErrReplyToNotProvided
+	}
+
+	if corrID == "" {
+		mc.logger.Warn("Correlation id is empty")
+	}
+
 	things, err := mc.thingInteractor.List(authorization)
 	if err != nil {
 		sendErr := mc.sender.SendListResponse(things, replyTo, corrID, err)
@@ -104,8 +117,19 @@ func (mc *thingController) AuthDevice(body []byte, authorization, replyTo, corrI
 		mc.logger.Error(err)
 		return err
 	}
-
 	mc.logger.Info("auth device command received")
+	if replyTo == "" {
+		sendErr := mc.sender.SendAuthResponse(authThingReq.ID, replyTo, corrID, interactors.ErrReplyToNotProvided)
+		if sendErr != nil {
+			return fmt.Errorf("error sending response: %v: %w", interactors.ErrReplyToNotProvided, sendErr)
+		}
+		return interactors.ErrReplyToNotProvided
+	}
+
+	if corrID == "" {
+		mc.logger.Warn("Correlation id is empty")
+	}
+
 	err = mc.thingInteractor.Auth(authorization, authThingReq.ID)
 	if err != nil {
 		sendErr := mc.sender.SendAuthResponse(authThingReq.ID, replyTo, corrID, err)

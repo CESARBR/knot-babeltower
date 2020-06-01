@@ -32,7 +32,6 @@ const (
 var (
 	errMissingChannel       = errors.New("missing channel")
 	errMissingMsgChannel    = errors.New("missing message channel")
-	errAuthorizationToken   = errors.New("authorization token not provided")
 	errUnsupportedMsg       = errors.New("unsupported message")
 	errUnexpectedRoutingKey = errors.New("unexpected routing key")
 )
@@ -123,10 +122,7 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) (err error) {
 	mc.logger.Infof("exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
 	mc.logger.Infof("message received: %s", string(msg.Body))
 
-	token, ok := msg.Headers["Authorization"].(string)
-	if !ok {
-		return errAuthorizationToken
-	}
+	token, _ := msg.Headers["Authorization"].(string)
 
 	if msg.Exchange != exchangeDataSent && msg.Exchange != exchangeDevices {
 		return errUnsupportedMsg

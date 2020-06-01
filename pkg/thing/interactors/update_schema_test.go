@@ -50,6 +50,26 @@ var tCases = []UpdateSchemaTestCase{
 		&mocks.FakePublisher{},
 	},
 	{
+		"empty authorization token",
+		"",
+		"19cf40c23012ce1c",
+		ErrAuthNotProvided,
+		[]entities.Schema{
+			{
+				SensorID:  0,
+				ValueType: 3,
+				Unit:      0,
+				TypeID:    65521,
+				Name:      "LED",
+			},
+		},
+		true,
+		ErrAuthNotProvided,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{Err: ErrAuthNotProvided, SendError: ErrAuthNotProvided},
+	},
+	{
 		"failed to update the schema on the thing's proxy",
 		"authorization-token",
 		"29cf40c23012ce1c",

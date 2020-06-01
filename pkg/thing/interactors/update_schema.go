@@ -51,7 +51,8 @@ var rules = map[int]schemaType{
 // UpdateSchema receive the new sensor schema and update it on the thing's service
 func (i *ThingInteractor) UpdateSchema(authorization, thingID string, schemaList []entities.Schema) error {
 	if authorization == "" {
-		return ErrAuthNotProvided
+		sendErr := i.notifyClient(thingID, schemaList, ErrAuthNotProvided)
+		return sendErr
 	}
 	if thingID == "" {
 		return ErrIDNotProvided

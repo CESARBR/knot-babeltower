@@ -88,6 +88,17 @@ var registerThingUseCases = []registerTestCase{
 		&mocks.FakePublisher{},
 	},
 	{
+		"thing successfully created on thing's service",
+		"",
+		"fc3fcf912d0c290a",
+		"knot-thing",
+		ErrAuthNotProvided,
+		nil,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{ReturnErr: ErrAuthNotProvided, SendError: ErrAuthNotProvided},
+	},
+	{
 		"failed to send register response",
 		"authorization-token",
 		"fc3fcf912d0c290a",

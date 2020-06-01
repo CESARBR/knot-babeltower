@@ -38,4 +38,7 @@ var (
 
 	// ErrDataInvalid is returned when the provided data mismatch the thing's schema
 	ErrDataInvalid = errors.New("data is incompatible with thing's schema")
+
+	// ErrReplyToNotProvided is returned when the reply_to is not provided in RPC calls
+	ErrReplyToNotProvided = errors.New("reply_to property not provided")
 )
