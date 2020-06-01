@@ -9,6 +9,7 @@ BINARY = app
 GOARCH = amd64
 
 LDFLAGS = -ldflags="$$(govvv -flags)"
+SHELL=/bin/bash
 
 .PHONY: tools
 tools:
@@ -41,7 +42,7 @@ http-docs:
 
 .PHONY: test
 test:
-	$(GOTEST) | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'' | grep -v RUN
+	set -o pipefail && $(GOTEST) | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'' | grep -v RUN
 
 .PHONY: lint
 lint:

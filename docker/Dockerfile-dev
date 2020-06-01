@@ -3,7 +3,7 @@ FROM golang:1.14-alpine
 WORKDIR /usr/src/app
 COPY . .
 
-RUN apk add --update make
+RUN apk add --update make bash
 RUN go get github.com/cespare/reflex
 RUN go get ./...
 
