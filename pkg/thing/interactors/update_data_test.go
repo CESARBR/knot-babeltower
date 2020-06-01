@@ -25,7 +25,7 @@ var (
 	errClientSend    = errors.New("error sending message to client")
 )
 
-var voltageSchema = []entities.Schema{entities.Schema{
+var voltageSchema = []entities.Schema{{
 	SensorID:  0,
 	ValueType: 1,
 	Unit:      1,
@@ -38,7 +38,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"authorization token not provided",
 		"",
 		"thing-id",
-		[]entities.Data{entities.Data{}},
+		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -48,7 +48,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"thing's id not provided",
 		"authorization-token",
 		"",
-		[]entities.Data{entities.Data{}},
+		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -68,7 +68,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"failed to get thing from thing's service",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{}},
+		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errThingProxyGet},
 		&mocks.FakePublisher{},
@@ -78,7 +78,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"thing doesn't have a schema yet",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{}},
+		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:    "thing-id",
@@ -92,7 +92,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"data value doesn't match with thing's schema",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 0, Value: false}},
+		[]entities.Data{{SensorID: 0, Value: false}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -107,7 +107,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"data sensorId doesn't match with thing's schema",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 1, Value: float64(5)}},
+		[]entities.Data{{SensorID: 1, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -122,7 +122,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"error publishing message in client exchange",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 0, Value: float64(5)}},
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -137,7 +137,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		"message successfuly send to client exchange",
 		"authorization-token",
 		"thing-id",
-		[]entities.Data{entities.Data{SensorID: 0, Value: float64(5)}},
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
