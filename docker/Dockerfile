@@ -6,6 +6,7 @@ ARG GOARM
 
 # Install build utilities
 RUN apk --no-cache add --virtual .build-deps \
+    bash \
     make \
     git
 
