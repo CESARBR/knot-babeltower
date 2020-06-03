@@ -9,19 +9,19 @@ import (
 // CreateToken has all dependencies and methods to enable the create token use case
 // execution. It is composed by the logger and user proxy services.
 type CreateToken struct {
-	logger    logging.Logger
-	userProxy http.UserProxy
+	logger     logging.Logger
+	usersProxy http.UsersProxy
 }
 
 // NewCreateToken creates a new CreateToken instance by receiving its dependencies.
-func NewCreateToken(logger logging.Logger, userProxy http.UserProxy) *CreateToken {
-	return &CreateToken{logger, userProxy}
+func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy) *CreateToken {
+	return &CreateToken{logger, usersProxy}
 }
 
 // Execute receives the user entity filled with e-mail and password properties and try
 // to create a token on the user proxy service. If it succeed, the token is returned.
 func (ct *CreateToken) Execute(user entities.User) (token string, err error) {
-	token, err = ct.userProxy.CreateToken(user)
+	token, err = ct.usersProxy.CreateToken(user)
 	if err != nil {
 		ct.logger.Errorf("failed to create an user's token: %s", err.Error())
 		return "", err

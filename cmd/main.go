@@ -48,12 +48,12 @@ func main() {
 	commandSender := thingDeliveryAMQP.NewCommandSender(logrus.Get("Command Sender"), amqp)
 
 	// Services
-	userProxy := userDeliveryHTTP.NewUserProxy(logrus.Get("UserProxy"), config.Users.Hostname, config.Users.Port)
+	usersProxy := userDeliveryHTTP.NewUsersProxy(logrus.Get("UsersProxy"), config.Users.Hostname, config.Users.Port)
 	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
 
 	// Interactors
-	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), userProxy)
-	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), userProxy)
+	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)
+	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy)
 	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy)
 
 	// Controllers
