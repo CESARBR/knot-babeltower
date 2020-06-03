@@ -5,15 +5,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeUserProxy represents a mocking type for the user's proxy service
-type FakeUserProxy struct {
+// FakeUsersProxy represents a mocking type for the user's proxy service
+type FakeUsersProxy struct {
 	mock.Mock
 	Token string
 	Err   error
 }
 
 // Create provides a mock function to create a new user
-func (fup *FakeUserProxy) Create(user entities.User) (err error) {
+func (fup *FakeUsersProxy) Create(user entities.User) (err error) {
 	ret := fup.Called(user)
 
 	rf, ok := ret.Get(0).(func(entities.User) error)
@@ -27,7 +27,7 @@ func (fup *FakeUserProxy) Create(user entities.User) (err error) {
 }
 
 // CreateToken provides a mock function to create a new user's token
-func (fup *FakeUserProxy) CreateToken(user entities.User) (string, error) {
+func (fup *FakeUsersProxy) CreateToken(user entities.User) (string, error) {
 	args := fup.Called(user)
 	return args.String(0), args.Error(1)
 }

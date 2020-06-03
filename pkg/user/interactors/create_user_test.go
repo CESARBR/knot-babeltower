@@ -10,12 +10,12 @@ import (
 )
 
 type CreateUserTestCase struct {
-	name          string
-	email         string
-	password      string
-	expected      error
-	fakeLogger    *mocks.FakeLogger
-	fakeUserProxy *mocks.FakeUserProxy
+	name           string
+	email          string
+	password       string
+	expected       error
+	fakeLogger     *mocks.FakeLogger
+	fakeUsersProxy *mocks.FakeUsersProxy
 }
 
 var cuCases = []CreateUserTestCase{
@@ -25,7 +25,7 @@ var cuCases = []CreateUserTestCase{
 		"123456789abcdef",
 		nil,
 		&mocks.FakeLogger{},
-		&mocks.FakeUserProxy{},
+		&mocks.FakeUsersProxy{},
 	},
 	{
 		"failed to create user when already exists",
@@ -33,7 +33,7 @@ var cuCases = []CreateUserTestCase{
 		"123456789abcdef",
 		entities.ErrUserExists,
 		&mocks.FakeLogger{},
-		&mocks.FakeUserProxy{Err: entities.ErrUserExists},
+		&mocks.FakeUsersProxy{Err: entities.ErrUserExists},
 	},
 	{
 		"failed to create user when e-mail or password format are invalid",
@@ -41,27 +41,27 @@ var cuCases = []CreateUserTestCase{
 		"123456789abcdef",
 		entities.ErrUserBadRequest,
 		&mocks.FakeLogger{},
-		&mocks.FakeUserProxy{Err: entities.ErrUserBadRequest},
+		&mocks.FakeUsersProxy{Err: entities.ErrUserBadRequest},
 	},
 }
 
 func TestCreateUser(t *testing.T) {
 	for _, tc := range cuCases {
 		t.Run(tc.name, func(t *testing.T) {
-			createUserInteractor := NewCreateUser(tc.fakeLogger, tc.fakeUserProxy)
+			createUserInteractor := NewCreateUser(tc.fakeLogger, tc.fakeUsersProxy)
 			user := entities.User{Email: tc.email, Password: tc.password}
-			tc.fakeUserProxy.On("Create", user).
-				Return(tc.fakeUserProxy.Err).Once()
+			tc.fakeUsersProxy.On("Create", user).
+				Return(tc.fakeUsersProxy.Err).Once()
 
 			err := createUserInteractor.Execute(user)
 			if err != nil && !assert.IsType(t, err, tc.expected) {
 				t.Errorf("create user failed. Error: %s", err)
-				tc.fakeUserProxy.AssertExpectations(t)
+				tc.fakeUsersProxy.AssertExpectations(t)
 				return
 			}
 
 			t.Logf("create user ok")
-			tc.fakeUserProxy.AssertExpectations(t)
+			tc.fakeUsersProxy.AssertExpectations(t)
 		})
 	}
 
