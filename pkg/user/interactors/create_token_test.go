@@ -18,6 +18,7 @@ type createTokenTestCase struct {
 	name           string
 	user           entities.User
 	tokenType      string
+	duration       int
 	expected       createTokenResponse
 	fakeLogger     *mocks.FakeLogger
 	fakeUsersProxy *mocks.FakeUsersProxy
@@ -40,6 +41,7 @@ var ctCases = []createTokenTestCase{
 		"user token successfully created",
 		mockedUser,
 		"user",
+		0,
 		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Token: mockedToken},
@@ -49,6 +51,7 @@ var ctCases = []createTokenTestCase{
 		"app token successfully created",
 		mockedUser,
 		"app",
+		3600,
 		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
@@ -58,6 +61,7 @@ var ctCases = []createTokenTestCase{
 		"failed to create user token when something goes wrong in usersProxy",
 		mockedUser,
 		"user",
+		0,
 		createTokenResponse{"", errUsersProxy},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Err: errUsersProxy},
@@ -67,6 +71,7 @@ var ctCases = []createTokenTestCase{
 		"failed to create app token when something goes wrong in authnProxy",
 		mockedUser,
 		"app",
+		3600,
 		createTokenResponse{"", errAuthnProxy},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
@@ -76,6 +81,7 @@ var ctCases = []createTokenTestCase{
 		"fail to create a token when the tokenType is invalid",
 		mockedUser,
 		"invalid-token-type",
+		3600,
 		createTokenResponse{"", entities.ErrInvalidTokenType},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
@@ -90,11 +96,11 @@ func TestCreateToken(t *testing.T) {
 				On("CreateToken", tc.user).
 				Return(tc.fakeUsersProxy.Token, tc.fakeUsersProxy.Err)
 			tc.fakeAuthnProxy.
-				On("CreateAppToken", tc.user).
+				On("CreateAppToken", tc.user, tc.duration).
 				Return(tc.fakeAuthnProxy.Token, tc.fakeUsersProxy.Err)
 
 			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthnProxy)
-			token, err := createTokenInteractor.Execute(tc.user, tc.tokenType)
+			token, err := createTokenInteractor.Execute(tc.user, tc.tokenType, tc.duration)
 
 			assert.Equal(t, tc.expected.token, token)
 			if err != nil {

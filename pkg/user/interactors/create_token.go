@@ -21,11 +21,11 @@ func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy, authnProx
 
 // Execute receives the user entity filled with e-mail and password properties and try
 // to create a token on the user proxy service. If it succeed, the token is returned.
-func (ct *CreateToken) Execute(user entities.User, tokenType string) (token string, err error) {
+func (ct *CreateToken) Execute(user entities.User, tokenType string, duration int) (token string, err error) {
 	if tokenType == "user" {
 		token, err = ct.usersProxy.CreateToken(user)
 	} else if tokenType == "app" {
-		token, err = ct.authnProxy.CreateAppToken(user)
+		token, err = ct.authnProxy.CreateAppToken(user, duration)
 	} else {
 		err = entities.ErrInvalidTokenType
 	}
