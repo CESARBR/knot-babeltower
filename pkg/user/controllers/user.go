@@ -23,6 +23,7 @@ type CreateTokenRequest struct {
 	Password string `json:"password"`
 	Token    string `json:"token"`
 	Type     string `json:"type"`
+	Duration int    `json:"duration"`
 }
 
 // CreateTokenResponse is used to map the use case response to HTTP
@@ -102,9 +103,12 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 	if req.Type == "" {
 		req.Type = "user"
 	}
+	if req.Duration == 0 {
+		req.Duration = 60 * 60 * 24 * 365
+	}
 
 	user := entities.User{Email: req.Email, Password: req.Password, Token: req.Token}
-	token, err := uc.createTokenInteractor.Execute(user, req.Type)
+	token, err := uc.createTokenInteractor.Execute(user, req.Type, req.Duration)
 	if err != nil {
 		uc.logger.Errorf("failed to create user's token: %s", err)
 		der := &DetailedErrorResponse{err.Error()}

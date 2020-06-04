@@ -14,7 +14,7 @@ import (
 
 // AuthnProxy represents the interface to the authn's proxy operations
 type AuthnProxy interface {
-	CreateAppToken(user entities.User) (token string, err error)
+	CreateAppToken(user entities.User, duration int) (token string, err error)
 }
 
 // Authn is responsible for implementing the authn's proxy operations
@@ -54,12 +54,12 @@ type keySchema struct {
 }
 
 // CreateAppToken creates a valid token for the application
-func (a *Authn) CreateAppToken(user entities.User) (string, error) {
+func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
 	var response keySchema
 	request := authnRequest{
 		Path:          "/keys",
 		Method:        "POST",
-		Body:          keyRequestSchema{Issuer: user.Email, Type: 2, Duration: 31536000},
+		Body:          keyRequestSchema{Issuer: user.Email, Type: 2, Duration: duration},
 		Authorization: user.Token,
 	}
 

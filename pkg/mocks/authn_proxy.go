@@ -13,7 +13,7 @@ type FakeAuthnProxy struct {
 }
 
 // CreateAppToken provides a mock function to create a new application token
-func (fup *FakeAuthnProxy) CreateAppToken(user entities.User) (string, error) {
-	args := fup.Called(user)
+func (fup *FakeAuthnProxy) CreateAppToken(user entities.User, duration int) (string, error) {
+	args := fup.Called(user, duration)
 	return args.String(0), args.Error(1)
 }
