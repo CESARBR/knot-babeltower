@@ -17,9 +17,11 @@ type CreateTokenTestCase struct {
 	name           string
 	email          string
 	password       string
+	tokenType      string
 	expected       createTokenResponse
 	fakeLogger     *mocks.FakeLogger
 	fakeUsersProxy *mocks.FakeUsersProxy
+	fakeAuthnProxy *mocks.FakeAuthnProxy
 }
 
 var ctCases = []CreateTokenTestCase{
@@ -27,25 +29,31 @@ var ctCases = []CreateTokenTestCase{
 		"user token successfully created",
 		"user@user.com",
 		"123456789abcdef",
+		"user",
 		createTokenResponse{"mocked-token", nil},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Token: "mocked-token"},
+		&mocks.FakeAuthnProxy{},
 	},
 	{
 		"failed to create user token when e-mail or password format are invalid",
 		"user",
 		"123456789abcdef",
+		"user",
 		createTokenResponse{"", entities.ErrUserBadRequest},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Err: entities.ErrUserBadRequest},
+		&mocks.FakeAuthnProxy{},
 	},
 	{
 		"failed to create user token when unauthorized",
 		"user@user.com",
 		"abcdef",
+		"user",
 		createTokenResponse{"", entities.ErrUserForbidden},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Err: entities.ErrUserForbidden},
+		&mocks.FakeAuthnProxy{},
 	},
 }
 
@@ -57,8 +65,8 @@ func TestCreateToken(t *testing.T) {
 				On("CreateToken", user).
 				Return(tc.fakeUsersProxy.Token, tc.fakeUsersProxy.Err)
 
-			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy)
-			token, err := createTokenInteractor.Execute(user)
+			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthnProxy)
+			token, err := createTokenInteractor.Execute(user, tc.tokenType)
 			if err != nil {
 				assert.Equal(t, tc.expected.token, token)
 				return

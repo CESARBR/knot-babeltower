@@ -1,6 +1,8 @@
 package interactors
 
 import (
+	"errors"
+
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
@@ -11,21 +13,29 @@ import (
 type CreateToken struct {
 	logger     logging.Logger
 	usersProxy http.UsersProxy
+	authnProxy http.AuthnProxy
 }
 
 // NewCreateToken creates a new CreateToken instance by receiving its dependencies.
-func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy) *CreateToken {
-	return &CreateToken{logger, usersProxy}
+func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy, authnProxy http.AuthnProxy) *CreateToken {
+	return &CreateToken{logger, usersProxy, authnProxy}
 }
 
 // Execute receives the user entity filled with e-mail and password properties and try
 // to create a token on the user proxy service. If it succeed, the token is returned.
-func (ct *CreateToken) Execute(user entities.User) (token string, err error) {
-	token, err = ct.usersProxy.CreateToken(user)
+func (ct *CreateToken) Execute(user entities.User, tokenType string) (token string, err error) {
+	if tokenType == "user" {
+		token, err = ct.usersProxy.CreateToken(user)
+	} else if tokenType == "app" {
+		token, err = ct.authnProxy.CreateAppToken(user)
+	} else {
+		err = errors.New("only 'user' and 'app' token types are supported")
+	}
+
 	if err != nil {
-		ct.logger.Errorf("failed to create an user's token: %s", err.Error())
+		ct.logger.Errorf("failed to create a token: %s", err.Error())
 		return "", err
 	}
 
-	return token, err
+	return token, nil
 }
