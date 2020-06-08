@@ -1,6 +1,7 @@
 package interactors
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/CESARBR/knot-babeltower/pkg/mocks"
@@ -13,10 +14,9 @@ type createTokenResponse struct {
 	err   error
 }
 
-type CreateTokenTestCase struct {
+type createTokenTestCase struct {
 	name           string
-	email          string
-	password       string
+	user           entities.User
 	tokenType      string
 	expected       createTokenResponse
 	fakeLogger     *mocks.FakeLogger
@@ -24,35 +24,61 @@ type CreateTokenTestCase struct {
 	fakeAuthnProxy *mocks.FakeAuthnProxy
 }
 
-var ctCases = []CreateTokenTestCase{
+var (
+	mockedUser = entities.User{
+		Email:    "user@knot.com",
+		Password: "123qwe123qwe",
+		Token:    "user-access-token",
+	}
+	mockedToken   = "mocked-token"
+	errUsersProxy = errors.New("fail to create a user token")
+	errAuthnProxy = errors.New("fail to create a app token")
+)
+
+var ctCases = []createTokenTestCase{
 	{
 		"user token successfully created",
-		"user@user.com",
-		"123456789abcdef",
+		mockedUser,
 		"user",
-		createTokenResponse{"mocked-token", nil},
+		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
-		&mocks.FakeUsersProxy{Token: "mocked-token"},
+		&mocks.FakeUsersProxy{Token: mockedToken},
 		&mocks.FakeAuthnProxy{},
 	},
 	{
-		"failed to create user token when e-mail or password format are invalid",
-		"user",
-		"123456789abcdef",
-		"user",
-		createTokenResponse{"", entities.ErrUserBadRequest},
+		"app token successfully created",
+		mockedUser,
+		"app",
+		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
-		&mocks.FakeUsersProxy{Err: entities.ErrUserBadRequest},
+		&mocks.FakeUsersProxy{},
+		&mocks.FakeAuthnProxy{Token: mockedToken},
+	},
+	{
+		"failed to create user token when something goes wrong in usersProxy",
+		mockedUser,
+		"user",
+		createTokenResponse{"", errUsersProxy},
+		&mocks.FakeLogger{},
+		&mocks.FakeUsersProxy{Err: errUsersProxy},
 		&mocks.FakeAuthnProxy{},
 	},
 	{
-		"failed to create user token when unauthorized",
-		"user@user.com",
-		"abcdef",
-		"user",
-		createTokenResponse{"", entities.ErrUserForbidden},
+		"failed to create app token when something goes wrong in authnProxy",
+		mockedUser,
+		"app",
+		createTokenResponse{"", errAuthnProxy},
 		&mocks.FakeLogger{},
-		&mocks.FakeUsersProxy{Err: entities.ErrUserForbidden},
+		&mocks.FakeUsersProxy{},
+		&mocks.FakeAuthnProxy{Err: errAuthnProxy},
+	},
+	{
+		"fail to create a token when the tokenType is invalid",
+		mockedUser,
+		"invalid-token-type",
+		createTokenResponse{"", entities.ErrInvalidTokenType},
+		&mocks.FakeLogger{},
+		&mocks.FakeUsersProxy{},
 		&mocks.FakeAuthnProxy{},
 	},
 }
@@ -60,19 +86,27 @@ var ctCases = []CreateTokenTestCase{
 func TestCreateToken(t *testing.T) {
 	for _, tc := range ctCases {
 		t.Run(tc.name, func(t *testing.T) {
-			user := entities.User{Email: tc.email, Password: tc.password}
 			tc.fakeUsersProxy.
-				On("CreateToken", user).
+				On("CreateToken", tc.user).
 				Return(tc.fakeUsersProxy.Token, tc.fakeUsersProxy.Err)
+			tc.fakeAuthnProxy.
+				On("CreateAppToken", tc.user).
+				Return(tc.fakeAuthnProxy.Token, tc.fakeUsersProxy.Err)
 
 			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthnProxy)
-			token, err := createTokenInteractor.Execute(user, tc.tokenType)
+			token, err := createTokenInteractor.Execute(tc.user, tc.tokenType)
+
+			assert.Equal(t, tc.expected.token, token)
 			if err != nil {
-				assert.Equal(t, tc.expected.token, token)
-				return
+				assert.Equal(t, errors.Is(err, tc.expected.err), true)
 			}
 
-			assert.Nil(t, err)
+			if tc.tokenType == "user" {
+				tc.fakeUsersProxy.AssertExpectations(t)
+			}
+			if tc.tokenType == "app" {
+				tc.fakeAuthnProxy.AssertExpectations(t)
+			}
 		})
 	}
 }

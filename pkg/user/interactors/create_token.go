@@ -1,8 +1,6 @@
 package interactors
 
 import (
-	"errors"
-
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
@@ -29,7 +27,7 @@ func (ct *CreateToken) Execute(user entities.User, tokenType string) (token stri
 	} else if tokenType == "app" {
 		token, err = ct.authnProxy.CreateAppToken(user)
 	} else {
-		err = errors.New("only 'user' and 'app' token types are supported")
+		err = entities.ErrInvalidTokenType
 	}
 
 	if err != nil {

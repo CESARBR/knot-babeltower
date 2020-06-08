@@ -3,6 +3,9 @@ package entities
 import "errors"
 
 var (
+	// ErrInvalidTokenType represent the erro when the tokenType provided is not valid
+	ErrInvalidTokenType = errors.New("only 'user' and 'app' token types are supported")
+
 	// ErrMalformedRequest represents the error when request has a malformed body or parameters
 	ErrMalformedRequest = errors.New("failed due to malformed request")
 
