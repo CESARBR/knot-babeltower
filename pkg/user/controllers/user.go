@@ -17,6 +17,14 @@ type UserController struct {
 	createTokenInteractor *interactors.CreateToken
 }
 
+// CreateTokenRequest represents the received parameters for CreateToken operation
+type CreateTokenRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
+	Type     string `json:"type"`
+}
+
 // CreateTokenResponse is used to map the use case response to HTTP
 type CreateTokenResponse struct {
 	Token string `json:"token"`
@@ -83,15 +91,20 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 // @Router /tokens [post]
 // CreateToken handles the server request and calls CreateTokenInteractor
 func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
-	var user entities.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var req CreateTokenRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		uc.logger.Error("failed to parse request body")
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
 
-	token, err := uc.createTokenInteractor.Execute(user)
+	if req.Type == "" {
+		req.Type = "user"
+	}
+
+	user := entities.User{Email: req.Email, Password: req.Password, Token: req.Token}
+	token, err := uc.createTokenInteractor.Execute(user, req.Type)
 	if err != nil {
 		uc.logger.Errorf("failed to create user's token: %s", err)
 		der := &DetailedErrorResponse{err.Error()}
@@ -99,7 +112,7 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uc.logger.Infof("user's %s token created", user.Email)
+	uc.logger.Infof("token created for user %s", req.Email)
 	ctr := &CreateTokenResponse{token}
 	uc.writeResponse(w, http.StatusCreated, ctr)
 }
