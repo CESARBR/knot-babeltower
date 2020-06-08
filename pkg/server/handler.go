@@ -140,9 +140,9 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 func (mc *MsgHandler) handleRequestReplyCommands(msg network.InMsg, token string) error {
 	switch msg.RoutingKey {
 	case bindingKeyAuthDevice:
-		return mc.thingController.AuthDevice(msg.Body, token, msg.ReplyTo, msg.CorrelationId)
+		return mc.thingController.AuthDevice(msg.Body, token, msg.ReplyTo, msg.CorrelationID)
 	case bindingKeyListDevices:
-		return mc.thingController.ListDevices(token, msg.ReplyTo, msg.CorrelationId)
+		return mc.thingController.ListDevices(token, msg.ReplyTo, msg.CorrelationID)
 	}
 
 	return nil

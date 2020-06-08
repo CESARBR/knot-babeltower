@@ -1,6 +1,21 @@
 package network
 
-import "github.com/CESARBR/knot-babeltower/pkg/thing/entities"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
+)
+
+// MessageSerializer represents a interface for KNoT messages
+type MessageSerializer interface {
+	Serialize() ([]byte, error)
+}
+
+// message represents a KNoT message
+type message struct {
+	Payload interface{}
+}
 
 // DeviceRegisterRequest represents the incoming register device request message
 type DeviceRegisterRequest struct {
@@ -74,4 +89,18 @@ type DataUpdate struct {
 type DataSent struct {
 	ID   string          `json:"id"`
 	Data []entities.Data `json:"data"`
+}
+
+// NewMessage creates a message
+func NewMessage(msg interface{}) MessageSerializer {
+	return message{Payload: msg}
+}
+
+// Serialize serializes the message in a byte stream
+func (m message) Serialize() ([]byte, error) {
+	data, err := json.Marshal(&m.Payload)
+	if err != nil {
+		return nil, fmt.Errorf("error econding JSON message: %w", err)
+	}
+	return data, nil
 }

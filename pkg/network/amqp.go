@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+
 	"github.com/cenkalti/backoff/v4"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
@@ -21,9 +23,15 @@ type InMsg struct {
 	Exchange      string
 	RoutingKey    string
 	ReplyTo       string
-	CorrelationId string
+	CorrelationID string
 	Headers       map[string]interface{}
 	Body          []byte
+}
+
+// MessageOptions represents the message publishing options
+type MessageOptions struct {
+	Authorization string
+	CorrelationID string
 }
 
 // NewAmqp constructs the AMQP connection handler
@@ -58,11 +66,25 @@ func (a *Amqp) Stop() {
 }
 
 // PublishPersistentMessage sends a persistent message to RabbitMQ
-func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, body []byte, headers amqp.Table) error {
-	err := a.declareExchange(exchange, exchangeType)
+func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, msg MessageSerializer, options *MessageOptions) error {
+	var headers map[string]interface{}
+	var corrID string
+
+	if options != nil {
+		headers = map[string]interface{}{
+			"Authorization": options.Authorization,
+		}
+		corrID = options.CorrelationID
+	}
+
+	body, err := msg.Serialize()
 	if err != nil {
-		a.logger.Error(err)
-		return err
+		return fmt.Errorf("error serializing message: %w", err)
+	}
+
+	err = a.declareExchange(exchange, exchangeType)
+	if err != nil {
+		return fmt.Errorf("error declaring exchange: %w", err)
 	}
 
 	err = a.channel.Publish(
@@ -74,14 +96,14 @@ func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, body
 			Headers:         headers,
 			ContentType:     "text/plain",
 			ContentEncoding: "",
-			Body:            body,
 			DeliveryMode:    amqp.Persistent,
 			Priority:        0,
+			CorrelationId:   corrID,
+			Body:            body,
 		},
 	)
 	if err != nil {
-		a.logger.Error(err)
-		return err
+		return fmt.Errorf("error publishing message in channel: %w", err)
 	}
 
 	return nil
