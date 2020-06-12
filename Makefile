@@ -9,7 +9,7 @@ BINARY = app
 GOARCH = amd64
 
 LDFLAGS = -ldflags="$$(govvv -flags)"
-SHELL=/bin/bash
+SHELL=/bin/sh
 
 .PHONY: tools
 tools:
