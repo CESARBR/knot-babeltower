@@ -2,7 +2,7 @@ package interactors
 
 import (
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
-	"github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
+	"github.com/CESARBR/knot-babeltower/pkg/proxy"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
@@ -10,12 +10,12 @@ import (
 // execution. It is composed by the logger and user proxy services.
 type CreateToken struct {
 	logger     logging.Logger
-	usersProxy http.UsersProxy
-	authnProxy http.AuthnProxy
+	usersProxy proxy.UsersProxy
+	authnProxy proxy.AuthnProxy
 }
 
 // NewCreateToken creates a new CreateToken instance by receiving its dependencies.
-func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy, authnProxy http.AuthnProxy) *CreateToken {
+func NewCreateToken(logger logging.Logger, usersProxy proxy.UsersProxy, authnProxy proxy.AuthnProxy) *CreateToken {
 	return &CreateToken{logger, usersProxy, authnProxy}
 }
 

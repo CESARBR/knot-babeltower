@@ -1,4 +1,4 @@
-package http
+package proxy
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ type Authn struct {
 }
 
 // NewAuthnProxy creates a new authnProxy instance
-func NewAuthnProxy(logger logging.Logger, authnHost string, authnPort uint16) *Authn {
+func NewAuthnProxy(logger logging.Logger, authnHost string, authnPort uint16) AuthnProxy {
 	URL := fmt.Sprintf("http://%s:%d", authnHost, authnPort)
 	logger.Debug("authn proxy configured to " + URL)
 	return &Authn{URL, logger}

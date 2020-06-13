@@ -7,13 +7,12 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/internal/config"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
+	"github.com/CESARBR/knot-babeltower/pkg/proxy"
 	"github.com/CESARBR/knot-babeltower/pkg/server"
 	thingControllers "github.com/CESARBR/knot-babeltower/pkg/thing/controllers"
 	thingDeliveryAMQP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
-	thingDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
 	thingInteractors "github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 	userControllers "github.com/CESARBR/knot-babeltower/pkg/user/controllers"
-	userDeliveryHTTP "github.com/CESARBR/knot-babeltower/pkg/user/delivery/http"
 	userInteractors "github.com/CESARBR/knot-babeltower/pkg/user/interactors"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
@@ -48,9 +47,9 @@ func main() {
 	commandSender := thingDeliveryAMQP.NewCommandSender(logrus.Get("Command Sender"), amqp)
 
 	// Services
-	usersProxy := userDeliveryHTTP.NewUsersProxy(logrus.Get("UsersProxy"), config.Users.Hostname, config.Users.Port)
-	authnProxy := userDeliveryHTTP.NewAuthnProxy(logrus.Get("AuthnProxy"), config.Authn.Hostname, config.Authn.Port)
-	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
+	usersProxy := proxy.NewUsersProxy(logrus.Get("UsersProxy"), config.Users.Hostname, config.Users.Port)
+	authnProxy := proxy.NewAuthnProxy(logrus.Get("AuthnProxy"), config.Authn.Hostname, config.Authn.Port)
+	thingProxy := proxy.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)

@@ -2,8 +2,8 @@ package interactors
 
 import (
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/proxy"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/amqp"
-	"github.com/CESARBR/knot-babeltower/pkg/thing/delivery/http"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
@@ -25,14 +25,14 @@ type Interactor interface {
 type ThingInteractor struct {
 	logger     logging.Logger
 	publisher  amqp.Publisher
-	thingProxy http.ThingProxy
+	thingProxy proxy.ThingProxy
 }
 
 // NewThingInteractor creates a new ThingInteractor instance
 func NewThingInteractor(
 	logger logging.Logger,
 	publisher amqp.Publisher,
-	thingProxy http.ThingProxy,
+	thingProxy proxy.ThingProxy,
 ) *ThingInteractor {
 	return &ThingInteractor{logger, publisher, thingProxy}
 }
