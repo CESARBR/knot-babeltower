@@ -48,7 +48,7 @@ func main() {
 	commandSender := thingDeliveryAMQP.NewCommandSender(logrus.Get("Command Sender"), amqp)
 
 	// Services
-	usersProxy := proxy.NewUsersProxy(logrus.Get("UsersProxy"), config.Users.Hostname, config.Users.Port)
+	usersProxy := proxy.NewUsersProxy(logrus.Get("UsersProxy"), http, config.Users.Hostname, config.Users.Port)
 	authnProxy := proxy.NewAuthnProxy(logrus.Get("AuthnProxy"), http, config.Authn.Hostname, config.Authn.Port)
 	thingProxy := proxy.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
 

@@ -1,15 +1,15 @@
 package proxy
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
+
+// users documentation: https://github.com/mainflux/mainflux/blob/master/users/swagger.yaml
 
 // UsersProxy represents the interface to the user's proxy operations
 type UsersProxy interface {
@@ -20,74 +20,63 @@ type UsersProxy interface {
 // Users is responsible for implementing the user's proxy operations
 type Users struct {
 	URL    string
+	http   *network.HTTP
 	logger logging.Logger
 }
 
-// UserTokenResponse represents the create token response from the user's service
-type UserTokenResponse struct {
+// NewUsersProxy creates a new Proxy instance
+func NewUsersProxy(logger logging.Logger, http *network.HTTP, userHost string, userPort uint16) UsersProxy {
+	URL := fmt.Sprintf("http://%s:%d", userHost, userPort)
+	logger.Debug("user proxy configured to " + URL)
+	return &Users{URL, http, logger}
+}
+
+// userSchema represents the schema for an user
+type userSchema struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// tokenSchema represents the schema for a token
+type tokenSchema struct {
 	Token string `json:"token"`
 }
 
-// NewUsersProxy creates a new Proxy instance
-func NewUsersProxy(logger logging.Logger, userHost string, userPort uint16) *Users {
-	URL := fmt.Sprintf("http://%s:%d", userHost, userPort)
-	logger.Debug("user proxy configured to " + URL)
-	return &Users{URL, logger}
-}
-
-// Create proxy the http request to user service
-func (p *Users) Create(user entities.User) (err error) {
-	p.logger.Debug("proxying request to create user")
-	/**
-	 * Add Timeout in http.Client to avoid blocking the request.
-	 */
-	client := &http.Client{Timeout: 10 * time.Second}
-	jsonUser, err := json.Marshal(user)
-	if err != nil {
-		return err
+// Create create a new user on users service
+func (u *Users) Create(user entities.User) error {
+	request := network.Request{
+		Path:   u.URL + "/users",
+		Method: "POST",
+		Body:   userSchema{Email: user.Email, Password: user.Password},
 	}
 
-	resp, err := client.Post(p.URL+"/users", "application/json", bytes.NewBuffer(jsonUser))
+	err := u.http.MakeRequest(request, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating a new user: %w", err)
 	}
-	defer resp.Body.Close()
 
-	return p.mapErrorFromStatusCode(resp.StatusCode)
+	return nil
 }
 
 // CreateToken creates a valid token for the specified user
-func (p *Users) CreateToken(user entities.User) (string, error) {
-	var resp *http.Response
-
-	credentials, err := json.Marshal(user)
-	if err != nil {
-		return "", err
+func (u *Users) CreateToken(user entities.User) (string, error) {
+	var response tokenSchema
+	request := network.Request{
+		Path:   u.URL + "/tokens",
+		Method: "POST",
+		Body:   userSchema{Email: user.Email, Password: user.Password},
 	}
 
-	client := &http.Client{}
-	resp, err = client.Post(p.URL+"/tokens", "application/json", bytes.NewBuffer(credentials))
+	err := u.http.MakeRequest(request, &response)
 	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	err = p.mapErrorFromStatusCode(resp.StatusCode)
-	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error requesting for an user token: %w", err)
 	}
 
-	tr := &UserTokenResponse{}
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(tr)
-	if err != nil {
-		return "", nil
-	}
-
-	return tr.Token, nil
+	return response.Token, nil
 }
 
-func (p *Users) mapErrorFromStatusCode(code int) error {
+// mapErrorFromStatusCode returns the error associated with status code
+func (u *Users) mapErrorFromStatusCode(code int) error {
 	var err error
 
 	if code != http.StatusCreated {

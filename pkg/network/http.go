@@ -54,10 +54,12 @@ func (h *HTTP) MakeRequest(request Request, response interface{}) error {
 		return err
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(response)
-	if err != nil {
-		return fmt.Errorf("error decoding response: %w", err)
+	if response != nil {
+		decoder := json.NewDecoder(resp.Body)
+		err = decoder.Decode(response)
+		if err != nil {
+			return fmt.Errorf("error decoding response: %w", err)
+		}
 	}
 
 	return nil
