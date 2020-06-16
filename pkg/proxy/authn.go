@@ -1,12 +1,10 @@
 package proxy
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
@@ -20,22 +18,15 @@ type AuthnProxy interface {
 // Authn is responsible for implementing the authn's proxy operations
 type Authn struct {
 	URL    string
+	http   *network.HTTP
 	logger logging.Logger
 }
 
 // NewAuthnProxy creates a new authnProxy instance
-func NewAuthnProxy(logger logging.Logger, authnHost string, authnPort uint16) AuthnProxy {
+func NewAuthnProxy(logger logging.Logger, http *network.HTTP, authnHost string, authnPort uint16) AuthnProxy {
 	URL := fmt.Sprintf("http://%s:%d", authnHost, authnPort)
 	logger.Debug("authn proxy configured to " + URL)
-	return &Authn{URL, logger}
-}
-
-// authnRequest represents an authn service request
-type authnRequest struct {
-	Path          string
-	Method        string
-	Body          interface{}
-	Authorization string
+	return &Authn{URL, http, logger}
 }
 
 // keyRequestSchema represents the schema for a key request
@@ -56,68 +47,17 @@ type keySchema struct {
 // CreateAppToken creates a valid token for the application
 func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
 	var response keySchema
-	request := authnRequest{
-		Path:          "/keys",
+	request := network.Request{
+		Path:          a.URL + "/keys",
 		Method:        "POST",
 		Body:          keyRequestSchema{Issuer: user.Email, Type: 2, Duration: duration},
 		Authorization: user.Token,
 	}
 
-	err := a.doRequest(request, &response)
+	err := a.http.MakeRequest(request, &response)
 	if err != nil {
 		return "", fmt.Errorf("error requesting a new app token: %w", err)
 	}
 
 	return response.Value, nil
-}
-
-func (a *Authn) doRequest(request authnRequest, response interface{}) error {
-	body, err := json.Marshal(&request.Body)
-	if err != nil {
-		return fmt.Errorf("error encoding body: %w", err)
-	}
-
-	req, err := http.NewRequest(request.Method, a.URL+request.Path, bytes.NewBuffer(body))
-	if err != nil {
-		return fmt.Errorf("error creating request object: %w", err)
-	}
-	req.Header.Add("Authorization", request.Authorization)
-	req.Header.Add("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error executing HTTP request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	err = a.mapErrorFromStatusCode(resp.StatusCode)
-	if err != nil {
-		return err
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(response)
-	if err != nil {
-		return fmt.Errorf("error decoding response: %w", err)
-	}
-
-	return nil
-}
-
-func (a *Authn) mapErrorFromStatusCode(code int) error {
-	var err error
-
-	switch code {
-	case http.StatusBadRequest:
-		err = entities.ErrMalformedRequest
-	case http.StatusConflict:
-		err = entities.ErrExistingID
-	case http.StatusUnsupportedMediaType:
-		err = entities.ErrMissingContentType
-	case http.StatusInternalServerError:
-		err = entities.ErrService
-	}
-
-	return err
 }
