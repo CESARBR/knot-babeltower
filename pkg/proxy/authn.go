@@ -54,7 +54,7 @@ func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error)
 		Authorization: user.Token,
 	}
 
-	err := a.http.MakeRequest(request, &response)
+	err := a.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return "", fmt.Errorf("error requesting a new app token: %w", err)
 	}

@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -50,7 +49,7 @@ func (u *Users) Create(user entities.User) error {
 		Body:   userSchema{Email: user.Email, Password: user.Password},
 	}
 
-	err := u.http.MakeRequest(request, nil)
+	err := u.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error creating a new user: %w", err)
 	}
@@ -67,29 +66,11 @@ func (u *Users) CreateToken(user entities.User) (string, error) {
 		Body:   userSchema{Email: user.Email, Password: user.Password},
 	}
 
-	err := u.http.MakeRequest(request, &response)
+	err := u.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return "", fmt.Errorf("error requesting for an user token: %w", err)
 	}
 
 	token := response.Body.(*tokenSchema)
 	return token.Token, nil
-}
-
-// mapErrorFromStatusCode returns the error associated with status code
-func (u *Users) mapErrorFromStatusCode(code int) error {
-	var err error
-
-	if code != http.StatusCreated {
-		switch code {
-		case http.StatusForbidden:
-			err = entities.ErrUserForbidden
-		case http.StatusConflict:
-			err = entities.ErrUserExists
-		case http.StatusBadRequest:
-			err = entities.ErrUserBadRequest
-		}
-	}
-
-	return err
 }

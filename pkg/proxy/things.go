@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
@@ -10,12 +9,6 @@ import (
 )
 
 // things documentation: https://github.com/mainflux/mainflux/blob/master/things/swagger.yaml
-
-type errorConflict struct{ error }
-
-func (err errorConflict) Error() string {
-	return "error conflict"
-}
 
 // ThingProxy proxy a request to the thing service interface
 type ThingProxy interface {
@@ -99,7 +92,7 @@ func (p proxy) Create(id, name, authorization string) (string, error) {
 		Authorization: authorization,
 	}
 
-	err := p.http.MakeRequest(request, &response)
+	err := p.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return "", fmt.Errorf("error creating a new thing: %w", err)
 	}
@@ -123,7 +116,7 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil)
+	err = p.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
@@ -146,7 +139,7 @@ func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Conf
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil)
+	err = p.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
@@ -192,7 +185,7 @@ func (p proxy) Remove(authorization, ID string) error {
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil)
+	err = p.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting to delete thing: %w", err)
 	}
@@ -224,7 +217,7 @@ func (p proxy) getThings(authorization string, offset int) ([]*entities.Thing, e
 		Authorization: authorization,
 	}
 
-	err := p.http.MakeRequest(request, &response)
+	err := p.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return nil, fmt.Errorf("error requesting for things: %w", err)
 	}
@@ -241,18 +234,4 @@ func (p proxy) getThings(authorization string, offset int) ([]*entities.Thing, e
 	}
 
 	return things, nil
-}
-
-func (p proxy) mapErrorFromStatusCode(code int) error {
-	var err error
-
-	if code != http.StatusCreated {
-		switch code {
-		case http.StatusConflict:
-			err = errorConflict{}
-		case http.StatusForbidden:
-			err = entities.ErrThingForbidden
-		}
-	}
-	return err
 }

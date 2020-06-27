@@ -7,8 +7,18 @@ import (
 	"net/http"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
-	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 	"github.com/google/go-querystring/query"
+)
+
+var (
+	// ErrMalformedParams occurs when the request body or query was a malformed
+	ErrMalformedParams = fmt.Errorf("request has a malformed body or query")
+
+	// ErrMissingContentType occurs when request has no content type
+	ErrMissingContentType = fmt.Errorf("request has no content type")
+
+	// ErrInternal occurs when there is some internal server error
+	ErrInternal = fmt.Errorf("unexpected server-side error ocurred")
 )
 
 // HTTP handles HTTP requests
@@ -37,7 +47,7 @@ func NewHTTP(logger logging.Logger) *HTTP {
 }
 
 // MakeRequest execute a HTTP request
-func (h *HTTP) MakeRequest(request Request, response *Response) error {
+func (h *HTTP) MakeRequest(request Request, response *Response, expectedErrors map[int]error) error {
 	body, err := json.Marshal(request.Body)
 	if err != nil {
 		return fmt.Errorf("error encoding body: %w", err)
@@ -65,7 +75,7 @@ func (h *HTTP) MakeRequest(request Request, response *Response) error {
 	}
 	defer resp.Body.Close()
 
-	err = h.mapErrorFromStatusCode(resp.StatusCode)
+	err = h.mapErrorFromStatusCode(resp.StatusCode, expectedErrors)
 	if err != nil {
 		return err
 	}
@@ -85,18 +95,16 @@ func (h *HTTP) MakeRequest(request Request, response *Response) error {
 	return nil
 }
 
-func (h *HTTP) mapErrorFromStatusCode(code int) error {
-	var err error
+func (h *HTTP) mapErrorFromStatusCode(code int, expectedErrors map[int]error) error {
+	err := expectedErrors[code]
 
 	switch code {
 	case http.StatusBadRequest:
-		err = entities.ErrMalformedRequest
-	case http.StatusConflict:
-		err = entities.ErrExistingID
+		err = ErrMalformedParams
 	case http.StatusUnsupportedMediaType:
-		err = entities.ErrMissingContentType
+		err = ErrMissingContentType
 	case http.StatusInternalServerError:
-		err = entities.ErrService
+		err = ErrInternal
 	}
 
 	return err
