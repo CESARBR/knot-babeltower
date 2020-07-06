@@ -19,33 +19,33 @@ type interval struct {
 
 // rules reference table: https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html
 var rules = map[int]schemaType{
-	0x0000: {valueType: 4, unit: 0},              // RAW   => NONE
-	0x0001: {valueType: 1, unit: interval{1, 3}}, // INT   => VOLTAGE
-	0x0002: {valueType: 1, unit: interval{1, 2}}, // INT   => CURRENT
-	0x0003: {valueType: 1, unit: 1},              // INT   => RESISTENCE
-	0x0004: {valueType: 1, unit: interval{1, 3}}, // INT   => POWER
-	0x0005: {valueType: 1, unit: interval{1, 3}}, // INT   => TEMPERATURE
-	0x0006: {valueType: 1, unit: 1},              // INT   => RELATIVE_HUMIDITY
-	0x0007: {valueType: 1, unit: interval{1, 3}}, // INT   => LUMINOSITY
-	0x0008: {valueType: 1, unit: interval{1, 3}}, // INT   => TIME
-	0x0009: {valueType: 1, unit: interval{1, 4}}, // INT   => MASS
-	0x000A: {valueType: 1, unit: interval{1, 3}}, // INT   => PRESSURE
-	0x000B: {valueType: 1, unit: interval{1, 4}}, // INT   => DISTANCE
-	0x000C: {valueType: 2, unit: interval{1, 2}}, // FLOAT => ANGLE
-	0x000D: {valueType: 2, unit: interval{1, 4}}, // FLOAT => VOLUME
-	0x000E: {valueType: 2, unit: interval{1, 3}}, // FLOAT => AREA
-	0x000F: {valueType: 2, unit: 1},              // FLOAT => RAIN
-	0x0010: {valueType: 2, unit: 1},              // FLOAT => DENSITY
-	0x0011: {valueType: 2, unit: 1},              // FLOAT => LATITUDE
-	0x0012: {valueType: 2, unit: 1},              // FLOAT => LONGITUDE
-	0x0013: {valueType: 1, unit: interval{1, 4}}, // INT   => SPEED
-	0x0014: {valueType: 2, unit: interval{1, 6}}, // FLOAT => VOLUMEFLOW
-	0x0015: {valueType: 1, unit: interval{1, 6}}, // INT   => ENERGY
-	0xFFF0: {valueType: 3, unit: 0},              // BOOL  => PRESENCE
-	0xFFF1: {valueType: 3, unit: 0},              // BOOL  => SWITCH
-	0xFFF2: {valueType: 4, unit: 0},              // RAW   => COMMAND
-	0xFF10: {valueType: 1, unit: 0},              // INT   => ANALOG
-	0xFFFF: {valueType: 4, unit: 0},              // RAW   => INVALID
+	0x0000: {valueType: interval{1,7}, unit: 0},              // NONE
+	0x0001: {valueType: interval{1,7}, unit: interval{1, 3}}, // VOLTAGE
+	0x0002: {valueType: interval{1,7}, unit: interval{1, 2}}, // CURRENT
+	0x0003: {valueType: interval{1,7}, unit: 1},              // RESISTENCE
+	0x0004: {valueType: interval{1,7}, unit: interval{1, 3}}, // POWER
+	0x0005: {valueType: interval{1,7}, unit: interval{1, 3}}, // TEMPERATURE
+	0x0006: {valueType: interval{1,7}, unit: 1},              // RELATIVE_HUMIDITY
+	0x0007: {valueType: interval{1,7}, unit: interval{1, 3}}, // LUMINOSITY
+	0x0008: {valueType: interval{1,7}, unit: interval{1, 3}}, // TIME
+	0x0009: {valueType: interval{1,7}, unit: interval{1, 4}}, // MASS
+	0x000A: {valueType: interval{1,7}, unit: interval{1, 3}}, // PRESSURE
+	0x000B: {valueType: interval{1,7}, unit: interval{1, 4}}, // DISTANCE
+	0x000C: {valueType: interval{1,7}, unit: interval{1, 2}}, // ANGLE
+	0x000D: {valueType: interval{1,7}, unit: interval{1, 4}}, // VOLUME
+	0x000E: {valueType: interval{1,7}, unit: interval{1, 3}}, // AREA
+	0x000F: {valueType: interval{1,7}, unit: 1},              // RAIN
+	0x0010: {valueType: interval{1,7}, unit: 1},              // DENSITY
+	0x0011: {valueType: interval{1,7}, unit: 1},              // LATITUDE
+	0x0012: {valueType: interval{1,7}, unit: 1},              // LONGITUDE
+	0x0013: {valueType: interval{1,7}, unit: interval{1, 4}}, // SPEED
+	0x0014: {valueType: interval{1,7}, unit: interval{1, 6}}, // VOLUMEFLOW
+	0x0015: {valueType: interval{1,7}, unit: interval{1, 6}}, // ENERGY
+	0xFFF0: {valueType: interval{1,7}, unit: 0},              // PRESENCE
+	0xFFF1: {valueType: interval{1,7}, unit: 0},              // SWITCH
+	0xFFF2: {valueType: interval{1,7}, unit: 0},              // COMMAND
+	0xFF10: {valueType: interval{1,7}, unit: 0},              // GENERIC
+	0xFFFF: {valueType: interval{1,7}, unit: 0},              // INVALID
 }
 
 // UpdateSchema receive the new sensor schema and update it on the thing's service
