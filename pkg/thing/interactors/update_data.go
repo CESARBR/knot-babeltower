@@ -58,7 +58,7 @@ func validateSchema(data entities.Data, schema []entities.Schema) bool {
 			switch data.Value.(type) {
 			case float64:
 				if data.Value == math.Trunc(data.Value.(float64)) { // check if number is integer
-					return s.ValueType == 1 // int
+					return validateSchemaNumber(data.Value.(float64), s.ValueType)
 				}
 				return s.ValueType == 2 // float
 			case bool:
@@ -72,4 +72,21 @@ func validateSchema(data entities.Data, schema []entities.Schema) bool {
 	}
 
 	return false
+}
+
+func validateSchemaNumber(value float64, valueType int) bool {
+	switch valueType {
+	case 1: // int
+		return value >= math.MinInt32 && value <= math.MaxInt32
+	case 2: // float
+		return true;
+	case 5: // int64
+		return value >= math.MinInt64 && value <= math.MaxInt64
+	case 6: // uint
+		return value >= 0 && value <= math.MaxUint32
+	case 7: // uint64
+		return value >= 0 && value <= math.MaxUint64
+	default: // Not a number
+		return false
+	}
 }
