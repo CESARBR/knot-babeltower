@@ -32,6 +32,7 @@ type InMsg struct {
 type MessageOptions struct {
 	Authorization string
 	CorrelationID string
+	Expiration    string
 }
 
 // NewAmqp constructs the AMQP connection handler
@@ -68,13 +69,14 @@ func (a *Amqp) Stop() {
 // PublishPersistentMessage sends a persistent message to RabbitMQ
 func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, msg MessageSerializer, options *MessageOptions) error {
 	var headers map[string]interface{}
-	var corrID string
+	var corrID, expTime string
 
 	if options != nil {
 		headers = map[string]interface{}{
 			"Authorization": options.Authorization,
 		}
 		corrID = options.CorrelationID
+		expTime = options.Expiration
 	}
 
 	body, err := msg.Serialize()
@@ -100,6 +102,7 @@ func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, msg 
 			Priority:        0,
 			CorrelationId:   corrID,
 			Body:            body,
+			Expiration:      expTime,
 		},
 	)
 	if err != nil {
