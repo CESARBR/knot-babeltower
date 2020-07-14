@@ -16,6 +16,7 @@ const (
 	schemaOutKey              = "device.schema.updated"
 	updateDataKey             = "data.update"
 	requestDataKey            = "data.request"
+	dataExpirationTime        = "86400000" // 1 day in milliseconds
 )
 
 // Publisher provides methods to send events to the clients
@@ -125,7 +126,7 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, replyTo, cor
 func (mp *msgClientPublisher) PublishPublishedData(thingID, token string, data []entities.Data) error {
 	mp.logger.Debug("sending publish data request")
 	msg := network.NewMessage(network.DataSent{ID: thingID, Data: data})
-	options := &network.MessageOptions{Authorization: token}
+	options := &network.MessageOptions{Authorization: token, Expiration: dataExpirationTime}
 
 	return mp.amqp.PublishPersistentMessage(exchangeDataPublished, exchangeDataPublishedType, "", msg, options)
 }
