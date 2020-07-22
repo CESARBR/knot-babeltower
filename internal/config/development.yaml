@@ -3,6 +3,7 @@ server:
 
 logger:
   level: debug
+  syslog: false
 
 users:
   hostname: users

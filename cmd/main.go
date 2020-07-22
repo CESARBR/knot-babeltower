@@ -27,7 +27,7 @@ func monitorSignals(sigs chan os.Signal, quit chan bool, logger logging.Logger) 
 
 func main() {
 	config := config.Load()
-	logrus := logging.NewLogrus(config.Logger.Level)
+	logrus := logging.NewLogrus(config.Logger.Level, config.Logger.Syslog)
 
 	logger := logrus.Get("Main")
 	logger.Info("starting KNoT Babeltower")
