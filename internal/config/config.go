@@ -16,7 +16,8 @@ type Server struct {
 
 // Logger represents the logger configuration properties
 type Logger struct {
-	Level string
+	Level  string
+	Syslog bool
 }
 
 // Users represents the users service to proxy request
@@ -53,7 +54,7 @@ type Config struct {
 }
 
 func readFile(name string) {
-	logger := logging.NewLogrus("error").Get("Config")
+	logger := logging.NewLogrus("error", false).Get("Config")
 	viper.SetConfigName(name)
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Fatalf("error reading config file, %s", err)
@@ -63,7 +64,7 @@ func readFile(name string) {
 // Load returns the service configuration
 func Load() Config {
 	var configuration Config
-	logger := logging.NewLogrus("error").Get("Config")
+	logger := logging.NewLogrus("error", false).Get("Config")
 	viper.AddConfigPath("internal/config")
 	viper.SetConfigType("yaml")
 
