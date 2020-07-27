@@ -22,7 +22,7 @@ const (
 // Publisher provides methods to send events to the clients
 type Publisher interface {
 	PublishRegisteredDevice(thingID, name, token string, err error) error
-	PublishUnregisteredDevice(thingID string, err error) error
+	PublishUnregisteredDevice(thingID, token string, err error) error
 	PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error
 	PublishUpdateData(thingID string, data []entities.Data) error
 	PublishRequestData(thingID string, sensorIds []int) error
@@ -67,12 +67,13 @@ func (mp *msgClientPublisher) PublishRegisteredDevice(thingID, name, token strin
 }
 
 // PublishUnregisteredDevice publishes the unregistered device's id and error message to the device unregistered queue
-func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID string, err error) error {
+func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID, token string, err error) error {
 	mp.logger.Debug("sending unregistered response")
 	errMsg := getErrMsg(err)
 	msg := network.NewMessage(network.DeviceUnregisteredResponse{ID: thingID, Error: errMsg})
+	options := &network.MessageOptions{Authorization: token}
 
-	return mp.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, unregisterOutKey, msg, nil)
+	return mp.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, unregisterOutKey, msg, options)
 }
 
 // PublishUpdatedSchema sends the updated schema response
