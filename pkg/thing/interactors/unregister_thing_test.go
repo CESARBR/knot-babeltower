@@ -25,7 +25,7 @@ var unregisterAtCases = []UnregisterThingTestCase{
 		"thing-id",
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
-		&mocks.FakePublisher{},
+		&mocks.FakePublisher{SendError: ErrAuthNotProvided, Err: ErrAuthNotProvided},
 		ErrAuthNotProvided.Error(),
 	},
 	{

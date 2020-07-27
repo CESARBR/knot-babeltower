@@ -5,7 +5,8 @@ func (i *ThingInteractor) Unregister(authorization, id string) error {
 	i.logger.Debug("executing unregister thing use case")
 
 	if authorization == "" {
-		return ErrAuthNotProvided
+		sendErr := i.publisher.PublishUnregisteredDevice(id, ErrAuthNotProvided)
+		return sendErr
 	}
 
 	if id == "" {
