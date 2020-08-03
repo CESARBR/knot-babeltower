@@ -15,11 +15,12 @@ type ThingController struct {
 	logger          logging.Logger
 	thingInteractor interactors.Interactor
 	sender          amqp.Sender
+	publisher       amqp.Publisher
 }
 
 // NewThingController constructs the ThingController
-func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, sender amqp.Sender) *ThingController {
-	return &ThingController{logger, thingInteractor, sender}
+func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, sender amqp.Sender, publisher amqp.Publisher) *ThingController {
+	return &ThingController{logger, thingInteractor, sender, publisher}
 }
 
 // Register handles the register device request and execute its use case
@@ -67,6 +68,7 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 
 // UpdateConfig handles the update config request and execute its use case
 func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string) error {
+	mc.logger.Info("update config message received")
 	var updateConfigReq network.ConfigUpdateRequest
 	err := json.Unmarshal(body, &updateConfigReq)
 	if err != nil {
@@ -74,15 +76,19 @@ func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string)
 		return err
 	}
 
-	mc.logger.Info("update config message received")
-	mc.logger.Debug(authorizationHeader, updateConfigReq)
-
 	err = mc.thingInteractor.UpdateConfig(authorizationHeader, updateConfigReq.ID, updateConfigReq.Config)
 	if err != nil {
+		pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, err)
+		if pubErr != nil {
+			return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
+		}
 		return err
 	}
 
-	// TODO: Publish response to message broker
+	pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, err)
+	if pubErr != nil {
+		return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
+	}
 
 	return nil
 }

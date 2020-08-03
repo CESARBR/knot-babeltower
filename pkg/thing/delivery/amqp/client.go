@@ -14,6 +14,7 @@ const (
 	registerOutKey            = "device.registered"
 	unregisterOutKey          = "device.unregistered"
 	schemaOutKey              = "device.schema.updated"
+	configOutKey              = "device.config.updated"
 	updateDataKey             = "data.update"
 	requestDataKey            = "data.request"
 	dataExpirationTime        = "86400000" // 1 day in milliseconds
@@ -24,6 +25,7 @@ type Publisher interface {
 	PublishRegisteredDevice(thingID, name, token string, err error) error
 	PublishUnregisteredDevice(thingID, token string, err error) error
 	PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error
+	PublishUpdatedConfig(thingID string, config []entities.Config, err error) error
 	PublishUpdateData(thingID string, data []entities.Data) error
 	PublishRequestData(thingID string, sensorIds []int) error
 	PublishPublishedData(thingID, token string, data []entities.Data) error
@@ -83,6 +85,15 @@ func (mp *msgClientPublisher) PublishUpdatedSchema(thingID string, schema []enti
 	msg := network.NewMessage(network.SchemaUpdatedResponse{ID: thingID, Schema: schema, Error: errMsg})
 
 	return mp.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, schemaOutKey, msg, nil)
+}
+
+// PublishUpdatedConfig sends the updated config response
+func (mp *msgClientPublisher) PublishUpdatedConfig(thingID string, config []entities.Config, err error) error {
+	mp.logger.Debug("sending update config response")
+	errMsg := getErrMsg(err)
+	msg := network.NewMessage(network.ConfigUpdatedResponse{ID: thingID, Config: config, Error: errMsg})
+
+	return mp.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, configOutKey, msg, nil)
 }
 
 // PublishRequestData sends request data command
