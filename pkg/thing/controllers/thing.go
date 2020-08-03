@@ -65,6 +65,13 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 	return nil
 }
 
+// UpdateConfig handles the update config request and execute its use case
+func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string) error {
+	// TODO: Call updateConfig interactor
+	// TODO: Publish response to message broker
+	return nil
+}
+
 // ListDevices handles the list devices request and execute its use case
 func (mc *ThingController) ListDevices(authorization, replyTo, corrID string) error {
 	mc.logger.Info("list devices command received")
