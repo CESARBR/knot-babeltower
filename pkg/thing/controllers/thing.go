@@ -67,8 +67,23 @@ func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string)
 
 // UpdateConfig handles the update config request and execute its use case
 func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string) error {
-	// TODO: Call updateConfig interactor
+	var updateConfigReq network.ConfigUpdateRequest
+	err := json.Unmarshal(body, &updateConfigReq)
+	if err != nil {
+		mc.logger.Error(err)
+		return err
+	}
+
+	mc.logger.Info("update config message received")
+	mc.logger.Debug(authorizationHeader, updateConfigReq)
+
+	err = mc.thingInteractor.UpdateConfig(authorizationHeader, updateConfigReq.ID, updateConfigReq.Config)
+	if err != nil {
+		return err
+	}
+
 	// TODO: Publish response to message broker
+
 	return nil
 }
 
