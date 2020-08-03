@@ -25,6 +25,12 @@ func (ftp *FakeThingProxy) UpdateSchema(authorization, thingID string, schema []
 	return ret.Error(0)
 }
 
+// UpdateConfig provides a mock function to update thing's config on the thing's service
+func (ftp *FakeThingProxy) UpdateConfig(authorization, thingID string, config []entities.Config) error {
+	ret := ftp.Called(authorization, thingID, config)
+	return ret.Error(0)
+}
+
 // Get provides a mock function to receive a thing from the thing's service
 func (ftp *FakeThingProxy) Get(authorization, thingID string) (*entities.Thing, error) {
 	args := ftp.Called(authorization, thingID)

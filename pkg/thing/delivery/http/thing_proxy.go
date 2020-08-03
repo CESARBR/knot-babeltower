@@ -22,6 +22,7 @@ func (err errorConflict) Error() string {
 type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
 	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
+	UpdateConfig(authorization, ID string, configList []entities.Config) error
 	List(authorization string) (things []*entities.Thing, err error)
 	Get(authorization, ID string) (*entities.Thing, error)
 	Remove(authorization, ID string) error
@@ -41,6 +42,7 @@ type objMetadata struct {
 type objKnot struct {
 	ID     string            `json:"id"`
 	Schema []entities.Schema `json:"schema,omitempty"`
+	Config []entities.Config `json:"config,omitempty"`
 }
 
 type pageFetchInput struct {
@@ -82,7 +84,7 @@ func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingPro
 // Create register a thing on service and return the id generated
 func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
 	p.logger.Debug("proxying request to create thing")
-	t := p.getRemoteThingRepr(id, name, nil)
+	t := p.getRemoteThingRepr(id, name, nil, nil)
 	body, err := json.Marshal(t)
 	if err != nil {
 		p.logger.Error(err)
@@ -124,8 +126,43 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 		return err
 	}
 
-	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema)
+	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
 	rt.Metadata.Knot.Schema = schemaList
+	parsedBody, err := json.Marshal(rt)
+	if err != nil {
+		p.logger.Error(err)
+		return err
+	}
+
+	requestInfo := &RequestInfo{
+		"PUT",
+		p.url + "/things/" + t.Token,
+		authorization,
+		"application/json",
+		parsedBody,
+		nil,
+	}
+
+	resp, err := p.sendRequest(requestInfo)
+	if err != nil {
+		p.logger.Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	return p.mapErrorFromStatusCode(resp.StatusCode)
+}
+
+// UpdateConfig receives as parameters the authorization token, thing's ID and config. After that,
+// it sends a HTTP request to the thing's service in order to update it with the new config.
+func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Config) error {
+	t, err := p.Get(authorization, ID)
+	if err != nil {
+		return err
+	}
+
+	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
+	rt.Metadata.Knot.Config = configList
 	parsedBody, err := json.Marshal(rt)
 	if err != nil {
 		p.logger.Error(err)
@@ -159,7 +196,7 @@ func (p proxy) List(authorization string) ([]*entities.Thing, error) {
 	}
 
 	for _, t := range pagThings {
-		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema})
+		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config})
 	}
 
 	return things, err
@@ -208,13 +245,14 @@ func (p proxy) Remove(authorization, ID string) error {
 	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
-func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema) ThingProxyRepr {
+func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema, configList []entities.Config) ThingProxyRepr {
 	return ThingProxyRepr{
 		Name: name,
 		Metadata: objMetadata{
 			Knot: objKnot{
 				ID:     id,
 				Schema: schemaList,
+				Config: configList,
 			},
 		},
 	}
