@@ -38,4 +38,10 @@ var (
 
 	// ErrDataInvalid is returned when the provided data mismatch the thing's schema
 	ErrDataInvalid = errors.New("data is incompatible with thing's schema")
+
+	// ErrConfigNotProvided is returned when thing's config is not provided
+	ErrConfigNotProvided = errors.New("thing's config not provided")
+
+	// ErrConfigInvalid is returned when thing's config mismatch the thing's schema
+	ErrConfigInvalid = errors.New("config is incompatible with thing's schema")
 )
