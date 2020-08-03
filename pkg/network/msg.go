@@ -55,6 +55,12 @@ type SchemaUpdatedResponse struct {
 	Error  *string           `json:"error"`
 }
 
+// ConfigUpdateRequest represents the incoming update config request message
+type ConfigUpdateRequest struct {
+	ID     string            `json:"id"`
+	Config []entities.Config `json:"config,omitempty"`
+}
+
 // DeviceAuthRequest represents the incoming auth device command
 type DeviceAuthRequest struct {
 	ID    string `json:"id"`
