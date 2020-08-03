@@ -32,6 +32,12 @@ func (fp *FakePublisher) PublishUpdatedSchema(thingID string, schema []entities.
 	return ret.Error(0)
 }
 
+// PublishUpdatedConfig provides a mock function to send an update config response
+func (fp *FakePublisher) PublishUpdatedConfig(thingID string, config []entities.Config, err error) error {
+	ret := fp.Called(thingID, config, err)
+	return ret.Error(0)
+}
+
 // PublishUpdateData provides a mock function to send an update data command
 func (fp *FakePublisher) PublishUpdateData(thingID string, data []entities.Data) error {
 	args := fp.Called(thingID, data)
