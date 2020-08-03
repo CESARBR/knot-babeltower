@@ -8,6 +8,7 @@ This document describes the events `babeltower` is able to receive and send. The
   - [device.register](#device-register)
   - [device.unregister](#device-unregister)
   - [device.schema.sent](#device-schema-sent)
+  - [device.config.sent](#device-config-sent)
   - [device.list](#device-list)
   - [device.auth](#device-auth)
   - [data.sent](#data-sent)
@@ -18,6 +19,7 @@ This document describes the events `babeltower` is able to receive and send. The
   - [device.registered](#device-registered)
   - [device.unregistered](#device-unregistered)
   - [device.schema.updated](#device-schema-updated)
+  - [device.config.updated](#device-config-updated)
   - [data.published](#data-published)
   - [device.[id].data.request](#device-<id>-data-request)
   - [device.[id].data.update](#device-<id>-data-update)
@@ -162,6 +164,59 @@ Event that represents a device sending its schema to the services that are inter
   - Routing key: device.schema.sent
 
 </details>
+
+### **device.config.sent** <a name="device-config-sent"></a>
+
+Event that represents a device sending its config to the services that are interested. After receiving this event, `babeltower` updates the thing's config on the registry and send a [`device.config.updated`](#device-config-updated) event.
+
+<details>
+  <summary>Headers</summary>
+
+  - `token` **String** user's token
+
+</details>
+
+<details>
+  <summary>Payload</summary>
+
+  JSON in the following format:
+
+  - `id` **String** thing's ID
+  - `config` **Array** config items, each one formed by:
+    - `sensorId` **Number** sensor ID
+    - `change` **Boolean** enable sending sensor data when its value changes
+    - `timeSec` **Number** time interval in seconds that indicates when data must be sent to the cloud
+    - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
+    - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
+
+  Example:
+
+  ```json
+  {
+    "id": "fbe64efa6c7f717e",
+    "config": [{
+      "sensorId": 1,
+      "change": true,
+      "timeSec": 10,
+      "lowerThreshold": 1000,
+      "upperThreshold": 3000
+    }]
+  }
+  ```
+</details>
+
+<details>
+  <summary>AMQP Binding</summary>
+
+  - Exchange:
+    - Type: direct
+    - Name: device
+    - Durable: `true`
+    - Auto-delete: `false`
+  - Routing key: device.config.sent
+
+</details>
+
 
 ### **device.list** <a name="device-list"></a>
 
@@ -496,6 +551,16 @@ Event that represents a thing's schema was updated.
   ```json
   {
     "id": "fbe64efa6c7f717e",
+    "schema": {
+      "id": "fbe64efa6c7f717e",
+      "schema": [{
+        "sensorId": 1,
+        "typeId": 0xFFF1,
+        "valueType": 3,
+        "unit": 0,
+        "name": "Door lock"
+      }]
+    },
     "error": null
   }
   ```
@@ -519,6 +584,62 @@ Event that represents a thing's schema was updated.
     - Durable: `true`
     - Auto-delete: `false`
   - Routing key: device.schema.updated
+
+</details>
+
+### **device.config.updated** <a name="device-config-updated"></a>
+
+Event that represents a thing's config was updated.
+
+<details>
+  <summary>Payload</summary>
+
+  JSON in the following format:
+
+  - `id` **String** thing's ID
+  - `config` **Array** list of updated config
+    - `sensorId` **Number** sensor ID
+    - `change` **Boolean** enable sending sensor data when its value changes
+    - `timeSec` **Number** time interval in seconds that indicates when data must be sent to the cloud
+    - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
+    - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
+  - `error` **String** a string with detailed error message
+
+  Success example:
+
+  ```json
+  {
+    "id": "fbe64efa6c7f717e",
+    "config": [{
+      "sensorId": 1,
+      "change": true,
+      "timeSec": 10,
+      "lowerThreshold": 1000,
+      "upperThreshold": 3000
+    }],
+    "error": null
+  }
+  ```
+
+  Error example:
+
+  ```json
+  {
+    "id": "3aa21010cda96fe9",
+    "error": "invalid config"
+  }
+  ```
+</details>
+
+<details>
+  <summary>AMQP Binding</summary>
+
+  - Exchange:
+    - Type: direct
+    - Name: device
+    - Durable: `true`
+    - Auto-delete: `false`
+  - Routing key: device.config.updated
 
 </details>
 
