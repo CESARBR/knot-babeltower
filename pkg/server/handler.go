@@ -26,6 +26,7 @@ const (
 	bindingKeyRequestData      = "data.request"
 	bindingKeyUpdateData       = "data.update"
 	bindingKeySchemaSent       = "device.schema.sent"
+	bindingKeyConfigSent       = "device.config.sent"
 	bindingKeyEmpty            = ""
 )
 
@@ -77,6 +78,7 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyRequestData)
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyUpdateData)
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeySchemaSent)
+	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyConfigSent)
 
 	// Subscribe to request-reply messages received from any client
 	subscribe(msgChan, queueNameCommands, exchangeDevices, exchangeDevicesType, bindingKeyAuthDevice)
@@ -128,6 +130,8 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 		return mc.thingController.Unregister(msg.Body, token)
 	case bindingKeySchemaSent:
 		return mc.thingController.UpdateSchema(msg.Body, token)
+	case bindingKeyConfigSent:
+		return mc.thingController.UpdateConfig(msg.Body, token)
 	case bindingKeyRequestData:
 		return mc.thingController.RequestData(msg.Body, token)
 	case bindingKeyUpdateData:
