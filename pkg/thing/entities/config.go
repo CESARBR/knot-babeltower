@@ -2,9 +2,9 @@ package entities
 
 // Config represents the thing's config
 type Config struct {
-	SensorID       int
-	Change         bool
-	TimeSec        int
-	LowerThreshold int
-	UpperThreshold int
+	SensorID       int         `json:"sensorId"`
+	Change         bool        `json:"change"`
+	TimeSec        int         `json:"timeSec"`
+	LowerThreshold interface{} `json:"lowerThreshold,omitempty"`
+	UpperThreshold interface{} `json:"upperThreshold,omitempty"`
 }

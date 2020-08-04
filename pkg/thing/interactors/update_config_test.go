@@ -25,8 +25,38 @@ var configExample = []entities.Config{
 		SensorID:       0,
 		Change:         true,
 		TimeSec:        12,
-		LowerThreshold: 1000,
-		UpperThreshold: 2000,
+		LowerThreshold: 25.4,
+		UpperThreshold: 87.2,
+	},
+	{
+		SensorID:       1,
+		Change:         false,
+		TimeSec:        60,
+		LowerThreshold: 25.4,
+	},
+}
+
+var schemaExample = []entities.Schema{
+	{
+		SensorID:  3,
+		ValueType: 1,
+		Unit:      0,
+		TypeID:    65521,
+		Name:      "thing-with-float-data",
+	},
+	{
+		SensorID:  0,
+		ValueType: 2,
+		Unit:      0,
+		TypeID:    65521,
+		Name:      "thing-with-float-data",
+	},
+	{
+		SensorID:  1,
+		ValueType: 2,
+		Unit:      0,
+		TypeID:    65521,
+		Name:      "second-thing-with-float-data",
 	},
 }
 
@@ -76,7 +106,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Schema: schemaExample,
 		}, ReturnErr: nil},
 		&mocks.FakePublisher{},
 	},
@@ -115,25 +145,44 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		&mocks.FakePublisher{},
 	},
 	{
-		"failed to updade thing's config if incompatible with schema",
+		"failed to updade thing's config if has no schema associated with the same sensorId",
 		"authorization-token",
 		"c09660af89ecba61",
-		[]entities.Config{
-			{
-				SensorID:       1,
-				Change:         true,
-				TimeSec:        12,
-				LowerThreshold: 1000,
-				UpperThreshold: 2000,
-			},
-		},
+		[]entities.Config{{
+			SensorID:       10, // different sensorId
+			Change:         true,
+			TimeSec:        12,
+			LowerThreshold: 25.4,
+			UpperThreshold: 87.2,
+		}},
 		ErrConfigInvalid,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Schema: schemaExample,
+		}},
+		&mocks.FakePublisher{},
+	},
+	{
+		"failed to updade thing's config if threshold value is incompatible with schema's valueType",
+		"authorization-token",
+		"c09660af89ecba61",
+		[]entities.Config{{
+			SensorID:       0,
+			Change:         true,
+			TimeSec:        12,
+			LowerThreshold: 400, // incompatible with valueType 2: floats.
+			UpperThreshold: 87.2,
+		}},
+		ErrDataInvalid,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Schema: schemaExample,
 		}},
 		&mocks.FakePublisher{},
 	},

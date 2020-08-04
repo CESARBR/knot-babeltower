@@ -2,6 +2,7 @@ package interactors
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
@@ -41,10 +42,24 @@ func (i *ThingInteractor) validateConfig(authorization, id string, configList []
 		return ErrSchemaUndefined
 	}
 
+	err = validateSchemaMatch(configList, thing.Schema)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateSchemaMatch(configList []entities.Config, schemaList []entities.Schema) error {
 	for _, c := range configList {
-		schema := checkSensorInSchema(c.SensorID, thing.Schema)
+		schema := checkSensorInSchema(c.SensorID, schemaList)
 		if schema == nil {
 			return ErrConfigInvalid
+		}
+
+		err := validateFlagValue(c, schema.ValueType)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -59,4 +74,28 @@ func checkSensorInSchema(sensorID int, schemaList []entities.Schema) *entities.S
 	}
 
 	return nil
+}
+
+func validateFlagValue(config entities.Config, valueType int) error {
+	if config.LowerThreshold != nil && !isValidValue(config.LowerThreshold, valueType) {
+		return ErrDataInvalid
+	}
+
+	if config.UpperThreshold != nil && !isValidValue(config.UpperThreshold, valueType) {
+		return ErrDataInvalid
+	}
+
+	return nil
+}
+
+func isValidValue(value interface{}, valueType int) bool {
+	switch value := value.(type) {
+	case float64:
+		if value == math.Trunc(value) {
+			return ValidateSchemaNumber(value, valueType)
+		}
+		return valueType == 2
+	default:
+		return false
+	}
 }
