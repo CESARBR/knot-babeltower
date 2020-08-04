@@ -212,7 +212,7 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 	for i := range things {
 		t := things[i]
 		if t.Metadata.Knot.ID == ID {
-			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema}
+			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config}
 			return nt, nil
 		}
 	}
