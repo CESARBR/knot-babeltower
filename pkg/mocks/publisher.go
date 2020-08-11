@@ -21,7 +21,7 @@ func (fp *FakePublisher) PublishRegisteredDevice(thingID, name, token string, er
 }
 
 // PublishUnregisteredDevice provides a mock function to send an unregister device response
-func (fp *FakePublisher) PublishUnregisteredDevice(thingID string, err error) error {
+func (fp *FakePublisher) PublishUnregisteredDevice(thingID, token string, err error) error {
 	ret := fp.Called(thingID, err)
 	return ret.Error(0)
 }
