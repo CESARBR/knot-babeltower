@@ -186,6 +186,22 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		}},
 		&mocks.FakePublisher{},
 	},
+	{
+		"failed to updade thing's config if it has not changed",
+		"authorization-token",
+		"c09660af89ecba61",
+		configExample,
+		ErrConfigEqual,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Schema: schemaExample,
+			Config: configExample,
+		}},
+		&mocks.FakePublisher{},
+	},
 }
 
 func TestUpdateConfig(t *testing.T) {
