@@ -185,7 +185,7 @@ Event that represents a device sending its config to the services that are inter
   - `config` **Array** config items, each one formed by:
     - `sensorId` **Number** sensor ID
     - `change` **Boolean** enable sending sensor data when its value changes
-    - `timeSec` **Number** time interval in seconds that indicates when data must be sent to the cloud
+    - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
     - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
     - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
 
@@ -600,7 +600,7 @@ Event that represents a thing's config was updated.
   - `config` **Array** list of updated config
     - `sensorId` **Number** sensor ID
     - `change` **Boolean** enable sending sensor data when its value changes
-    - `timeSec` **Number** time interval in seconds that indicates when data must be sent to the cloud
+    - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
     - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
     - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
   - `error` **String** a string with detailed error message
