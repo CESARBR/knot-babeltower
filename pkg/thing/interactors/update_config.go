@@ -3,6 +3,7 @@ package interactors
 import (
 	"fmt"
 	"math"
+	"reflect"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
@@ -40,6 +41,10 @@ func (i *ThingInteractor) validateConfig(authorization, id string, configList []
 
 	if thing.Schema == nil {
 		return ErrSchemaUndefined
+	}
+
+	if reflect.DeepEqual(thing.Config, configList) {
+		return ErrConfigEqual
 	}
 
 	err = validateSchemaMatch(configList, thing.Schema)
