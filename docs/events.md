@@ -1,4 +1,4 @@
-# Babeltower Events API - v2.0.0
+# Babeltower Events API - v2.1.0
 
 This document describes the events `babeltower` is able to receive and send. They are gruped based on the external clients point of view, i.e. publishing or subscribing to the topics. In each section, it is provided information about the header, payload and protocol binding details of the event.
 
@@ -7,7 +7,6 @@ This document describes the events `babeltower` is able to receive and send. The
 - [Publish](#publish) (external clients can publish to):
   - [device.register](#device-register)
   - [device.unregister](#device-unregister)
-  - [device.schema.sent](#device-schema-sent)
   - [device.config.sent](#device-config-sent)
   - [device.list](#device-list)
   - [device.auth](#device-auth)
@@ -18,7 +17,6 @@ This document describes the events `babeltower` is able to receive and send. The
 - [Subscribe](#Subscribe) (external clients can subscribe to):
   - [device.registered](#device-registered)
   - [device.unregistered](#device-unregistered)
-  - [device.schema.updated](#device-schema-updated)
   - [device.config.updated](#device-config-updated)
   - [data.published](#data-published)
   - [device.[id].data.request](#device-<id>-data-request)
@@ -111,60 +109,6 @@ Event-command to remove a thing from the things registry. The operation response
 
 </details>
 
-### **device.schema.sent** <a name="device-schema-sent"></a>
-
-Event that represents a device sending its schema to the services that are interested. After receiving this event, `babeltower` updates the thing's schema on the registry and send a [`device.schema.updated`](#device-schema-updated) event.
-
-<details>
-  <summary>Headers</summary>
-
-  - `token` **String** user's token
-
-</details>
-
-<details>
-  <summary>Payload</summary>
-
-  JSON in the following format:
-
-  - `id` **String** thing's ID
-  - `schema` **Array** schema items, each one formed by:
-    - `sensorId` **Number** sensor ID
-    - `typeId` **Number** semantic value type (voltage, current, temperature, etc)
-    - `valueType` **Number** data value type (boolean, integer, etc)
-    - `unit` **Number** sensor unit (V, A, W, etc)
-    - `name` **String** sensor name
-
-  The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html).
-
-  Example:
-
-  ```json
-  {
-    "id": "fbe64efa6c7f717e",
-    "schema": [{
-      "sensorId": 1,
-      "typeId": 0xFFF1,
-      "valueType": 3,
-      "unit": 0,
-      "name": "Door lock"
-    }]
-  }
-  ```
-</details>
-
-<details>
-  <summary>AMQP Binding</summary>
-
-  - Exchange:
-    - Type: direct
-    - Name: device
-    - Durable: `true`
-    - Auto-delete: `false`
-  - Routing key: device.schema.sent
-
-</details>
-
 ### **device.config.sent** <a name="device-config-sent"></a>
 
 Event that represents a device sending its config to the services that are interested. After receiving this event, `babeltower` updates the thing's config on the registry and send a [`device.config.updated`](#device-config-updated) event.
@@ -184,10 +128,18 @@ Event that represents a device sending its config to the services that are inter
   - `id` **String** thing's ID
   - `config` **Array** config items, each one formed by:
     - `sensorId` **Number** sensor ID
-    - `change` **Boolean** enable sending sensor data when its value changes
-    - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
-    - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
-    - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
+    - `schema` **JSON Object** schema item, each one formed by:
+      - `typeId` **Number** semantic value type (voltage, current, temperature, etc)
+      - `unit` **Number** sensor unit (V, A, W, etc)
+      - `valueType` **Number** data value type (boolean, integer, etc)
+      - `name` **String** sensor name
+    - `event` **JSON Object** event item, each one formed by:
+      - `change` **Boolean** enable sending sensor data when its value changes
+      - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
+      - `lowerThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's lower than this threshold
+      - `upperThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's upper than this threshold
+
+  The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html).
 
   Example:
 
@@ -196,10 +148,18 @@ Event that represents a device sending its config to the services that are inter
     "id": "fbe64efa6c7f717e",
     "config": [{
       "sensorId": 1,
-      "change": true,
-      "timeSec": 10,
-      "lowerThreshold": 1000,
-      "upperThreshold": 3000
+      "schema": {
+        "typeId": 0xFFF1,
+        "unit": 0,
+        "valueType": 3,
+        "name": "Door lock",
+      },
+      "event": {
+         "change": true,
+         "timeSec": 10,
+         "lowerThreshold": 1000,
+         "upperThreshold": 3000
+      }
     }]
   }
   ```
@@ -216,7 +176,6 @@ Event that represents a device sending its config to the services that are inter
   - Routing key: device.config.sent
 
 </details>
-
 
 ### **device.list** <a name="device-list"></a>
 
@@ -534,59 +493,6 @@ Event that represents a thing was removed.
 
 </details>
 
-### **device.schema.updated** <a name="device-schema-updated"></a>
-
-Event that represents a thing's schema was updated.
-
-<details>
-  <summary>Payload</summary>
-
-  JSON in the following format:
-
-  - `id` **String** thing's ID
-  - `error` **String** a string with detailed error message
-
-  Success example:
-
-  ```json
-  {
-    "id": "fbe64efa6c7f717e",
-    "schema": {
-      "id": "fbe64efa6c7f717e",
-      "schema": [{
-        "sensorId": 1,
-        "typeId": 0xFFF1,
-        "valueType": 3,
-        "unit": 0,
-        "name": "Door lock"
-      }]
-    },
-    "error": null
-  }
-  ```
-
-  Error example:
-
-  ```json
-  {
-    "id": "3aa21010cda96fe9",
-    "error": "invalid schema"
-  }
-  ```
-</details>
-
-<details>
-  <summary>AMQP Binding</summary>
-
-  - Exchange:
-    - Type: direct
-    - Name: device
-    - Durable: `true`
-    - Auto-delete: `false`
-  - Routing key: device.schema.updated
-
-</details>
-
 ### **device.config.updated** <a name="device-config-updated"></a>
 
 Event that represents a thing's config was updated.
@@ -597,13 +503,22 @@ Event that represents a thing's config was updated.
   JSON in the following format:
 
   - `id` **String** thing's ID
-  - `config` **Array** list of updated config
+  - `config` **Array** - **Optional** config items, each one formed by:
     - `sensorId` **Number** sensor ID
-    - `change` **Boolean** enable sending sensor data when its value changes
-    - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
-    - `lowerThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's lower than this threshold
-    - `upperThreshold` **Optional (Depends on schema's valueType)** send data to the cloud if it's upper than this threshold
+    - `schema` **JSON Object** schema item, each one formed by:
+      - `typeId` **Number** semantic value type (voltage, current, temperature, etc)
+      - `unit` **Number** sensor unit (V, A, W, etc)
+      - `valueType` **Number** data value type (boolean, integer, etc)
+      - `name` **String** sensor name
+    - `event` **JSON Object** - **Optional** event item, each one formed by:
+      - `change` **Boolean** enable sending sensor data when its value changes
+      - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
+      - `lowerThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's lower than this threshold
+      - `upperThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's upper than this threshold
   - `error` **String** a string with detailed error message
+
+  The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html).
+
 
   Success example:
 
@@ -612,10 +527,18 @@ Event that represents a thing's config was updated.
     "id": "fbe64efa6c7f717e",
     "config": [{
       "sensorId": 1,
-      "change": true,
-      "timeSec": 10,
-      "lowerThreshold": 1000,
-      "upperThreshold": 3000
+      "schema": {
+        "typeId": 0xFFF1,
+        "unit": 0,
+        "valueType": 3,
+        "name": "Door lock"
+      },
+      "event": {
+         "change": true,
+         "timeSec": 10,
+         "lowerThreshold": 1000,
+         "upperThreshold": 3000
+      }
     }],
     "error": null
   }
