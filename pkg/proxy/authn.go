@@ -46,7 +46,7 @@ type keySchema struct {
 
 // CreateAppToken creates a valid token for the application
 func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
-	var response keySchema
+	response := network.Response{Body: &keySchema{}}
 	request := network.Request{
 		Path:          a.URL + "/keys",
 		Method:        "POST",
@@ -59,5 +59,6 @@ func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error)
 		return "", fmt.Errorf("error requesting a new app token: %w", err)
 	}
 
-	return response.Value, nil
+	key := response.Body.(*keySchema)
+	return key.Value, nil
 }

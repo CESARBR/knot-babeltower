@@ -60,7 +60,7 @@ func (u *Users) Create(user entities.User) error {
 
 // CreateToken creates a valid token for the specified user
 func (u *Users) CreateToken(user entities.User) (string, error) {
-	var response tokenSchema
+	response := network.Response{Body: &tokenSchema{}}
 	request := network.Request{
 		Path:   u.URL + "/tokens",
 		Method: "POST",
@@ -72,7 +72,8 @@ func (u *Users) CreateToken(user entities.User) (string, error) {
 		return "", fmt.Errorf("error requesting for an user token: %w", err)
 	}
 
-	return response.Token, nil
+	token := response.Body.(*tokenSchema)
+	return token.Token, nil
 }
 
 // mapErrorFromStatusCode returns the error associated with status code

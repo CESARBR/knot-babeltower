@@ -8,6 +8,7 @@ import (
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
+	"github.com/google/go-querystring/query"
 )
 
 // HTTP handles HTTP requests
@@ -20,7 +21,14 @@ type Request struct {
 	Path          string
 	Method        string
 	Body          interface{}
+	Query         interface{}
 	Authorization string
+}
+
+// Response represents a proxy request's response
+type Response struct {
+	Body   interface{}
+	Header http.Header
 }
 
 // NewHTTP constructs the HTTP requests handler
@@ -29,10 +37,18 @@ func NewHTTP(logger logging.Logger) *HTTP {
 }
 
 // MakeRequest execute a HTTP request
-func (h *HTTP) MakeRequest(request Request, response interface{}) error {
-	body, err := json.Marshal(&request.Body)
+func (h *HTTP) MakeRequest(request Request, response *Response) error {
+	body, err := json.Marshal(request.Body)
 	if err != nil {
 		return fmt.Errorf("error encoding body: %w", err)
+	}
+
+	if request.Query != nil {
+		params, err := query.Values(request.Query)
+		if err != nil {
+			return fmt.Errorf("error encoding query: %w", err)
+		}
+		request.Path += "?" + params.Encode()
 	}
 
 	req, err := http.NewRequest(request.Method, request.Path, bytes.NewBuffer(body))
@@ -55,8 +71,12 @@ func (h *HTTP) MakeRequest(request Request, response interface{}) error {
 	}
 
 	if response != nil {
+		response.Header = resp.Header
+	}
+
+	if response != nil && response.Body != nil {
 		decoder := json.NewDecoder(resp.Body)
-		err = decoder.Decode(response)
+		err = decoder.Decode(&response.Body)
 		if err != nil {
 			return fmt.Errorf("error decoding response: %w", err)
 		}

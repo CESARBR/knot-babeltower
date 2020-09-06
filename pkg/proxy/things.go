@@ -1,16 +1,15 @@
 package proxy
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
-	"github.com/google/go-querystring/query"
 )
+
+// things documentation: https://github.com/mainflux/mainflux/blob/master/things/swagger.yaml
 
 type errorConflict struct{ error }
 
@@ -28,192 +27,152 @@ type ThingProxy interface {
 	Remove(authorization, ID string) error
 }
 
-// ThingProxyRepr is the entity that represents the thing on the remote thing's service
-type ThingProxyRepr struct {
-	ID       string      `json:"id"`
+type proxy struct {
+	url    string
+	http   *network.HTTP
+	logger logging.Logger
+}
+
+// NewThingProxy creates a proxy to the thing service
+func NewThingProxy(logger logging.Logger, http *network.HTTP, hostname string, port uint16) ThingProxy {
+	url := fmt.Sprintf("http://%s:%d", hostname, port)
+	logger.Debug("proxy setup to " + url)
+	return proxy{url, http, logger}
+}
+
+// createThingReqSchema represents the schema for a create thing request
+type createThingReqSchema struct {
+	Key      string      `json:"key,omitempty"`
 	Name     string      `json:"name"`
-	Metadata objMetadata `json:"metadata"`
+	Metadata interface{} `json:"metadata"`
 }
 
-type objMetadata struct {
-	Knot objKnot `json:"knot"`
+// updateThingReqSchema represents the schema for an update thing request
+type updateThingReqSchema struct {
+	Name     string      `json:"name,omitempty"`
+	Metadata interface{} `json:"metadata,omitempty"`
 }
 
-type objKnot struct {
+// thingsPageSchema represents the schema for a page of things
+type thingsPageSchema struct {
+	Things []*thingResSchema `json:"things"`
+	Total  int               `json:"total"`
+	Offset int               `json:"offset"`
+	Limit  int               `json:"limit"`
+}
+
+// thingResSchema represents the schema for a thing
+type thingResSchema struct {
+	ID       string       `json:"id"`
+	Key      string       `json:"key"`
+	Name     string       `json:"name"`
+	Metadata metadataKNoT `json:"metadata"`
+}
+
+// thingsQuery represents the query parameters for requests to things service
+type thingsQuery struct {
+	Limit    int    `url:"limit,omitempty"`
+	Offset   int    `url:"offset,omitempty"`
+	Name     string `url:"name,omitempty"`
+	Metadata string `url:"metadata,omitempty"`
+}
+
+// metadataKNoT represents the KNoT metadata
+type metadataKNoT struct {
+	KNoT thingKNoT `json:"knot"`
+}
+
+// thingKNoT represents a thing KNoT on things service
+type thingKNoT struct {
 	ID     string            `json:"id"`
 	Schema []entities.Schema `json:"schema,omitempty"`
 	Config []entities.Config `json:"config,omitempty"`
 }
 
-type pageFetchInput struct {
-	Total  int               `json:"total"`
-	Offset int               `json:"offset"`
-	Limit  int               `json:"limit"`
-	Things []*ThingProxyRepr `json:"things"`
-}
-
-type proxy struct {
-	url    string
-	logger logging.Logger
-}
-
-// RequestInfo aims to group all request releated information
-type RequestInfo struct {
-	method        string
-	url           string
-	authorization string
-	contentType   string
-	data          []byte
-	options       *RequestOptions
-}
-
-// RequestOptions represents the request query parameters
-type RequestOptions struct {
-	Limit  int `url:"limit"`
-	Offset int `url:"offset"`
-}
-
-// NewThingProxy creates a proxy to the thing service
-func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingProxy {
-	url := fmt.Sprintf("http://%s:%d", hostname, port)
-
-	logger.Debug("proxy setup to " + url)
-	return proxy{url, logger}
-}
-
 // Create register a thing on service and return the id generated
-func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
-	p.logger.Debug("proxying request to create thing")
-	t := p.getRemoteThingRepr(id, name, nil, nil)
-	body, err := json.Marshal(t)
+func (p proxy) Create(id, name, authorization string) (string, error) {
+	var response network.Response
+	request := network.Request{
+		Path:          p.url + "/things",
+		Method:        "POST",
+		Body:          createThingReqSchema{Name: name, Metadata: metadataKNoT{KNoT: thingKNoT{ID: id}}},
+		Authorization: authorization,
+	}
+
+	err := p.http.MakeRequest(request, &response)
 	if err != nil {
-		p.logger.Error(err)
-		return "", err
+		return "", fmt.Errorf("error creating a new thing: %w", err)
 	}
 
-	requestInfo := &RequestInfo{
-		"POST",
-		p.url + "/things",
-		authorization,
-		"application/json",
-		body,
-		nil,
-	}
-
-	resp, err := p.sendRequest(requestInfo)
-	if err != nil {
-		p.logger.Error(err)
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	err = p.mapErrorFromStatusCode(resp.StatusCode)
-	if err != nil {
-		p.logger.Error(err)
-		return "", err
-	}
-
-	locationHeader := resp.Header.Get("Location")
-	thingID := locationHeader[len("/things/"):] // get substring after "/things/"
-	return thingID, nil
+	location := response.Header.Get("Location")
+	return location[len("/things/"):], nil
 }
 
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
 // the thing's service in order to update it with the schema.
 func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
-	t, err := p.Get(authorization, ID)
+	thing, err := p.Get(authorization, ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting thing: %w", err)
 	}
 
-	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
-	rt.Metadata.Knot.Schema = schemaList
-	parsedBody, err := json.Marshal(rt)
+	request := network.Request{
+		Path:          p.url + "/things/" + thing.Token,
+		Method:        "PUT",
+		Body:          updateThingReqSchema{Metadata: metadataKNoT{KNoT: thingKNoT{ID: ID, Schema: schemaList, Config: thing.Config}}},
+		Authorization: authorization,
+	}
+
+	err = p.http.MakeRequest(request, nil)
 	if err != nil {
-		p.logger.Error(err)
-		return err
+		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
 
-	requestInfo := &RequestInfo{
-		"PUT",
-		p.url + "/things/" + t.Token,
-		authorization,
-		"application/json",
-		parsedBody,
-		nil,
-	}
-
-	resp, err := p.sendRequest(requestInfo)
-	if err != nil {
-		p.logger.Error(err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	return p.mapErrorFromStatusCode(resp.StatusCode)
+	return nil
 }
 
 // UpdateConfig receives as parameters the authorization token, thing's ID and config. After that,
 // it sends a HTTP request to the thing's service in order to update it with the new config.
 func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Config) error {
-	t, err := p.Get(authorization, ID)
+	thing, err := p.Get(authorization, ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting thing: %w", err)
 	}
 
-	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
-	rt.Metadata.Knot.Config = configList
-	parsedBody, err := json.Marshal(rt)
+	request := network.Request{
+		Path:          p.url + "/things/" + thing.Token,
+		Method:        "PUT",
+		Body:          updateThingReqSchema{Metadata: metadataKNoT{KNoT: thingKNoT{ID: ID, Schema: thing.Schema, Config: configList}}},
+		Authorization: authorization,
+	}
+
+	err = p.http.MakeRequest(request, nil)
 	if err != nil {
-		p.logger.Error(err)
-		return err
+		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
 
-	requestInfo := &RequestInfo{
-		"PUT",
-		p.url + "/things/" + t.Token,
-		authorization,
-		"application/json",
-		parsedBody,
-		nil,
-	}
-
-	resp, err := p.sendRequest(requestInfo)
-	if err != nil {
-		p.logger.Error(err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	return p.mapErrorFromStatusCode(resp.StatusCode)
+	return nil
 }
 
 func (p proxy) List(authorization string) ([]*entities.Thing, error) {
-	things := []*entities.Thing{}
-	pagThings, err := p.getPaginatedThings(authorization)
+	things, err := p.getPaginatedThings(authorization)
 	if err != nil {
-		return things, err
+		return nil, fmt.Errorf("error listing things: %w", err)
 	}
 
-	for _, t := range pagThings {
-		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config})
-	}
-
-	return things, err
+	return things, nil
 }
 
 // Get list the things registered on thing's service
 func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 	things, err := p.getPaginatedThings(authorization)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting things: %w", err)
 	}
 
-	for i := range things {
-		t := things[i]
-		if t.Metadata.Knot.ID == ID {
-			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config}
-			return nt, nil
+	for _, t := range things {
+		if t.ID == ID {
+			return t, nil
 		}
 	}
 
@@ -222,63 +181,66 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 
 // Remove removes the indicated thing from the thing's service
 func (p proxy) Remove(authorization, ID string) error {
-	t, err := p.Get(authorization, ID)
+	thing, err := p.Get(authorization, ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting thing: %w", err)
 	}
 
-	requestInfo := &RequestInfo{
-		"DELETE",
-		p.url + "/things/" + t.Token,
-		authorization,
-		"application/json",
-		nil,
-		nil,
+	request := network.Request{
+		Path:          p.url + "/things/" + thing.Token,
+		Method:        "DELETE",
+		Authorization: authorization,
 	}
 
-	resp, err := p.sendRequest(requestInfo)
+	err = p.http.MakeRequest(request, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error requesting to delete thing: %w", err)
 	}
-	defer resp.Body.Close()
 
-	return p.mapErrorFromStatusCode(resp.StatusCode)
+	return nil
 }
 
-func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema, configList []entities.Config) ThingProxyRepr {
-	return ThingProxyRepr{
-		Name: name,
-		Metadata: objMetadata{
-			Knot: objKnot{
-				ID:     id,
-				Schema: schemaList,
-				Config: configList,
-			},
-		},
+func (p proxy) getPaginatedThings(authorization string) ([]*entities.Thing, error) {
+	paginatedThings := []*entities.Thing{}
+
+	for offset := 0; offset == len(paginatedThings); offset += 100 {
+		things, err := p.getThings(authorization, offset)
+		if err != nil {
+			return nil, fmt.Errorf("error getting paginated things: %w", err)
+		}
+
+		paginatedThings = append(paginatedThings, things...)
 	}
+
+	return paginatedThings, nil
 }
 
-func (p proxy) sendRequest(info *RequestInfo) (*http.Response, error) {
-	values, err := query.Values(info.options)
-	if err != nil {
-		return nil, err
-	}
-	queryString := "?" + values.Encode()
-
-	/**
-	 * Add Timeout in http.Client to avoid blocking the request.
-	 */
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequest(info.method, info.url+queryString, bytes.NewBuffer(info.data))
-	if err != nil {
-		p.logger.Error(err)
-		return nil, err
+func (p proxy) getThings(authorization string, offset int) ([]*entities.Thing, error) {
+	response := network.Response{Body: &thingsPageSchema{}}
+	request := network.Request{
+		Path:          p.url + "/things",
+		Method:        "GET",
+		Query:         thingsQuery{Limit: 100, Offset: offset},
+		Authorization: authorization,
 	}
 
-	req.Header.Set("Authorization", info.authorization)
-	req.Header.Set("Content-Type", info.contentType)
+	err := p.http.MakeRequest(request, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error requesting for things: %w", err)
+	}
 
-	return client.Do(req)
+	things := []*entities.Thing{}
+	for _, t := range response.Body.(*thingsPageSchema).Things {
+		things = append(things, &entities.Thing{
+			ID:     t.Metadata.KNoT.ID,
+			Token:  t.ID,
+			Name:   t.Name,
+			Schema: t.Metadata.KNoT.Schema,
+			Config: t.Metadata.KNoT.Config,
+		})
+	}
+
+	return things, nil
 }
 
 func (p proxy) mapErrorFromStatusCode(code int) error {
@@ -293,47 +255,4 @@ func (p proxy) mapErrorFromStatusCode(code int) error {
 		}
 	}
 	return err
-}
-
-func (p proxy) getPaginatedThings(authorization string) ([]*ThingProxyRepr, error) {
-	requestInfo := &RequestInfo{
-		"GET",
-		p.url + "/things",
-		authorization,
-		"application/json",
-		nil,
-		&RequestOptions{Limit: 100, Offset: 0}, // 100 is the max number of things that can be returned
-	}
-
-	var things []*ThingProxyRepr
-	keepGoing := true
-	for keepGoing {
-		resp, err := p.sendRequest(requestInfo)
-		if err != nil {
-			p.logger.Error(err)
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		err = p.mapErrorFromStatusCode(resp.StatusCode)
-		if err != nil {
-			p.logger.Error(err)
-			return nil, err
-		}
-
-		page := &pageFetchInput{}
-		err = json.NewDecoder(resp.Body).Decode(&page)
-		if err != nil {
-			return nil, err
-		}
-
-		things = append(things, page.Things...)
-		requestInfo.options.Offset += requestInfo.options.Limit
-
-		if page.Total == len(things) {
-			keepGoing = false
-		}
-	}
-
-	return things, nil
 }

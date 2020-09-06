@@ -50,7 +50,7 @@ func main() {
 	// Services
 	usersProxy := proxy.NewUsersProxy(logrus.Get("UsersProxy"), http, config.Users.Hostname, config.Users.Port)
 	authnProxy := proxy.NewAuthnProxy(logrus.Get("AuthnProxy"), http, config.Authn.Hostname, config.Authn.Port)
-	thingProxy := proxy.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Port)
+	thingProxy := proxy.NewThingProxy(logrus.Get("ThingProxy"), http, config.Things.Hostname, config.Things.Port)
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)
