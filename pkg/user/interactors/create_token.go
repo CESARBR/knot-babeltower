@@ -25,7 +25,7 @@ func (ct *CreateToken) Execute(user entities.User, tokenType string, duration in
 	if tokenType == "user" {
 		token, err = ct.usersProxy.CreateToken(user)
 	} else if tokenType == "app" {
-		token, err = ct.authnProxy.CreateAppToken(user, duration)
+		token, err = ct.authnProxy.CreateAPIToken(user, duration)
 	} else {
 		err = entities.ErrInvalidTokenType
 	}

@@ -96,7 +96,7 @@ func TestCreateToken(t *testing.T) {
 				On("CreateToken", tc.user).
 				Return(tc.fakeUsersProxy.Token, tc.fakeUsersProxy.Err)
 			tc.fakeAuthnProxy.
-				On("CreateAppToken", tc.user, tc.duration).
+				On("CreateAPIToken", tc.user, tc.duration).
 				Return(tc.fakeAuthnProxy.Token, tc.fakeUsersProxy.Err)
 
 			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthnProxy)

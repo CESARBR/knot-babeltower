@@ -25,14 +25,14 @@ type Interactor interface {
 type ThingInteractor struct {
 	logger     logging.Logger
 	publisher  amqp.Publisher
-	thingProxy proxy.ThingProxy
+	thingProxy proxy.ThingsProxy
 }
 
 // NewThingInteractor creates a new ThingInteractor instance
 func NewThingInteractor(
 	logger logging.Logger,
 	publisher amqp.Publisher,
-	thingProxy proxy.ThingProxy,
+	thingProxy proxy.ThingsProxy,
 ) *ThingInteractor {
 	return &ThingInteractor{logger, publisher, thingProxy}
 }

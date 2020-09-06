@@ -10,27 +10,27 @@ import (
 
 // things documentation: https://github.com/mainflux/mainflux/blob/master/things/swagger.yaml
 
-// ThingProxy proxy a request to the thing service interface
-type ThingProxy interface {
-	Create(id, name, authorization string) (idGenerated string, err error)
-	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
-	UpdateConfig(authorization, ID string, configList []entities.Config) error
+// ThingsProxy proxy a request to the thing service interface
+type ThingsProxy interface {
+	Create(ID, name, authorization string) (token string, err error)
+	UpdateSchema(authorization, ID string, schemaList []entities.Schema) (err error)
+	UpdateConfig(authorizaiton, ID string, configList []entities.Config) (err error)
 	List(authorization string) (things []*entities.Thing, err error)
-	Get(authorization, ID string) (*entities.Thing, error)
-	Remove(authorization, ID string) error
+	Get(authorization, ID string) (thing *entities.Thing, err error)
+	Remove(authorization, ID string) (err error)
 }
 
-type proxy struct {
-	url    string
+type things struct {
+	URL    string
 	http   *network.HTTP
 	logger logging.Logger
 }
 
-// NewThingProxy creates a proxy to the thing service
-func NewThingProxy(logger logging.Logger, http *network.HTTP, hostname string, port uint16) ThingProxy {
-	url := fmt.Sprintf("http://%s:%d", hostname, port)
-	logger.Debug("proxy setup to " + url)
-	return proxy{url, http, logger}
+// NewThingsProxy creates a proxy to the thing service
+func NewThingsProxy(logger logging.Logger, http *network.HTTP, hostname string, port uint16) ThingsProxy {
+	URL := fmt.Sprintf("http://%s:%d", hostname, port)
+	logger.Debug("things proxy configured to " + URL)
+	return &things{URL, http, logger}
 }
 
 // createThingReqSchema represents the schema for a create thing request
@@ -82,17 +82,19 @@ type thingKNoT struct {
 	Config []entities.Config `json:"config,omitempty"`
 }
 
+const pageSize = 100
+
 // Create register a thing on service and return the id generated
-func (p proxy) Create(id, name, authorization string) (string, error) {
+func (t *things) Create(ID, name, authorization string) (string, error) {
 	var response network.Response
 	request := network.Request{
-		Path:          p.url + "/things",
+		Path:          t.URL + "/things",
 		Method:        "POST",
-		Body:          createThingReqSchema{Name: name, Metadata: metadataKNoT{KNoT: thingKNoT{ID: id}}},
+		Body:          createThingReqSchema{Name: name, Metadata: metadataKNoT{KNoT: thingKNoT{ID: ID}}},
 		Authorization: authorization,
 	}
 
-	err := p.http.MakeRequest(request, &response, StatusErrors)
+	err := t.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return "", fmt.Errorf("error creating a new thing: %w", err)
 	}
@@ -103,20 +105,20 @@ func (p proxy) Create(id, name, authorization string) (string, error) {
 
 // UpdateSchema receives the thing's ID and schema and send a HTTP request to
 // the thing's service in order to update it with the schema.
-func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
-	thing, err := p.Get(authorization, ID)
+func (t *things) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
+	thing, err := t.Get(authorization, ID)
 	if err != nil {
 		return fmt.Errorf("error getting thing: %w", err)
 	}
 
 	request := network.Request{
-		Path:          p.url + "/things/" + thing.Token,
+		Path:          t.URL + "/things/" + thing.Token,
 		Method:        "PUT",
 		Body:          updateThingReqSchema{Metadata: metadataKNoT{KNoT: thingKNoT{ID: ID, Schema: schemaList, Config: thing.Config}}},
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil, StatusErrors)
+	err = t.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
@@ -126,20 +128,20 @@ func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Sche
 
 // UpdateConfig receives as parameters the authorization token, thing's ID and config. After that,
 // it sends a HTTP request to the thing's service in order to update it with the new config.
-func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Config) error {
-	thing, err := p.Get(authorization, ID)
+func (t *things) UpdateConfig(authorization, ID string, configList []entities.Config) error {
+	thing, err := t.Get(authorization, ID)
 	if err != nil {
 		return fmt.Errorf("error getting thing: %w", err)
 	}
 
 	request := network.Request{
-		Path:          p.url + "/things/" + thing.Token,
+		Path:          t.URL + "/things/" + thing.Token,
 		Method:        "PUT",
 		Body:          updateThingReqSchema{Metadata: metadataKNoT{KNoT: thingKNoT{ID: ID, Schema: thing.Schema, Config: configList}}},
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil, StatusErrors)
+	err = t.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting for update thing: %w", err)
 	}
@@ -147,8 +149,8 @@ func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Conf
 	return nil
 }
 
-func (p proxy) List(authorization string) ([]*entities.Thing, error) {
-	things, err := p.getPaginatedThings(authorization)
+func (t *things) List(authorization string) ([]*entities.Thing, error) {
+	things, err := t.getPaginatedThings(authorization)
 	if err != nil {
 		return nil, fmt.Errorf("error listing things: %w", err)
 	}
@@ -157,15 +159,15 @@ func (p proxy) List(authorization string) ([]*entities.Thing, error) {
 }
 
 // Get list the things registered on thing's service
-func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
-	things, err := p.getPaginatedThings(authorization)
+func (t *things) Get(authorization, ID string) (*entities.Thing, error) {
+	things, err := t.getPaginatedThings(authorization)
 	if err != nil {
 		return nil, fmt.Errorf("error getting things: %w", err)
 	}
 
-	for _, t := range things {
-		if t.ID == ID {
-			return t, nil
+	for _, th := range things {
+		if th.ID == ID {
+			return th, nil
 		}
 	}
 
@@ -173,19 +175,19 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 }
 
 // Remove removes the indicated thing from the thing's service
-func (p proxy) Remove(authorization, ID string) error {
-	thing, err := p.Get(authorization, ID)
+func (t *things) Remove(authorization, ID string) error {
+	thing, err := t.Get(authorization, ID)
 	if err != nil {
 		return fmt.Errorf("error getting thing: %w", err)
 	}
 
 	request := network.Request{
-		Path:          p.url + "/things/" + thing.Token,
+		Path:          t.URL + "/things/" + thing.Token,
 		Method:        "DELETE",
 		Authorization: authorization,
 	}
 
-	err = p.http.MakeRequest(request, nil, StatusErrors)
+	err = t.http.MakeRequest(request, nil, StatusErrors)
 	if err != nil {
 		return fmt.Errorf("error requesting to delete thing: %w", err)
 	}
@@ -193,11 +195,11 @@ func (p proxy) Remove(authorization, ID string) error {
 	return nil
 }
 
-func (p proxy) getPaginatedThings(authorization string) ([]*entities.Thing, error) {
+func (t *things) getPaginatedThings(authorization string) ([]*entities.Thing, error) {
 	paginatedThings := []*entities.Thing{}
 
-	for offset := 0; offset == len(paginatedThings); offset += 100 {
-		things, err := p.getThings(authorization, offset)
+	for offset := 0; offset == len(paginatedThings); offset += pageSize {
+		things, err := t.getThings(authorization, offset)
 		if err != nil {
 			return nil, fmt.Errorf("error getting paginated things: %w", err)
 		}
@@ -208,28 +210,28 @@ func (p proxy) getPaginatedThings(authorization string) ([]*entities.Thing, erro
 	return paginatedThings, nil
 }
 
-func (p proxy) getThings(authorization string, offset int) ([]*entities.Thing, error) {
+func (t *things) getThings(authorization string, offset int) ([]*entities.Thing, error) {
 	response := network.Response{Body: &thingsPageSchema{}}
 	request := network.Request{
-		Path:          p.url + "/things",
+		Path:          t.URL + "/things",
 		Method:        "GET",
-		Query:         thingsQuery{Limit: 100, Offset: offset},
+		Query:         thingsQuery{Limit: pageSize, Offset: offset},
 		Authorization: authorization,
 	}
 
-	err := p.http.MakeRequest(request, &response, StatusErrors)
+	err := t.http.MakeRequest(request, &response, StatusErrors)
 	if err != nil {
 		return nil, fmt.Errorf("error requesting for things: %w", err)
 	}
 
 	things := []*entities.Thing{}
-	for _, t := range response.Body.(*thingsPageSchema).Things {
+	for _, th := range response.Body.(*thingsPageSchema).Things {
 		things = append(things, &entities.Thing{
-			ID:     t.Metadata.KNoT.ID,
-			Token:  t.ID,
-			Name:   t.Name,
-			Schema: t.Metadata.KNoT.Schema,
-			Config: t.Metadata.KNoT.Config,
+			ID:     th.Metadata.KNoT.ID,
+			Token:  th.ID,
+			Name:   th.Name,
+			Schema: th.Metadata.KNoT.Schema,
+			Config: th.Metadata.KNoT.Config,
 		})
 	}
 

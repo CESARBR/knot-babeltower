@@ -12,11 +12,10 @@ import (
 
 // AuthnProxy represents the interface to the authn's proxy operations
 type AuthnProxy interface {
-	CreateAppToken(user entities.User, duration int) (token string, err error)
+	CreateAPIToken(user entities.User, duration int) (token string, err error)
 }
 
-// Authn is responsible for implementing the authn's proxy operations
-type Authn struct {
+type authn struct {
 	URL    string
 	http   *network.HTTP
 	logger logging.Logger
@@ -26,7 +25,7 @@ type Authn struct {
 func NewAuthnProxy(logger logging.Logger, http *network.HTTP, authnHost string, authnPort uint16) AuthnProxy {
 	URL := fmt.Sprintf("http://%s:%d", authnHost, authnPort)
 	logger.Debug("authn proxy configured to " + URL)
-	return &Authn{URL, http, logger}
+	return &authn{URL, http, logger}
 }
 
 // keyRequestSchema represents the schema for a key request
@@ -44,8 +43,8 @@ type keySchema struct {
 	ExpiresAt string `json:"expires_at"`
 }
 
-// CreateAppToken creates a valid token for the application
-func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
+// CreateAPIToken creates a valid token for the application
+func (a *authn) CreateAPIToken(user entities.User, duration int) (string, error) {
 	response := network.Response{Body: &keySchema{}}
 	request := network.Request{
 		Path:          a.URL + "/keys",

@@ -50,12 +50,12 @@ func main() {
 	// Services
 	usersProxy := proxy.NewUsersProxy(logrus.Get("UsersProxy"), http, config.Users.Hostname, config.Users.Port)
 	authnProxy := proxy.NewAuthnProxy(logrus.Get("AuthnProxy"), http, config.Authn.Hostname, config.Authn.Port)
-	thingProxy := proxy.NewThingProxy(logrus.Get("ThingProxy"), http, config.Things.Hostname, config.Things.Port)
+	thingsProxy := proxy.NewThingsProxy(logrus.Get("ThingProxy"), http, config.Things.Hostname, config.Things.Port)
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)
 	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy, authnProxy)
-	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy)
+	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingsProxy)
 
 	// Controllers
 	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor, commandSender, clientPublisher)

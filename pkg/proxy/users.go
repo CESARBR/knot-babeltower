@@ -16,8 +16,7 @@ type UsersProxy interface {
 	CreateToken(user entities.User) (token string, err error)
 }
 
-// Users is responsible for implementing the user's proxy operations
-type Users struct {
+type users struct {
 	URL    string
 	http   *network.HTTP
 	logger logging.Logger
@@ -26,8 +25,8 @@ type Users struct {
 // NewUsersProxy creates a new Proxy instance
 func NewUsersProxy(logger logging.Logger, http *network.HTTP, userHost string, userPort uint16) UsersProxy {
 	URL := fmt.Sprintf("http://%s:%d", userHost, userPort)
-	logger.Debug("user proxy configured to " + URL)
-	return &Users{URL, http, logger}
+	logger.Debug("users proxy configured to " + URL)
+	return &users{URL, http, logger}
 }
 
 // userSchema represents the schema for an user
@@ -42,7 +41,7 @@ type tokenSchema struct {
 }
 
 // Create create a new user on users service
-func (u *Users) Create(user entities.User) error {
+func (u *users) Create(user entities.User) error {
 	request := network.Request{
 		Path:   u.URL + "/users",
 		Method: "POST",
@@ -58,7 +57,7 @@ func (u *Users) Create(user entities.User) error {
 }
 
 // CreateToken creates a valid token for the specified user
-func (u *Users) CreateToken(user entities.User) (string, error) {
+func (u *users) CreateToken(user entities.User) (string, error) {
 	response := network.Response{Body: &tokenSchema{}}
 	request := network.Request{
 		Path:   u.URL + "/tokens",
