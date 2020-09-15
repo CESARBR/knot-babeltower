@@ -26,12 +26,6 @@ func (fp *FakePublisher) PublishUnregisteredDevice(thingID, token string, err er
 	return ret.Error(0)
 }
 
-// PublishUpdatedSchema provides a mock function to send an update schema response
-func (fp *FakePublisher) PublishUpdatedSchema(thingID string, schema []entities.Schema, err error) error {
-	ret := fp.Called(thingID, schema, err)
-	return ret.Error(0)
-}
-
 // PublishUpdatedConfig provides a mock function to send an update config response
 func (fp *FakePublisher) PublishUpdatedConfig(thingID string, config []entities.Config, err error) error {
 	ret := fp.Called(thingID, config, err)

@@ -45,27 +45,6 @@ func (mc *ThingController) Unregister(body []byte, authorizationHeader string) e
 	return mc.thingInteractor.Unregister(authorizationHeader, msg.ID)
 }
 
-// UpdateSchema handles the update schema request and execute its use case
-func (mc *ThingController) UpdateSchema(body []byte, authorizationHeader string) error {
-	var updateSchemaReq network.SchemaUpdateRequest
-	err := json.Unmarshal(body, &updateSchemaReq)
-	if err != nil {
-		mc.logger.Error(err)
-		return err
-	}
-
-	mc.logger.Info("update schema message received")
-	mc.logger.Debug(authorizationHeader, updateSchemaReq)
-
-	err = mc.thingInteractor.UpdateSchema(authorizationHeader, updateSchemaReq.ID, updateSchemaReq.Schema)
-	if err != nil {
-		mc.logger.Error(err)
-		return err
-	}
-
-	return nil
-}
-
 // UpdateConfig handles the update config request and execute its use case
 func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string) error {
 	mc.logger.Info("update config message received")

@@ -128,8 +128,6 @@ func (mc *MsgHandler) handleClientMessages(msg network.InMsg, token string) erro
 		return mc.thingController.Register(msg.Body, token)
 	case bindingKeyUnregisterDevice:
 		return mc.thingController.Unregister(msg.Body, token)
-	case bindingKeySchemaSent:
-		return mc.thingController.UpdateSchema(msg.Body, token)
 	case bindingKeyConfigSent:
 		return mc.thingController.UpdateConfig(msg.Body, token)
 	case bindingKeyRequestData:

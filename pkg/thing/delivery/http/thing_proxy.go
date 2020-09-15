@@ -21,7 +21,6 @@ func (err errorConflict) Error() string {
 // ThingProxy proxy a request to the thing service interface
 type ThingProxy interface {
 	Create(id, name, authorization string) (idGenerated string, err error)
-	UpdateSchema(authorization, ID string, schemaList []entities.Schema) error
 	UpdateConfig(authorization, ID string, configList []entities.Config) error
 	List(authorization string) (things []*entities.Thing, err error)
 	Get(authorization, ID string) (*entities.Thing, error)
@@ -116,41 +115,6 @@ func (p proxy) Create(id, name, authorization string) (idGenerated string, err e
 	locationHeader := resp.Header.Get("Location")
 	thingID := locationHeader[len("/things/"):] // get substring after "/things/"
 	return thingID, nil
-}
-
-// UpdateSchema receives the thing's ID and schema and send a HTTP request to
-// the thing's service in order to update it with the schema.
-func (p proxy) UpdateSchema(authorization, ID string, schemaList []entities.Schema) error {
-	t, err := p.Get(authorization, ID)
-	if err != nil {
-		return err
-	}
-
-	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
-	rt.Metadata.Knot.Schema = schemaList
-	parsedBody, err := json.Marshal(rt)
-	if err != nil {
-		p.logger.Error(err)
-		return err
-	}
-
-	requestInfo := &RequestInfo{
-		"PUT",
-		p.url + "/things/" + t.Token,
-		authorization,
-		"application/json",
-		parsedBody,
-		nil,
-	}
-
-	resp, err := p.sendRequest(requestInfo)
-	if err != nil {
-		p.logger.Error(err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
 // UpdateConfig receives as parameters the authorization token, thing's ID and config. After that,
