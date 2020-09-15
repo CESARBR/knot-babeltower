@@ -42,19 +42,6 @@ type DeviceUnregisteredResponse struct {
 	Error *string `json:"error"`
 }
 
-// SchemaUpdateRequest represents the incoming update schema request message
-type SchemaUpdateRequest struct {
-	ID     string            `json:"id"`
-	Schema []entities.Schema `json:"schema,omitempty"`
-}
-
-// SchemaUpdatedResponse represents the outgoing update schema response message
-type SchemaUpdatedResponse struct {
-	ID     string            `json:"id"`
-	Schema []entities.Schema `json:"schema,omitempty"`
-	Error  *string           `json:"error"`
-}
-
 // ConfigUpdateRequest represents the incoming update config request message
 type ConfigUpdateRequest struct {
 	ID     string            `json:"id"`
