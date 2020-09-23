@@ -40,7 +40,6 @@ type objMetadata struct {
 
 type objKnot struct {
 	ID     string            `json:"id"`
-	Schema []entities.Schema `json:"schema,omitempty"`
 	Config []entities.Config `json:"config,omitempty"`
 }
 
@@ -83,7 +82,7 @@ func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingPro
 // Create register a thing on service and return the id generated
 func (p proxy) Create(id, name, authorization string) (idGenerated string, err error) {
 	p.logger.Debug("proxying request to create thing")
-	t := p.getRemoteThingRepr(id, name, nil, nil)
+	t := p.getRemoteThingRepr(id, name, nil)
 	body, err := json.Marshal(t)
 	if err != nil {
 		p.logger.Error(err)
@@ -125,7 +124,7 @@ func (p proxy) UpdateConfig(authorization, ID string, configList []entities.Conf
 		return err
 	}
 
-	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Schema, t.Config)
+	rt := p.getRemoteThingRepr(t.ID, t.Name, t.Config)
 	rt.Metadata.Knot.Config = configList
 	parsedBody, err := json.Marshal(rt)
 	if err != nil {
@@ -160,7 +159,7 @@ func (p proxy) List(authorization string) ([]*entities.Thing, error) {
 	}
 
 	for _, t := range pagThings {
-		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config})
+		things = append(things, &entities.Thing{ID: t.Metadata.Knot.ID, Name: t.Name, Config: t.Metadata.Knot.Config})
 	}
 
 	return things, err
@@ -176,7 +175,7 @@ func (p proxy) Get(authorization, ID string) (*entities.Thing, error) {
 	for i := range things {
 		t := things[i]
 		if t.Metadata.Knot.ID == ID {
-			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Schema: t.Metadata.Knot.Schema, Config: t.Metadata.Knot.Config}
+			nt := &entities.Thing{ID: ID, Token: t.ID, Name: t.Name, Config: t.Metadata.Knot.Config}
 			return nt, nil
 		}
 	}
@@ -209,13 +208,12 @@ func (p proxy) Remove(authorization, ID string) error {
 	return p.mapErrorFromStatusCode(resp.StatusCode)
 }
 
-func (p proxy) getRemoteThingRepr(id, name string, schemaList []entities.Schema, configList []entities.Config) ThingProxyRepr {
+func (p proxy) getRemoteThingRepr(id, name string, configList []entities.Config) ThingProxyRepr {
 	return ThingProxyRepr{
 		Name: name,
 		Metadata: objMetadata{
 			Knot: objKnot{
 				ID:     id,
-				Schema: schemaList,
 				Config: configList,
 			},
 		},
