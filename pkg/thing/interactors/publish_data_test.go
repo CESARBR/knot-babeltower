@@ -57,7 +57,7 @@ var publishDataUseCases = []PublishDataTestCase{
 		errThingProxyGet,
 	},
 	{
-		"thing doesn't have a schema yet",
+		"thing doesn't have a config yet",
 		"authorization-token",
 		"thing-id",
 		[]entities.Data{{}},
@@ -67,7 +67,7 @@ var publishDataUseCases = []PublishDataTestCase{
 			Token: "thing-token",
 			Name:  "thing",
 		}},
-		ErrSchemaUndefined,
+		ErrConfigUndefined,
 	},
 	{
 		"data value doesn't match with thing's schema",

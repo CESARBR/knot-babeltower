@@ -25,12 +25,15 @@ var (
 	errClientSend    = errors.New("error sending message to client")
 )
 
-var voltageSchema = []entities.Schema{{
-	SensorID:  0,
-	ValueType: 1,
-	Unit:      1,
-	TypeID:    1,
-	Name:      "voltage-v",
+// TODO Event with ValueType: 1
+var configWithVoltageSchema = []entities.Config{{
+	SensorID: 0,
+	Schema: entities.Schema{
+		ValueType: 1,
+		Unit:      1,
+		TypeID:    1,
+		Name:      "voltage-v",
+	},
 }}
 
 var updateDataUseCases = []UpdateDataTestCase{
@@ -75,7 +78,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 		errThingProxyGet,
 	},
 	{
-		"thing doesn't have a schema yet",
+		"thing doesn't have a config yet",
 		"authorization-token",
 		"thing-id",
 		[]entities.Data{{}},
@@ -86,7 +89,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			Name:  "thing",
 		}},
 		&mocks.FakePublisher{},
-		ErrSchemaUndefined,
+		ErrConfigUndefined,
 	},
 	{
 		"data value doesn't match with thing's schema",
@@ -98,7 +101,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Config: configWithVoltageSchema,
 		}},
 		&mocks.FakePublisher{},
 		ErrDataInvalid,
@@ -113,7 +116,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Config: configWithVoltageSchema,
 		}},
 		&mocks.FakePublisher{},
 		ErrDataInvalid,
@@ -128,7 +131,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Config: configWithVoltageSchema,
 		}},
 		&mocks.FakePublisher{ReturnErr: errClientSend},
 		errClientSend,
@@ -143,7 +146,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			ID:     "thing-id",
 			Token:  "thing-token",
 			Name:   "thing",
-			Schema: voltageSchema,
+			Config: configWithVoltageSchema,
 		}},
 		&mocks.FakePublisher{},
 		nil,
