@@ -24,12 +24,12 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 		return err
 	}
 
-	if thing.Schema == nil {
-		i.logger.Error(fmt.Errorf("thing %s has no schema yet", thing.ID))
+	if thing.Config == nil {
+		i.logger.Error(fmt.Errorf("thing %s has no config yet", thing.ID))
 		return err
 	}
 
-	err = validateSensors(sensorIds, thing.Schema)
+	err = validateSensors(sensorIds, thing.Config)
 	if err != nil {
 		i.logger.Error(err)
 		return err
@@ -47,9 +47,9 @@ func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds [
 
 // validateSensors validates a slice of sensor ids against the thing's registered schema
 // that represents the sensors and actuators associated to it.
-func validateSensors(sensorIds []int, schema []entities.Schema) error {
+func validateSensors(sensorIds []int, configList []entities.Config) error {
 	for _, id := range sensorIds {
-		if !sensorExists(schema, id) {
+		if !sensorExists(configList, id) {
 			return ErrSensorInvalid
 		}
 	}
@@ -57,9 +57,9 @@ func validateSensors(sensorIds []int, schema []entities.Schema) error {
 	return nil
 }
 
-func sensorExists(schema []entities.Schema, id int) bool {
-	for _, s := range schema {
-		if s.SensorID == id {
+func sensorExists(configList []entities.Config, id int) bool {
+	for _, c := range configList {
+		if c.SensorID == id {
 			return true
 		}
 	}
