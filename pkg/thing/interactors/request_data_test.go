@@ -68,13 +68,21 @@ var gdCases = []GetDataTestCase{
 			ID:    "fc3fcf912d0c290a",
 			Token: "token",
 			Name:  "thing",
-			Schema: []entities.Schema{
+			Config: []entities.Config{
 				{
-					SensorID:  2,
-					ValueType: 3,
-					Unit:      0,
-					TypeID:    65521,
-					Name:      "Test",
+					SensorID: 0,
+					Schema: entities.Schema{
+						ValueType: 2,
+						Unit:      0,
+						TypeID:    65521,
+						Name:      "test",
+					},
+					Event: entities.Event{
+						Change:         true,
+						TimeSec:        12,
+						LowerThreshold: 25.4,
+						UpperThreshold: 87.2,
+					},
 				},
 			},
 		},
@@ -93,13 +101,21 @@ var gdCases = []GetDataTestCase{
 			ID:    "fc3fcf912d0c290a",
 			Token: "token",
 			Name:  "thing",
-			Schema: []entities.Schema{
+			Config: []entities.Config{
 				{
-					SensorID:  0,
-					ValueType: 3,
-					Unit:      0,
-					TypeID:    65521,
-					Name:      "Test",
+					SensorID: 0,
+					Schema: entities.Schema{
+						ValueType: 2,
+						Unit:      0,
+						TypeID:    65521,
+						Name:      "test",
+					},
+					Event: entities.Event{
+						Change:         true,
+						TimeSec:        12,
+						LowerThreshold: 25.4,
+						UpperThreshold: 87.2,
+					},
 				},
 			},
 		},
@@ -118,13 +134,21 @@ var gdCases = []GetDataTestCase{
 			ID:    "fc3fcf912d0c290a",
 			Token: "token",
 			Name:  "thing",
-			Schema: []entities.Schema{
+			Config: []entities.Config{
 				{
-					SensorID:  1,
-					ValueType: 3,
-					Unit:      0,
-					TypeID:    65521,
-					Name:      "Test",
+					SensorID: 0,
+					Schema: entities.Schema{
+						ValueType: 2,
+						Unit:      0,
+						TypeID:    65521,
+						Name:      "test",
+					},
+					Event: entities.Event{
+						Change:         true,
+						TimeSec:        12,
+						LowerThreshold: 25.4,
+						UpperThreshold: 87.2,
+					},
 				},
 			},
 		},
@@ -143,13 +167,21 @@ var gdCases = []GetDataTestCase{
 			ID:    "fc3fcf912d0c290a",
 			Token: "token",
 			Name:  "thing",
-			Schema: []entities.Schema{
+			Config: []entities.Config{
 				{
-					SensorID:  1,
-					ValueType: 3,
-					Unit:      0,
-					TypeID:    65521,
-					Name:      "Test",
+					SensorID: 0,
+					Schema: entities.Schema{
+						ValueType: 2,
+						Unit:      0,
+						TypeID:    65521,
+						Name:      "test",
+					},
+					Event: entities.Event{
+						Change:         true,
+						TimeSec:        12,
+						LowerThreshold: 25.4,
+						UpperThreshold: 87.2,
+					},
 				},
 			},
 		},
