@@ -39,12 +39,12 @@ func (i *ThingInteractor) verifyThingData(authorization, thingID string, data []
 		return fmt.Errorf("error getting thing metadata: %w", err)
 	}
 
-	if thing.Schema == nil {
-		return ErrSchemaUndefined
+	if thing.Config == nil {
+		return ErrConfigUndefined
 	}
 
 	for _, d := range data {
-		if !validateSchema(d, thing.Schema) {
+		if !validateSchema(d, thing.Config) {
 			return ErrDataInvalid
 		}
 	}
@@ -52,19 +52,19 @@ func (i *ThingInteractor) verifyThingData(authorization, thingID string, data []
 	return nil
 }
 
-func validateSchema(data entities.Data, schema []entities.Schema) bool {
-	for _, s := range schema {
-		if s.SensorID == data.SensorID {
+func validateSchema(data entities.Data, configList []entities.Config) bool {
+	for _, c := range configList {
+		if c.SensorID == data.SensorID {
 			switch data.Value.(type) {
 			case float64:
 				if data.Value == math.Trunc(data.Value.(float64)) { // check if number is integer
-					return ValidateSchemaNumber(data.Value.(float64), s.ValueType)
+					return ValidateSchemaNumber(data.Value.(float64), c.Schema.ValueType)
 				}
-				return s.ValueType == 2 // float
+				return c.Schema.ValueType == 2 // float
 			case bool:
-				return s.ValueType == 3 // bool
+				return c.Schema.ValueType == 3 // bool
 			case string:
-				return s.ValueType == 4 // raw
+				return c.Schema.ValueType == 4 // raw
 			default:
 				return false
 			}
