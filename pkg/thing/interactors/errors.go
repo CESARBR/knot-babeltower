@@ -45,9 +45,6 @@ var (
 	// ErrConfigInvalid is returned when thing's config mismatch the thing's schema
 	ErrConfigInvalid = errors.New("config is incompatible with thing's schema")
 
-	// ErrConfigEqual is returned when thing's config already has the same config
-	ErrConfigEqual = errors.New("nothing to update in the thing's config")
-
 	// ErrConfigUndefined is returned when the thing has no config yet
 	ErrConfigUndefined = errors.New("thing has no config")
 )
