@@ -3,7 +3,6 @@ package interactors
 import (
 	"fmt"
 	"math"
-	"reflect"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/go-playground/validator"
@@ -84,10 +83,6 @@ func (i *ThingInteractor) validateConfig(authorization, id string, configList []
 	err = validateSchemaExists(configList, thing.Config)
 	if err != nil {
 		return err
-	}
-
-	if reflect.DeepEqual(thing.Config, configList) {
-		return ErrConfigEqual
 	}
 
 	if !i.isValidSchema(configList) {
