@@ -515,6 +515,7 @@ Event that represents a thing's config was updated.
       - `timeSec` **Number** - **Optional** time interval in seconds that indicates when data must be sent to the cloud
       - `lowerThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's lower than this threshold
       - `upperThreshold` **(Depends on schema's valueType)** - **Optional** send data to the cloud if it's upper than this threshold
+  - `changed` **Boolean** inform if the update has changed something in the thing's current configuration
   - `error` **String** a string with detailed error message
 
   The semantic specification that defines `valueType`, `unit` and `typeId` properties can be find [here](https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html).
@@ -540,6 +541,7 @@ Event that represents a thing's config was updated.
          "upperThreshold": 3000
       }
     }],
+    "changed": true,
     "error": null
   }
   ```
