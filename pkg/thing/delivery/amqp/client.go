@@ -23,7 +23,7 @@ const (
 type Publisher interface {
 	PublishRegisteredDevice(thingID, name, token string, err error) error
 	PublishUnregisteredDevice(thingID, token string, err error) error
-	PublishUpdatedConfig(thingID string, config []entities.Config, err error) error
+	PublishUpdatedConfig(thingID string, config []entities.Config, changed bool, err error) error
 	PublishUpdateData(thingID string, data []entities.Data) error
 	PublishRequestData(thingID string, sensorIds []int) error
 	PublishPublishedData(thingID, token string, data []entities.Data) error
@@ -77,10 +77,10 @@ func (mp *msgClientPublisher) PublishUnregisteredDevice(thingID, token string, e
 }
 
 // PublishUpdatedConfig sends the updated config response
-func (mp *msgClientPublisher) PublishUpdatedConfig(thingID string, config []entities.Config, err error) error {
+func (mp *msgClientPublisher) PublishUpdatedConfig(thingID string, config []entities.Config, changed bool, err error) error {
 	mp.logger.Debug("sending update config response")
 	errMsg := getErrMsg(err)
-	msg := network.NewMessage(network.ConfigUpdatedResponse{ID: thingID, Config: config, Error: errMsg})
+	msg := network.NewMessage(network.ConfigUpdatedResponse{ID: thingID, Config: config, Changed: changed, Error: errMsg})
 
 	return mp.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, configOutKey, msg, nil)
 }

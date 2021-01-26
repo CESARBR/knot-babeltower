@@ -10,14 +10,15 @@ import (
 )
 
 type UpdateConfigTestCase struct {
-	name           string
-	authParam      string
-	idParam        string
-	configParam    []entities.Config
-	expectedError  error
-	fakeLogger     *mocks.FakeLogger
-	fakeThingProxy *mocks.FakeThingProxy
-	fakePublisher  *mocks.FakePublisher
+	name            string
+	authParam       string
+	idParam         string
+	configParam     []entities.Config
+	expectedError   error
+	expectedChanged bool
+	fakeLogger      *mocks.FakeLogger
+	fakeThingProxy  *mocks.FakeThingProxy
+	fakePublisher   *mocks.FakePublisher
 }
 
 var configExample = []entities.Config{
@@ -72,6 +73,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		"c09660af89ecba61",
 		[]entities.Config{{}},
 		ErrAuthNotProvided,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -82,6 +84,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		"",
 		[]entities.Config{{}},
 		ErrIDNotProvided,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -92,6 +95,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		"c09660af89ecba61",
 		nil,
 		ErrConfigNotProvided,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
 		&mocks.FakePublisher{},
@@ -115,6 +119,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		nil,
+		true,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -130,6 +135,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		"c09660af89ecba61",
 		configExample,
 		errProxyUpdateConfig,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errProxyUpdateConfig},
 		&mocks.FakePublisher{},
@@ -140,6 +146,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 		"c09660af89ecba61",
 		configExample,
 		errProxyUpdateConfig,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errProxyUpdateConfig},
 		&mocks.FakePublisher{},
@@ -164,6 +171,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		ErrDataInvalid,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -193,6 +201,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		nil,
+		true,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:    "thing-id",
@@ -232,6 +241,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		ErrSchemaNotProvided,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -261,6 +271,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		ErrSchemaInvalid,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -290,6 +301,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		ErrSchemaInvalid,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -319,6 +331,7 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			},
 		}},
 		ErrSchemaInvalid,
+		false,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{Thing: &entities.Thing{
 			ID:     "thing-id",
@@ -326,6 +339,22 @@ var updateConfigTestCases = []UpdateConfigTestCase{
 			Name:   "thing",
 			Config: configExample,
 		}},
+		&mocks.FakePublisher{},
+	},
+	{
+		"returned information indicating if thing's config has not changed",
+		"authorization-token",
+		"c09660af89ecba61",
+		configExample,
+		nil,
+		false,
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Config: configExample,
+		}, ReturnErr: nil},
 		&mocks.FakePublisher{},
 	},
 }
@@ -343,8 +372,9 @@ func TestUpdateConfig(t *testing.T) {
 				Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
-			err := thingInteractor.UpdateConfig(tc.authParam, tc.idParam, tc.configParam)
+			changed, err := thingInteractor.UpdateConfig(tc.authParam, tc.idParam, tc.configParam)
 
+			assert.EqualValues(t, tc.expectedChanged, changed)
 			assert.EqualValues(t, errors.Is(err, tc.expectedError), true)
 			tc.fakeThingProxy.AssertExpectations(t)
 		})

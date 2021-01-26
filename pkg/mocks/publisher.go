@@ -27,8 +27,8 @@ func (fp *FakePublisher) PublishUnregisteredDevice(thingID, token string, err er
 }
 
 // PublishUpdatedConfig provides a mock function to send an update config response
-func (fp *FakePublisher) PublishUpdatedConfig(thingID string, config []entities.Config, err error) error {
-	ret := fp.Called(thingID, config, err)
+func (fp *FakePublisher) PublishUpdatedConfig(thingID string, config []entities.Config, changed bool, err error) error {
+	ret := fp.Called(thingID, config, changed, err)
 	return ret.Error(0)
 }
 

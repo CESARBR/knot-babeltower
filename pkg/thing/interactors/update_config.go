@@ -3,6 +3,7 @@ package interactors
 import (
 	"fmt"
 	"math"
+	"reflect"
 
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 	"github.com/go-playground/validator"
@@ -50,28 +51,35 @@ var rules = map[int]schemaType{
 }
 
 // UpdateConfig executes the use case to update thing's configuration
-func (i *ThingInteractor) UpdateConfig(authorization, id string, configList []entities.Config) error {
+// It returns two values:
+//   - error: indicates if something goes wrong
+//   - bool: indicates if the operation has changed something in the current thing's configuration
+func (i *ThingInteractor) UpdateConfig(authorization, id string, configList []entities.Config) (bool, error) {
 	if authorization == "" {
-		return ErrAuthNotProvided
+		return false, ErrAuthNotProvided
 	}
 	if id == "" {
-		return ErrIDNotProvided
+		return false, ErrIDNotProvided
 	}
 	if configList == nil {
-		return ErrConfigNotProvided
+		return false, ErrConfigNotProvided
 	}
 
 	err := i.validateConfig(authorization, id, configList)
 	if err != nil {
-		return fmt.Errorf("failed to validate if config is valid: %w", err)
+		if err == ErrConfigEqual {
+			return false, nil
+		}
+
+		return false, fmt.Errorf("failed to validate if config is valid: %w", err)
 	}
 
 	err = i.thingProxy.UpdateConfig(authorization, id, configList)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }
 
 func (i *ThingInteractor) validateConfig(authorization, id string, configList []entities.Config) error {
@@ -83,6 +91,10 @@ func (i *ThingInteractor) validateConfig(authorization, id string, configList []
 	err = validateSchemaExists(configList, thing.Config)
 	if err != nil {
 		return err
+	}
+
+	if reflect.DeepEqual(thing.Config, configList) {
+		return ErrConfigEqual
 	}
 
 	if !i.isValidSchema(configList) {

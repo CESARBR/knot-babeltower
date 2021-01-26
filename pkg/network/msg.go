@@ -50,9 +50,10 @@ type ConfigUpdateRequest struct {
 
 // ConfigUpdatedResponse represents the outgoing update config response message
 type ConfigUpdatedResponse struct {
-	ID     string            `json:"id"`
-	Config []entities.Config `json:"config,omitempty"`
-	Error  *string           `json:"error"`
+	ID      string            `json:"id"`
+	Config  []entities.Config `json:"config,omitempty"`
+	Changed bool              `json:"changed"`
+	Error   *string           `json:"error"`
 }
 
 // DeviceAuthRequest represents the incoming auth device command

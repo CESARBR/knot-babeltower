@@ -55,16 +55,16 @@ func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string)
 		return err
 	}
 
-	err = mc.thingInteractor.UpdateConfig(authorizationHeader, updateConfigReq.ID, updateConfigReq.Config)
+	changed, err := mc.thingInteractor.UpdateConfig(authorizationHeader, updateConfigReq.ID, updateConfigReq.Config)
 	if err != nil {
-		pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, err)
+		pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, changed, err)
 		if pubErr != nil {
 			return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
 		}
 		return err
 	}
 
-	pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, err)
+	pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, changed, err)
 	if pubErr != nil {
 		return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
 	}

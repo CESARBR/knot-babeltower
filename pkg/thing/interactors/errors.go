@@ -47,4 +47,7 @@ var (
 
 	// ErrConfigUndefined is returned when the thing has no config yet
 	ErrConfigUndefined = errors.New("thing has no config")
+
+	// ErrConfigEqual is returned when thing's config already has the same config
+	ErrConfigEqual = errors.New("nothing to update in the thing's config")
 )
