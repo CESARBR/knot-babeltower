@@ -1,4 +1,5 @@
 GOCMD=go
+GOSECCMD=gosec
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test -v ./...
@@ -21,6 +22,7 @@ tools:
 	go get github.com/ahmetb/govvv
 	go get github.com/cespare/reflex
 	go get github.com/swaggo/swag/cmd/swag
+	go get github.com/securego/gosec/v2/cmd/gosec
 	pip install pre-commit
 	pre-commit install
 
@@ -43,6 +45,10 @@ http-docs:
 .PHONY: test
 test:
 	set -o pipefail && $(GOTEST) | sed ''/PASS/s//$$(printf "\033[32mPASS\033[0m")/'' | sed ''/FAIL/s//$$(printf "\033[31mFAIL\033[0m")/'' | grep -v RUN
+
+.PHONY: sectest
+sectest:
+	$(GOSECCMD) -fmt=json ./...
 
 .PHONY: lint
 lint:
