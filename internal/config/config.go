@@ -39,6 +39,7 @@ type RabbitMQ struct {
 
 // Things represents the things service to proxy request
 type Things struct {
+	Protocol string
 	Hostname string
 	Port     uint16
 }
