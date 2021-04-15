@@ -17,5 +17,6 @@ rabbitmq:
   url: amqp://knot:knot@rabbitmq/
 
 things:
+  protocol: http
   hostname: things
   port: 8182

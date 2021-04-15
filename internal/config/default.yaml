@@ -17,5 +17,6 @@ rabbitmq:
   url: amqp://localhost/
 
 things:
+  protocol: http
   hostname: localhost
   port: 8182

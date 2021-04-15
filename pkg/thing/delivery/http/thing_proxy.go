@@ -72,8 +72,8 @@ type RequestOptions struct {
 }
 
 // NewThingProxy creates a proxy to the thing service
-func NewThingProxy(logger logging.Logger, hostname string, port uint16) ThingProxy {
-	url := fmt.Sprintf("http://%s:%d", hostname, port)
+func NewThingProxy(logger logging.Logger, hostname, protocol string, port uint16) ThingProxy {
+	url := fmt.Sprintf("%s://%s:%d", protocol, hostname, port)
 
 	logger.Debug("proxy setup to " + url)
 	return proxy{url, logger}
