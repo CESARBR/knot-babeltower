@@ -44,6 +44,11 @@ type Things struct {
 	Port     uint16
 }
 
+// Redis represents the redis configuration properties
+type Redis struct {
+	URL string
+}
+
 // Config represents the service configuration
 type Config struct {
 	Server
@@ -52,6 +57,7 @@ type Config struct {
 	Authn
 	RabbitMQ
 	Things
+	Redis
 }
 
 func readFile(name string) {

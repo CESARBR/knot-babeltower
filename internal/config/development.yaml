@@ -20,3 +20,6 @@ things:
   protocol: http
   hostname: things
   port: 8182
+
+redis:
+  url: redis://es-redis:6379/0
