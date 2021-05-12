@@ -39,6 +39,10 @@ func main() {
 
 	go monitorSignals(sigs, quit, logger)
 
+	// Redis
+	redisStartedChan := make(chan bool, 1)
+	redis := network.NewRedis(config.Redis.URL, logrus.Get("Redis"))
+
 	// AMQP
 	amqpStartedChan := make(chan bool, 1)
 	amqp := network.NewAmqp(config.RabbitMQ.URL, logrus.Get("Amqp"))
@@ -72,6 +76,7 @@ func main() {
 	// Start goroutines
 	go amqp.Start(amqpStartedChan)
 	go http.Start(serverStartedChan)
+	go redis.Start(redisStartedChan)
 
 	// Main loop
 	for {
@@ -90,6 +95,10 @@ func main() {
 				logger.Info("message handler started")
 			} else {
 				quit <- true
+			}
+		case started := <-redisStartedChan:
+			if started {
+				logger.Info("redis connection started")
 			}
 		case <-quit:
 			msgHandler.Stop()

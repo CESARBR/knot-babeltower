@@ -20,3 +20,6 @@ things:
   protocol: http
   hostname: localhost
   port: 8182
+
+redis:
+  url: redis://localhost:6379/0
