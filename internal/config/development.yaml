@@ -23,3 +23,4 @@ things:
 
 redis:
   url: redis://es-redis:6379/0
+  expirationTime: 24h

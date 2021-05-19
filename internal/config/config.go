@@ -46,7 +46,8 @@ type Things struct {
 
 // Redis represents the redis configuration properties
 type Redis struct {
-	URL string
+	URL            string
+	ExpirationTime string
 }
 
 // Config represents the service configuration
