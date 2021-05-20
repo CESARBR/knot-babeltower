@@ -1,11 +1,10 @@
 module github.com/CESARBR/knot-babeltower
 
-go 1.12
+go 1.16
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/cenkalti/backoff/v4 v4.0.0
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/spec v0.19.7 // indirect
 	github.com/go-openapi/swag v0.19.8 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
@@ -31,5 +30,4 @@ require (
 	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
