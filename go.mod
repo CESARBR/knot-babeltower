@@ -9,6 +9,7 @@ require (
 	github.com/go-openapi/swag v0.19.8 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-redis/redis/v8 v8.8.3
 	github.com/google/go-querystring v1.0.0
 	github.com/gorilla/mux v1.7.4
 	github.com/kr/text v0.2.0 // indirect
@@ -24,7 +25,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/http-swagger v0.0.0-20200308142732-58ac5e232fba
 	github.com/swaggo/swag v1.6.7
 	golang.org/x/tools v0.1.0 // indirect
