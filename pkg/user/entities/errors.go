@@ -21,6 +21,9 @@ var (
 	// ErrUserForbidden represents the error when user cannot be authenticated
 	ErrUserForbidden = errors.New("forbidden to authenticate user")
 
+	// ErrTokenForbidden represents the error when cannot authenticate user or app token
+	ErrTokenForbidden = errors.New("failed to authenticate token")
+
 	// ErrUserExists is returned when trying to register an existing user
 	ErrUserExists = errors.New("user is already created")
 
