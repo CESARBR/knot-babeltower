@@ -10,27 +10,32 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
-// authn documentation: https://github.com/mainflux/mainflux/blob/master/authn/swagger.yaml
-
-// AuthnProxy represents the interface to the authn's proxy operations
+// AuthnProxy is an interface to the Mainflux Authn service, which provides an API for.
+// managing authentication keys. This interface provides a way to create application
+// tokens (with configurable duration) and to validate the token used in operations across
+// the platform.
+// https://github.com/mainflux/mainflux/blob/0.11.0/authn/swagger.yaml
 type AuthnProxy interface {
 	CreateAppToken(user entities.User, duration int) (token string, err error)
 }
 
-// Authn is responsible for implementing the authn's proxy operations
+// Authn takes a URL address that points to the Mainflux Authn service and implements
+// the AuthnProxy interface methods.
 type Authn struct {
 	URL    string
 	logger logging.Logger
 }
 
-// NewAuthnProxy creates a new authnProxy instance
-func NewAuthnProxy(logger logging.Logger, authnHost string, authnPort uint16) *Authn {
-	URL := fmt.Sprintf("http://%s:%d", authnHost, authnPort)
+// NewAuthnProxy creates a new authn instance and returns a pointer to the AuthnProxy interface
+// implementation.
+func NewAuthnProxy(logger logging.Logger, hostname string, port uint16) *Authn {
+	URL := fmt.Sprintf("http://%s:%d", hostname, port)
 	logger.Debug("authn proxy configured to " + URL)
 	return &Authn{URL, logger}
 }
 
-// authnRequest represents an authn service request
+// authnRequest represents a HTTP request to the Mainflux Authn service. It basically has
+// fields that matches with the HTTP protocol structure (path, method, body, headers, etc).
 type authnRequest struct {
 	Path          string
 	Method        string
@@ -38,24 +43,33 @@ type authnRequest struct {
 	Authorization string
 }
 
-// keyRequestSchema represents the schema for a key request
+// keyRequestSchema represents the request schema for creating a new token in the
+// Mainflux platform.
+// `Issuer` is the entity responsible for requesting the token creation.
+// `Type` is the token type, which can be user (0) or app (2).
+// `Duration` is the duration of the token until it expires (only for app tokens).
 type keyRequestSchema struct {
 	Issuer   string `json:"issuer"`
 	Type     int    `json:"type"`
 	Duration int    `json:"duration"`
 }
 
-// keySchema represents the schema for a key
-type keySchema struct {
+// keyResponseSchema represents the response schema for the created token.
+// `ID` is an unique ID that identifies the token.
+// `Value` is the token value itself.
+// `IssuedAt` and `ExpiresAt` are time fields to know when the token was created and
+// when it expires.
+type keyResponseSchema struct {
 	ID        string `json:"id"`
 	Value     string `json:"value"`
 	IssuedAt  string `json:"issued_at"`
 	ExpiresAt string `json:"expires_at"`
 }
 
-// CreateAppToken creates a valid token for the application
+// CreateAppToken creates a new application token in the Mainflux platform. This type of
+// token has a configurable duration.
 func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
-	var response keySchema
+	var response keyResponseSchema
 	request := authnRequest{
 		Path:          "/keys",
 		Method:        "POST",
