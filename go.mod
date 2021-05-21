@@ -19,6 +19,7 @@ require (
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
+	github.com/segmentio/ksuid v1.0.3
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
