@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/CESARBR/knot-babeltower/internal/config"
+	"github.com/CESARBR/knot-babeltower/pkg/cache"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/server"
 	thingControllers "github.com/CESARBR/knot-babeltower/pkg/thing/controllers"
@@ -42,6 +43,7 @@ func main() {
 	// Redis
 	redisStartedChan := make(chan bool, 1)
 	redis := network.NewRedis(config.Redis.URL, logrus.Get("Redis"))
+	sessionStore := cache.NewSessionStore(redis, config.ExpirationTime)
 
 	// AMQP
 	amqpStartedChan := make(chan bool, 1)
@@ -56,14 +58,19 @@ func main() {
 	authnProxy := userDeliveryHTTP.NewAuthnProxy(logrus.Get("AuthnProxy"), config.Authn.Hostname, config.Authn.Port)
 	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Protocol, config.Things.Port)
 
+	// ID generator
+	generator := userInteractors.NewGenerator()
+
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)
 	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy, authnProxy)
+	createSession := userInteractors.NewCreateSession(thingProxy, generator, sessionStore)
+
 	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy)
 
 	// Controllers
 	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor, commandSender, clientPublisher)
-	userController := userControllers.NewUserController(logrus.Get("UserController"), createUser, createToken)
+	userController := userControllers.NewUserController(logrus.Get("UserController"), createUser, createToken, createSession)
 
 	// Server
 	serverStartedChan := make(chan bool, 1)

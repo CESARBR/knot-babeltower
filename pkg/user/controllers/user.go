@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
+	"github.com/CESARBR/knot-babeltower/pkg/network"
 
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 	"github.com/CESARBR/knot-babeltower/pkg/user/interactors"
@@ -12,9 +13,10 @@ import (
 
 // UserController represents the controller for user
 type UserController struct {
-	logger                logging.Logger
-	createUserInteractor  *interactors.CreateUser
-	createTokenInteractor *interactors.CreateToken
+	logger                  logging.Logger
+	createUserInteractor    *interactors.CreateUser
+	createTokenInteractor   *interactors.CreateToken
+	createSessionInteractor *interactors.CreateSession
 }
 
 // CreateTokenRequest represents the received parameters for CreateToken operation
@@ -40,8 +42,9 @@ type DetailedErrorResponse struct {
 func NewUserController(
 	logger logging.Logger,
 	createUserInteractor *interactors.CreateUser,
-	createTokenInteractor *interactors.CreateToken) *UserController {
-	return &UserController{logger, createUserInteractor, createTokenInteractor}
+	createTokenInteractor *interactors.CreateToken,
+	createSessionInteractor *interactors.CreateSession) *UserController {
+	return &UserController{logger, createUserInteractor, createTokenInteractor, createSessionInteractor}
 }
 
 // Create godoc
@@ -118,6 +121,37 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 
 	uc.logger.Infof("token created for user %s", req.Email)
 	ctr := &CreateTokenResponse{token}
+	uc.writeResponse(w, http.StatusCreated, ctr)
+}
+
+// CreateSession godoc
+// @Summary Generate a user's session ID
+// @Produce json
+// @Accept  json
+// @Param user body network.CreateSessionRequest true "User or application token"
+// @Success 201 {object} network.CreateSessionResponse "Session ID"
+// @Failure 403 {object} DetailedErrorResponse "Invalid credentials"
+// @Failure 500 {string} string "Internal server error"
+// @Router /sessions [post]
+// CreateSession handles the server request and calls CreateSessionInteractor
+func (uc *UserController) CreateSession(w http.ResponseWriter, r *http.Request) {
+	var req network.CreateSessionRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		uc.logger.Error("failed to parse request body")
+		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
+		return
+	}
+
+	id, err := uc.createSessionInteractor.Execute(req.Token)
+	if err != nil {
+		uc.logger.Errorf("failed to create user's messaging session: %s", err)
+		der := &DetailedErrorResponse{err.Error()}
+		uc.writeResponse(w, mapErrorToStatusCode(err), der)
+		return
+	}
+
+	ctr := &network.CreateSessionResponse{ID: id}
 	uc.writeResponse(w, http.StatusCreated, ctr)
 }
 

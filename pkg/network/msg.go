@@ -92,6 +92,16 @@ type DataSent struct {
 	Data []entities.Data `json:"data"`
 }
 
+// CreateSessionRequest represents session creation request
+type CreateSessionRequest struct {
+	Token string `json:"token"`
+}
+
+// CreateSessionResponse represents session creation response
+type CreateSessionResponse struct {
+	ID string `json:"id"`
+}
+
 // NewMessage creates a message
 func NewMessage(msg interface{}) MessageSerializer {
 	return message{Payload: msg}
