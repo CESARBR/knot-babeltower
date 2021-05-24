@@ -11,6 +11,7 @@ type FakeThingProxy struct {
 	ReturnErr error
 	CreateErr error
 	Thing     *entities.Thing
+	Things    []*entities.Thing
 }
 
 // Create provides a mock function to create a thing on the thing's service
