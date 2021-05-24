@@ -16,6 +16,18 @@ definitions:
         type: string
       password:
         type: string
+      token:
+        type: string
+    type: object
+  network.CreateSessionRequest:
+    properties:
+      token:
+        type: string
+    type: object
+  network.CreateSessionResponse:
+    properties:
+      id:
+        type: string
     type: object
   server.Health:
     properties:
@@ -42,6 +54,33 @@ paths:
           schema:
             $ref: '#/definitions/server.Health'
       summary: Verify the service health
+  /sessions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User or application token
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/network.CreateSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Session ID
+          schema:
+            $ref: '#/definitions/network.CreateSessionResponse'
+        "403":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/controllers.DetailedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Generate a user's session ID
   /tokens:
     post:
       consumes:
