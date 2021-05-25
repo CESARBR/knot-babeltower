@@ -26,7 +26,9 @@ type Publisher interface {
 	PublishUpdatedConfig(thingID string, config []entities.Config, changed bool, err error) error
 	PublishUpdateData(thingID string, data []entities.Data) error
 	PublishRequestData(thingID string, sensorIds []int) error
-	PublishPublishedData(thingID, token string, data []entities.Data) error
+
+	// Publish data in broadcast mode to all clients within the cluster
+	PublishBroadcastData(thingID, token string, data []entities.Data) error
 }
 
 // Sender represents the operations to send commands response
@@ -123,9 +125,9 @@ func (cs *commandSender) SendListResponse(things []*entities.Thing, replyTo, cor
 	return cs.amqp.PublishPersistentMessage(exchangeDevice, exchangeDeviceType, replyTo, msg, options)
 }
 
-// PublishPublishedData send update data command
-func (mp *msgClientPublisher) PublishPublishedData(thingID, token string, data []entities.Data) error {
-	mp.logger.Debug("sending publish data request")
+// PublishBroadcastData publishes thing's data to all consumers
+func (mp *msgClientPublisher) PublishBroadcastData(thingID, token string, data []entities.Data) error {
+	mp.logger.Debug("publishing broadcast data")
 	msg := network.NewMessage(network.DataSent{ID: thingID, Data: data})
 	options := &network.MessageOptions{Authorization: token, Expiration: dataExpirationTime}
 

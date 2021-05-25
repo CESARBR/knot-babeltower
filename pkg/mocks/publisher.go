@@ -44,8 +44,8 @@ func (fp *FakePublisher) PublishRequestData(thingID string, sensorIds []int) err
 	return args.Error(0)
 }
 
-// PublishPublishedData provides a mock function to send a request data command
-func (fp *FakePublisher) PublishPublishedData(thingID, token string, data []entities.Data) error {
-	args := fp.Called(thingID, data)
+// PublishBroadcastData provides a mock function to publish data in broadcast mode
+func (fp *FakePublisher) PublishBroadcastData(thingID, token string, data []entities.Data) error {
+	args := fp.Called(thingID, token, data)
 	return args.Error(0)
 }
