@@ -66,7 +66,7 @@ func main() {
 	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy, authnProxy)
 	createSession := userInteractors.NewCreateSession(thingProxy, generator, sessionStore)
 
-	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy)
+	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy, sessionStore)
 
 	// Controllers
 	thingController := thingControllers.NewThingController(logrus.Get("ThingController"), thingInteractor, commandSender, clientPublisher)
