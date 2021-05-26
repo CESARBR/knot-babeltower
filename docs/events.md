@@ -19,6 +19,7 @@ This document describes the events `babeltower` is able to receive and send. The
   - [device.unregistered](#device-unregistered)
   - [device.config.updated](#device-config-updated)
   - [data.published](#data-published)
+  - [data.[sessionId].published](#data-session-published)
   - [device.[id].data.request](#device-<id>-data-request)
   - [device.[id].data.update](#device-<id>-data-update)
 
@@ -607,6 +608,50 @@ Event that represents a data published from a thing's sensor.
   - Exchange:
     - Type: fanout
     - Name: data.published
+    - Durable: `true`
+    - Auto-delete: `false`
+
+</details>
+
+### **data.[sessionId].published** <a name="data-session-published"></a>
+
+Event that represents a data published from a thing's sensor to a user session. You can obtain a `sessionId` by sending a request to the endpoint `POST /sessions` with a valid authorization token. The endpoint specification can be easily viewed in the browser by accessing the address `http://<address>:<port>/swagger/index.html`.
+
+<details>
+  <summary>Payload</summary>
+
+  JSON in the following format:
+
+  - `id` **String** thing's ID
+  - `data` **Array** data items to be published, each one formed by:
+    - `sensorId` **Number** sensor ID
+    - `value` **Number|Boolean|String** sensor value
+
+  Example:
+
+  ```json
+  {
+    "id": "fbe64efa6c7f717e",
+    "data": [
+      {
+        "sensorId": 1,
+        "value": false
+      },
+      {
+        "sensorId": 2,
+        "value": 1000
+      }
+    ]
+  }
+  ```
+</details>
+
+<details>
+  <summary>AMQP Binding</summary>
+
+  - Exchange:
+    - Type: fanout
+    - Name: data.[sessionId].published
     - Durable: `true`
     - Auto-delete: `false`
 
