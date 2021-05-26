@@ -49,3 +49,9 @@ func (fp *FakePublisher) PublishBroadcastData(thingID, token string, data []enti
 	args := fp.Called(thingID, token, data)
 	return args.Error(0)
 }
+
+// PublishSessionData provides a mock function to send a request data command
+func (fp *FakePublisher) PublishSessionData(thingID, token, sessionID string, data []entities.Data) error {
+	args := fp.Called(thingID, token, sessionID, data)
+	return args.Error(0)
+}
