@@ -371,7 +371,7 @@ func TestUpdateConfig(t *testing.T) {
 				Return(tc.fakeThingProxy.ReturnErr).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 			changed, err := thingInteractor.UpdateConfig(tc.authParam, tc.idParam, tc.configParam)
 
 			assert.EqualValues(t, tc.expectedChanged, changed)

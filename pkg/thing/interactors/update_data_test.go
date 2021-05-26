@@ -165,7 +165,7 @@ func TestUpdateData(t *testing.T) {
 				Return(tc.fakePublisher.ReturnErr).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 			err := thingInteractor.UpdateData(tc.authParam, tc.idParam, tc.dataParam)
 
 			assert.EqualValues(t, errors.Is(err, tc.expectedError), true)

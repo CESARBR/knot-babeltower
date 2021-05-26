@@ -72,7 +72,7 @@ func TestAuthThing(t *testing.T) {
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 			err := thingInteractor.Auth(tc.authParam, tc.idParam)
 
 			if tc.authParam == "" {

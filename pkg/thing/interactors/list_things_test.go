@@ -84,7 +84,7 @@ func TestListThings(t *testing.T) {
 				Return(tc.expectedProxyResponseThings, tc.expectedProxyResponseError).
 				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 			things, err := thingInteractor.List(tc.authorization)
 			if tc.authorization == "" {
 				assert.EqualError(t, err, ErrAuthNotProvided.Error())

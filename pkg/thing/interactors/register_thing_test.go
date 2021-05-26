@@ -122,7 +122,7 @@ func TestRegisterThing(t *testing.T) {
 			tc.fakeThingProxy.On("Create", tc.idParam, tc.nameParam, tc.authParam).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.CreateErr).Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 			err := thingInteractor.Register(tc.authParam, tc.idParam, tc.nameParam)
 			if err != nil && !assert.IsType(t, errors.Unwrap(err), tc.errExpected) {
 				t.Errorf("create thing failed with unexpected error. Error: %s", err)
