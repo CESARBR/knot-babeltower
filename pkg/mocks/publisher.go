@@ -8,10 +8,11 @@ import (
 // FakePublisher represents a mocking type for the publisher service
 type FakePublisher struct {
 	mock.Mock
-	ReturnErr error
-	SendError error
-	Token     string
-	Err       error
+	PublishErr        error
+	PublishSessionErr error
+	SendError         error
+	Token             string
+	Err               error
 }
 
 // PublishRegisteredDevice provides a mock function to send a register device response

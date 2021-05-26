@@ -10,14 +10,24 @@ import (
 )
 
 type PublishDataTestCase struct {
-	name           string
-	authParam      string
-	idParam        string
-	dataParam      []entities.Data
-	fakeLogger     *mocks.FakeLogger
-	fakeThingProxy *mocks.FakeThingProxy
-	expectedError  error
+	name             string
+	authParam        string
+	idParam          string
+	dataParam        []entities.Data
+	fakeLogger       *mocks.FakeLogger
+	fakeThingProxy   *mocks.FakeThingProxy
+	fakePublisher    *mocks.FakePublisher
+	fakeSessionStore *mocks.FakeSessionStore
+	expectedError    error
 }
+
+var (
+	errPublishData        = errors.New("error publishing data in broadcast mode")
+	errPublishSessionData = errors.New("error publishing data to user sessions")
+	tokenWithValidEmail   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTI0NTE3OTEsImp0aSI6IjgwYjBlNzk5LTAzNjItNGE0NC1iMTA3LWMwOTNjYzRiMjM2MSIsImlhdCI6MTYyMDkxNTc5MSwiaXNzIjoiamFzbkBjZXNhci5vcmcuYnIiLCJ0eXBlIjoyfQ._TBgxNAf18f5_FdH1oCuYe1v3NPOyL68l0-nzx4XAI8"
+	emailExample          = "jasn@cesar.org.br"
+	errGetSession         = errors.New("error getting user session")
+)
 
 var publishDataUseCases = []PublishDataTestCase{
 	{
@@ -27,6 +37,8 @@ var publishDataUseCases = []PublishDataTestCase{
 		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrAuthNotProvided,
 	},
 	{
@@ -36,6 +48,8 @@ var publishDataUseCases = []PublishDataTestCase{
 		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrIDNotProvided,
 	},
 	{
@@ -45,6 +59,8 @@ var publishDataUseCases = []PublishDataTestCase{
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrDataNotProvided,
 	},
 	{
@@ -54,6 +70,8 @@ var publishDataUseCases = []PublishDataTestCase{
 		[]entities.Data{{}},
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: errThingProxyGet},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		errThingProxyGet,
 	},
 	{
@@ -67,6 +85,8 @@ var publishDataUseCases = []PublishDataTestCase{
 			Token: "thing-token",
 			Name:  "thing",
 		}},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrConfigUndefined,
 	},
 	{
@@ -81,6 +101,8 @@ var publishDataUseCases = []PublishDataTestCase{
 			Name:   "thing",
 			Config: configWithVoltageSchema,
 		}},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrDataInvalid,
 	},
 	{
@@ -95,7 +117,73 @@ var publishDataUseCases = []PublishDataTestCase{
 			Name:   "thing",
 			Config: configWithVoltageSchema,
 		}},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{},
 		ErrDataInvalid,
+	},
+	{
+		"failed to publish broadcast data",
+		"authorization-token",
+		"thing-id",
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Config: configWithVoltageSchema,
+		}},
+		&mocks.FakePublisher{PublishErr: errPublishData},
+		&mocks.FakeSessionStore{},
+		errPublishData,
+	},
+	{
+		"failed to get user session",
+		tokenWithValidEmail,
+		"thing-id",
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Config: configWithVoltageSchema,
+		}},
+		&mocks.FakePublisher{PublishSessionErr: errPublishSessionData},
+		&mocks.FakeSessionStore{GetReturnErr: errGetSession},
+		errGetSession,
+	},
+	{
+		"failed to publish session data",
+		tokenWithValidEmail,
+		"thing-id",
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Config: configWithVoltageSchema,
+		}},
+		&mocks.FakePublisher{PublishSessionErr: errPublishSessionData},
+		&mocks.FakeSessionStore{Session: "session-id"},
+		errPublishSessionData,
+	},
+	{
+		"data successfully published",
+		tokenWithValidEmail,
+		"thing-id",
+		[]entities.Data{{SensorID: 0, Value: float64(5)}},
+		&mocks.FakeLogger{},
+		&mocks.FakeThingProxy{Thing: &entities.Thing{
+			ID:     "thing-id",
+			Token:  "thing-token",
+			Name:   "thing",
+			Config: configWithVoltageSchema,
+		}},
+		&mocks.FakePublisher{},
+		&mocks.FakeSessionStore{Session: "session-id"},
+		nil,
 	},
 }
 
@@ -106,13 +194,26 @@ func TestPublishData(t *testing.T) {
 				On("Get", tc.authParam, tc.idParam).
 				Return(tc.fakeThingProxy.Thing, tc.fakeThingProxy.ReturnErr).
 				Maybe()
+			tc.fakePublisher.
+				On("PublishBroadcastData", tc.idParam, tc.authParam, tc.dataParam).
+				Return(tc.fakePublisher.PublishErr).
+				Maybe()
+			tc.fakePublisher.
+				On("PublishSessionData", tc.idParam, tc.authParam, tc.fakeSessionStore.Session, tc.dataParam).
+				Return(tc.fakePublisher.PublishSessionErr).
+				Maybe()
+			tc.fakeSessionStore.
+				On("Get", emailExample).
+				Return(tc.fakeSessionStore.Session, tc.fakeSessionStore.GetReturnErr).
+				Maybe()
 
-			thingInteractor := NewThingInteractor(tc.fakeLogger, nil, tc.fakeThingProxy)
+			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, tc.fakeSessionStore)
 			err := thingInteractor.PublishData(tc.authParam, tc.idParam, tc.dataParam)
-
 			assert.EqualValues(t, errors.Is(err, tc.expectedError), true)
 
 			tc.fakeThingProxy.AssertExpectations(t)
+			tc.fakePublisher.AssertExpectations(t)
+			tc.fakeSessionStore.AssertExpectations(t)
 		})
 	}
 }

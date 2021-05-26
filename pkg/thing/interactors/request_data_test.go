@@ -206,7 +206,7 @@ func TestGetData(t *testing.T) {
 				Maybe()
 		})
 
-		thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy)
+		thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, &mocks.FakeSessionStore{})
 		err := thingInteractor.RequestData(tc.authorization, tc.thingID, tc.sensorIds)
 		if tc.authorization == "" {
 			assert.EqualError(t, err, ErrAuthNotProvided.Error())

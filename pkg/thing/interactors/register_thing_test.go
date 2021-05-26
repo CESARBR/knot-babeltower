@@ -96,7 +96,7 @@ var registerThingUseCases = []registerTestCase{
 		nil,
 		&mocks.FakeLogger{},
 		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
-		&mocks.FakePublisher{ReturnErr: errRegisterResponse},
+		&mocks.FakePublisher{PublishErr: errRegisterResponse},
 	},
 	{
 		"register response successfully sent",
@@ -118,7 +118,7 @@ func TestRegisterThing(t *testing.T) {
 			tc.fakeThingProxy.On("Get", tc.authParam, tc.idParam).
 				Return(tc.thingExpected, tc.fakeThingProxy.ReturnErr).Maybe()
 			tc.fakePublisher.On("PublishRegisteredDevice", tc.idParam, tc.nameParam, tc.fakePublisher.Token, tc.fakePublisher.SendError).
-				Return(tc.fakePublisher.ReturnErr).Maybe()
+				Return(tc.fakePublisher.PublishErr).Maybe()
 			tc.fakeThingProxy.On("Create", tc.idParam, tc.nameParam, tc.authParam).
 				Return(tc.fakePublisher.Token, tc.fakeThingProxy.CreateErr).Maybe()
 

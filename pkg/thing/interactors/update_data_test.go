@@ -133,7 +133,7 @@ var updateDataUseCases = []UpdateDataTestCase{
 			Name:   "thing",
 			Config: configWithVoltageSchema,
 		}},
-		&mocks.FakePublisher{ReturnErr: errClientSend},
+		&mocks.FakePublisher{PublishErr: errClientSend},
 		errClientSend,
 	},
 	{
@@ -162,7 +162,7 @@ func TestUpdateData(t *testing.T) {
 				Maybe()
 			tc.fakePublisher.
 				On("PublishUpdateData", tc.idParam, tc.dataParam).
-				Return(tc.fakePublisher.ReturnErr).
+				Return(tc.fakePublisher.PublishErr).
 				Maybe()
 
 			thingInteractor := NewThingInteractor(tc.fakeLogger, tc.fakePublisher, tc.fakeThingProxy, &mocks.FakeSessionStore{})
