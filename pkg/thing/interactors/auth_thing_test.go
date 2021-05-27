@@ -43,12 +43,12 @@ var atCases = []AuthThingTestCase{
 		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingNotFound},
 	},
 	{
-		"forbidden to authenticate thing",
+		"unauthorized to authenticate thing",
 		"invalid-authorization-token",
 		"8380ba096a091fb9",
-		entities.ErrThingForbidden,
+		entities.ErrThingUnauthorized,
 		&mocks.FakeLogger{},
-		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingForbidden},
+		&mocks.FakeThingProxy{ReturnErr: entities.ErrThingUnauthorized},
 	},
 	{
 		"allowed to authenticate thing",
