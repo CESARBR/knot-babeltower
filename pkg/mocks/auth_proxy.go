@@ -5,15 +5,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeAuthnProxy represents a mocking type for the user's proxy service
-type FakeAuthnProxy struct {
+// FakeAuthProxy represents a mocking type for the user's proxy service
+type FakeAuthProxy struct {
 	mock.Mock
 	Token string
 	Err   error
 }
 
 // CreateAppToken provides a mock function to create a new application token
-func (fup *FakeAuthnProxy) CreateAppToken(user entities.User, duration int) (string, error) {
+func (fup *FakeAuthProxy) CreateAppToken(user entities.User, duration int) (string, error) {
 	args := fup.Called(user, duration)
 	return args.String(0), args.Error(1)
 }

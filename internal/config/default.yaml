@@ -9,7 +9,7 @@ users:
   hostname: localhost
   port: 8180
 
-authn:
+auth:
   hostname: localhost
   port: 8183
 

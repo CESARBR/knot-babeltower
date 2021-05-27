@@ -22,7 +22,7 @@ type createTokenTestCase struct {
 	expected       createTokenResponse
 	fakeLogger     *mocks.FakeLogger
 	fakeUsersProxy *mocks.FakeUsersProxy
-	fakeAuthnProxy *mocks.FakeAuthnProxy
+	fakeAuthProxy  *mocks.FakeAuthProxy
 }
 
 var (
@@ -33,7 +33,7 @@ var (
 	}
 	mockedToken   = "mocked-token"
 	errUsersProxy = errors.New("fail to create a user token")
-	errAuthnProxy = errors.New("fail to create a app token")
+	errAuthProxy  = errors.New("fail to create a app token")
 )
 
 var ctCases = []createTokenTestCase{
@@ -45,7 +45,7 @@ var ctCases = []createTokenTestCase{
 		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Token: mockedToken},
-		&mocks.FakeAuthnProxy{},
+		&mocks.FakeAuthProxy{},
 	},
 	{
 		"app token successfully created",
@@ -55,7 +55,7 @@ var ctCases = []createTokenTestCase{
 		createTokenResponse{mockedToken, nil},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
-		&mocks.FakeAuthnProxy{Token: mockedToken},
+		&mocks.FakeAuthProxy{Token: mockedToken},
 	},
 	{
 		"failed to create user token when something goes wrong in usersProxy",
@@ -65,17 +65,17 @@ var ctCases = []createTokenTestCase{
 		createTokenResponse{"", errUsersProxy},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{Err: errUsersProxy},
-		&mocks.FakeAuthnProxy{},
+		&mocks.FakeAuthProxy{},
 	},
 	{
-		"failed to create app token when something goes wrong in authnProxy",
+		"failed to create app token when something goes wrong in authProxy",
 		mockedUser,
 		"app",
 		3600,
-		createTokenResponse{"", errAuthnProxy},
+		createTokenResponse{"", errAuthProxy},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
-		&mocks.FakeAuthnProxy{Err: errAuthnProxy},
+		&mocks.FakeAuthProxy{Err: errAuthProxy},
 	},
 	{
 		"fail to create a token when the tokenType is invalid",
@@ -85,7 +85,7 @@ var ctCases = []createTokenTestCase{
 		createTokenResponse{"", entities.ErrInvalidTokenType},
 		&mocks.FakeLogger{},
 		&mocks.FakeUsersProxy{},
-		&mocks.FakeAuthnProxy{},
+		&mocks.FakeAuthProxy{},
 	},
 }
 
@@ -95,11 +95,11 @@ func TestCreateToken(t *testing.T) {
 			tc.fakeUsersProxy.
 				On("CreateToken", tc.user).
 				Return(tc.fakeUsersProxy.Token, tc.fakeUsersProxy.Err)
-			tc.fakeAuthnProxy.
+			tc.fakeAuthProxy.
 				On("CreateAppToken", tc.user, tc.duration).
-				Return(tc.fakeAuthnProxy.Token, tc.fakeUsersProxy.Err)
+				Return(tc.fakeAuthProxy.Token, tc.fakeUsersProxy.Err)
 
-			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthnProxy)
+			createTokenInteractor := NewCreateToken(tc.fakeLogger, tc.fakeUsersProxy, tc.fakeAuthProxy)
 			token, err := createTokenInteractor.Execute(tc.user, tc.tokenType, tc.duration)
 
 			assert.Equal(t, tc.expected.token, token)
@@ -111,7 +111,7 @@ func TestCreateToken(t *testing.T) {
 				tc.fakeUsersProxy.AssertExpectations(t)
 			}
 			if tc.tokenType == "app" {
-				tc.fakeAuthnProxy.AssertExpectations(t)
+				tc.fakeAuthProxy.AssertExpectations(t)
 			}
 		})
 	}
