@@ -26,8 +26,8 @@ type Users struct {
 	Port     uint16
 }
 
-// Authn represents the authn service to proxy request
-type Authn struct {
+// Auth represents the auth service to proxy request
+type Auth struct {
 	Hostname string
 	Port     uint16
 }
@@ -55,7 +55,7 @@ type Config struct {
 	Server
 	Logger
 	Users
-	Authn
+	Auth
 	RabbitMQ
 	Things
 	Redis

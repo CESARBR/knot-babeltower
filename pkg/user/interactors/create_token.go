@@ -11,12 +11,12 @@ import (
 type CreateToken struct {
 	logger     logging.Logger
 	usersProxy http.UsersProxy
-	authnProxy http.AuthnProxy
+	authProxy  http.AuthProxy
 }
 
 // NewCreateToken creates a new CreateToken instance by receiving its dependencies.
-func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy, authnProxy http.AuthnProxy) *CreateToken {
-	return &CreateToken{logger, usersProxy, authnProxy}
+func NewCreateToken(logger logging.Logger, usersProxy http.UsersProxy, authProxy http.AuthProxy) *CreateToken {
+	return &CreateToken{logger, usersProxy, authProxy}
 }
 
 // Execute receives the user entity filled with e-mail and password properties and try
@@ -25,7 +25,7 @@ func (ct *CreateToken) Execute(user entities.User, tokenType string, duration in
 	if tokenType == "user" {
 		token, err = ct.usersProxy.CreateToken(user)
 	} else if tokenType == "app" {
-		token, err = ct.authnProxy.CreateAppToken(user, duration)
+		token, err = ct.authProxy.CreateAppToken(user, duration)
 	} else {
 		err = entities.ErrInvalidTokenType
 	}

@@ -55,7 +55,7 @@ func main() {
 
 	// Services
 	usersProxy := userDeliveryHTTP.NewUsersProxy(logrus.Get("UsersProxy"), config.Users.Hostname, config.Users.Port)
-	authnProxy := userDeliveryHTTP.NewAuthnProxy(logrus.Get("AuthnProxy"), config.Authn.Hostname, config.Authn.Port)
+	authProxy := userDeliveryHTTP.NewAuthProxy(logrus.Get("AuthProxy"), config.Auth.Hostname, config.Auth.Port)
 	thingProxy := thingDeliveryHTTP.NewThingProxy(logrus.Get("ThingProxy"), config.Things.Hostname, config.Things.Protocol, config.Things.Port)
 
 	// ID generator
@@ -63,7 +63,7 @@ func main() {
 
 	// Interactors
 	createUser := userInteractors.NewCreateUser(logrus.Get("CreateUser"), usersProxy)
-	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy, authnProxy)
+	createToken := userInteractors.NewCreateToken(logrus.Get("CreateToken"), usersProxy, authProxy)
 	createSession := userInteractors.NewCreateSession(thingProxy, generator, sessionStore)
 
 	thingInteractor := thingInteractors.NewThingInteractor(logrus.Get("ThingInteractor"), clientPublisher, thingProxy)

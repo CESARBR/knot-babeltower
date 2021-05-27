@@ -10,33 +10,33 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/user/entities"
 )
 
-// AuthnProxy is an interface to the Mainflux Authn service, which provides an API for.
+// AuthProxy is an interface to the Mainflux Auth service, which provides an API for.
 // managing authentication keys. This interface provides a way to create application
 // tokens (with configurable duration) and to validate the token used in operations across
 // the platform.
-// https://github.com/mainflux/mainflux/blob/0.11.0/authn/swagger.yaml
-type AuthnProxy interface {
+// https://github.com/mainflux/mainflux/blob/0.12.1/auth/openapi.yml
+type AuthProxy interface {
 	CreateAppToken(user entities.User, duration int) (token string, err error)
 }
 
-// Authn takes a URL address that points to the Mainflux Authn service and implements
-// the AuthnProxy interface methods.
-type Authn struct {
+// authProxy takes a URL address that points to the Mainflux authProxy service and implements
+// the AuthProxy interface methods.
+type authProxy struct {
 	URL    string
 	logger logging.Logger
 }
 
-// NewAuthnProxy creates a new authn instance and returns a pointer to the AuthnProxy interface
+// NewAuthProxy creates a new auth instance and returns a pointer to the AuthProxy interface
 // implementation.
-func NewAuthnProxy(logger logging.Logger, hostname string, port uint16) *Authn {
+func NewAuthProxy(logger logging.Logger, hostname string, port uint16) *authProxy {
 	URL := fmt.Sprintf("http://%s:%d", hostname, port)
-	logger.Debug("authn proxy configured to " + URL)
-	return &Authn{URL, logger}
+	logger.Debug("auth proxy configured to " + URL)
+	return &authProxy{URL, logger}
 }
 
-// authnRequest represents a HTTP request to the Mainflux Authn service. It basically has
+// authRequest represents a HTTP request to the Mainflux Auth service. It basically has
 // fields that matches with the HTTP protocol structure (path, method, body, headers, etc).
-type authnRequest struct {
+type authRequest struct {
 	Path          string
 	Method        string
 	Body          interface{}
@@ -68,9 +68,9 @@ type keyResponseSchema struct {
 
 // CreateAppToken creates a new application token in the Mainflux platform. This type of
 // token has a configurable duration.
-func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error) {
+func (a *authProxy) CreateAppToken(user entities.User, duration int) (string, error) {
 	var response keyResponseSchema
-	request := authnRequest{
+	request := authRequest{
 		Path:          "/keys",
 		Method:        "POST",
 		Body:          keyRequestSchema{Issuer: user.Email, Type: 2, Duration: duration},
@@ -85,7 +85,7 @@ func (a *Authn) CreateAppToken(user entities.User, duration int) (string, error)
 	return response.Value, nil
 }
 
-func (a *Authn) doRequest(request authnRequest, response interface{}) error {
+func (a *authProxy) doRequest(request authRequest, response interface{}) error {
 	body, err := json.Marshal(&request.Body)
 	if err != nil {
 		return fmt.Errorf("error encoding body: %w", err)
@@ -119,7 +119,7 @@ func (a *Authn) doRequest(request authnRequest, response interface{}) error {
 	return nil
 }
 
-func (a *Authn) mapErrorFromStatusCode(code int) error {
+func (a *authProxy) mapErrorFromStatusCode(code int) error {
 	var err error
 
 	switch code {
