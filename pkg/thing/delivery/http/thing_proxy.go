@@ -250,8 +250,8 @@ func (p proxy) mapErrorFromStatusCode(code int) error {
 		switch code {
 		case http.StatusConflict:
 			err = errorConflict{}
-		case http.StatusForbidden:
-			err = entities.ErrThingForbidden
+		case http.StatusUnauthorized:
+			err = entities.ErrThingUnauthorized
 		}
 	}
 	return err
