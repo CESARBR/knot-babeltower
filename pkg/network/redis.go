@@ -46,7 +46,7 @@ func (r *Redis) Set(key string, value interface{}, expiration time.Duration) err
 // Get retrieves a value from the Redis database according to key, which is returned as a string.
 func (r *Redis) Get(key string) (string, error) {
 	val, err := r.rdb.Get(ctx, key).Result()
-	if err != redis.Nil {
+	if err != nil && err != redis.Nil {
 		return "", err
 	}
 
