@@ -6,8 +6,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-const APPLICATION_TYPE = 2
-
 var (
 	ErrParseToken      = errors.New("failed to parse authorization token")
 	ErrClaimsAssertion = errors.New("unable to extract token claims")
@@ -38,10 +36,6 @@ func GetEmail(token string) (string, error) {
 	claims, ok := t.Claims.(*TokenClaims)
 	if !ok {
 		return "", ErrClaimsAssertion
-	}
-
-	if claims.Kind == APPLICATION_TYPE {
-		return claims.Iss, nil
 	}
 
 	return claims.Sub, nil
