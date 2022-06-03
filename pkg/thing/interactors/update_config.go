@@ -46,7 +46,7 @@ var rules = map[int]schemaType{
 	0xFFF0: {valueType: interval{1, 7}, unit: 0},              // PRESENCE
 	0xFFF1: {valueType: interval{1, 7}, unit: 0},              // SWITCH
 	0xFFF2: {valueType: interval{1, 7}, unit: 0},              // COMMAND
-	0xFF10: {valueType: interval{1, 7}, unit: 0},              // GENERIC
+	0xFF10: {valueType: interval{1, 7}, unit: interval{0, 1}}, // GENERIC
 	0xFFFF: {valueType: interval{1, 7}, unit: 0},              // INVALID
 }
 
