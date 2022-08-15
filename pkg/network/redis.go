@@ -32,7 +32,6 @@ func (r *Redis) Start(started chan bool) {
 		r.logger.Error(err)
 	}
 
-	// TODO: handle disconnection/reconnection
 	r.rdb = redis.NewClient(opt)
 	started <- true
 }

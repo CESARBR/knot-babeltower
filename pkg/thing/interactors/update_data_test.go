@@ -25,7 +25,6 @@ var (
 	errClientSend    = errors.New("error sending message to client")
 )
 
-// TODO Event with ValueType: 1
 var configWithVoltageSchema = []entities.Config{{
 	SensorID: 0,
 	Schema: entities.Schema{

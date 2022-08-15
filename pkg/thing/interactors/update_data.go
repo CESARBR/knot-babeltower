@@ -7,6 +7,13 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/thing/entities"
 )
 
+const (
+	intType   = 1
+	floatType = 2
+	boolType  = 3
+	rawType   = 4
+)
+
 // UpdateData executes the use case operations to update data in thing
 func (i *ThingInteractor) UpdateData(authorization, thingID string, data []entities.Data) error {
 	if authorization == "" {
@@ -60,11 +67,11 @@ func validateSchema(data entities.Data, configList []entities.Config) bool {
 				if data.Value == math.Trunc(data.Value.(float64)) { // check if number is integer
 					return ValidateSchemaNumber(data.Value.(float64), c.Schema.ValueType)
 				}
-				return c.Schema.ValueType == 2 // float
+				return c.Schema.ValueType == floatType
 			case bool:
-				return c.Schema.ValueType == 3 // bool
+				return c.Schema.ValueType == boolType
 			case string:
-				return c.Schema.ValueType == 4 // raw
+				return c.Schema.ValueType == rawType
 			default:
 				return false
 			}
@@ -77,9 +84,9 @@ func validateSchema(data entities.Data, configList []entities.Config) bool {
 // ValidateSchemaNumber validates the value received against its type defined in the sensor's schema
 func ValidateSchemaNumber(value float64, valueType int) bool {
 	switch valueType {
-	case 1: // int
+	case intType:
 		return value >= math.MinInt32 && value <= math.MaxInt32
-	case 2: // float
+	case floatType:
 		return true
 	case 5: // int64
 		return value >= math.MinInt64 && value <= math.MaxInt64

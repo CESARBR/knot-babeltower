@@ -91,9 +91,8 @@ func (mc *MsgHandler) subscribeToMessages(msgChan chan network.InMsg) error {
 }
 
 func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
-	for {
+	for msg := range msgChan {
 		var err error
-		msg := <-msgChan
 		mc.logger.Infof("exchange: %s, routing key: %s", msg.Exchange, msg.RoutingKey)
 		mc.logger.Infof("message received: %s", string(msg.Body))
 

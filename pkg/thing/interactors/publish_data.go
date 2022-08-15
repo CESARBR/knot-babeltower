@@ -29,6 +29,11 @@ func (i *ThingInteractor) PublishData(authorization, thingID string, data []enti
 		return fmt.Errorf("error publishing data in broadcast mode: %w", err)
 	}
 
+	err = i.publisher.PublishSegmentedData(thingID, authorization, data)
+	if err != nil {
+		return fmt.Errorf("error publishing data in user-tracked mode: %w", err)
+	}
+
 	err = i.publishSessionData(thingID, authorization, data)
 	if err != nil {
 		return fmt.Errorf("error publishing data to user sessions: %w", err)

@@ -11,6 +11,8 @@ const (
 	exchangeDeviceType        = "direct"
 	exchangeDataPublished     = "data.published"
 	exchangeDataPublishedType = "fanout"
+	exchangeDataSegmented     = "data.util"
+	exchangeDataSegmentedType = "direct"
 	registerOutKey            = "device.registered"
 	unregisterOutKey          = "device.unregistered"
 	configOutKey              = "device.config.updated"
@@ -29,6 +31,9 @@ type Publisher interface {
 
 	// Publish data in broadcast mode to all clients within the cluster
 	PublishBroadcastData(thingID, token string, data []entities.Data) error
+
+	// PublishSegmentedData publishes user-tracked thing's data
+	PublishSegmentedData(thingID, token string, data []entities.Data) error
 
 	// Publish data to specific users according to their session IDs
 	PublishSessionData(thingID, token, sessionID string, data []entities.Data) error
@@ -135,6 +140,15 @@ func (mp *msgClientPublisher) PublishBroadcastData(thingID, token string, data [
 	options := &network.MessageOptions{Authorization: token, Expiration: dataExpirationTime}
 
 	return mp.amqp.PublishPersistentMessage(exchangeDataPublished, exchangeDataPublishedType, "", msg, options)
+}
+
+// PublishSegmentedData publishes user-tracked thing's data
+func (mp *msgClientPublisher) PublishSegmentedData(thingID, token string, data []entities.Data) error {
+	mp.logger.Debug("publishing user-tracked data")
+	msg := network.NewMessage(network.DataSent{ID: thingID, Data: data})
+	options := &network.MessageOptions{Authorization: token, Expiration: dataExpirationTime}
+
+	return mp.amqp.PublishPersistentMessage(exchangeDataSegmented, exchangeDataSegmentedType, token, msg, options)
 }
 
 // PublishSessionData publishes thing's data to its owner based on a session ID

@@ -5,17 +5,34 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 
+	"sync"
+
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/streadway/amqp"
 )
 
+var exchangeLock *sync.Mutex = &sync.Mutex{}
+
+const (
+	mandatory          = false
+	immediate          = false
+	noWait             = false
+	durable            = true
+	exclusive          = false
+	noAck              = true
+	deleteWhenUnused   = false
+	deleteWhenComplete = false
+	noLocal            = false
+)
+
 // Amqp handles the connection, queues and exchanges declared
 type Amqp struct {
-	url     string
-	logger  logging.Logger
-	conn    *amqp.Connection
-	channel *amqp.Channel
-	queue   *amqp.Queue
+	url               string
+	logger            logging.Logger
+	conn              *amqp.Connection
+	channel           *amqp.Channel
+	queue             *amqp.Queue
+	declaredExchanges map[string]struct{}
 }
 
 // InMsg represents the message received from the AMQP broker
@@ -37,7 +54,8 @@ type MessageOptions struct {
 
 // NewAmqp constructs the AMQP connection handler
 func NewAmqp(url string, logger logging.Logger) *Amqp {
-	return &Amqp{url, logger, nil, nil, nil}
+	declaredExchanges := make(map[string]struct{})
+	return &Amqp{url, logger, nil, nil, nil, declaredExchanges}
 }
 
 // Start starts the handler
@@ -84,16 +102,21 @@ func (a *Amqp) PublishPersistentMessage(exchange, exchangeType, key string, msg 
 		return fmt.Errorf("error serializing message: %w", err)
 	}
 
-	err = a.declareExchange(exchange, exchangeType)
-	if err != nil {
-		return fmt.Errorf("error declaring exchange: %w", err)
+	if !a.exchangeAlreadyDeclared(exchange) {
+		err = a.declareExchange(exchange, exchangeType)
+		if err != nil {
+			return fmt.Errorf("error declaring exchange: %w", err)
+		} else {
+			exchangeLock.Lock()
+			a.declaredExchanges[exchange] = struct{}{}
+			exchangeLock.Unlock()
+		}
 	}
-
 	err = a.channel.Publish(
 		exchange,
 		key,
-		false, // mandatory
-		false, // immediate
+		mandatory,
+		immediate,
 		amqp.Publishing{
 			Headers:         headers,
 			ContentType:     "text/plain",
@@ -130,8 +153,8 @@ func (a *Amqp) OnMessage(msgChan chan InMsg, queueName, exchangeName, exchangeTy
 		queueName,
 		key,
 		exchangeName,
-		false, // noWait
-		nil,   // arguments
+		noWait,
+		nil, // arguments
 	)
 	if err != nil {
 		a.logger.Error(err)
@@ -140,12 +163,12 @@ func (a *Amqp) OnMessage(msgChan chan InMsg, queueName, exchangeName, exchangeTy
 
 	deliveries, err := a.channel.Consume(
 		queueName,
-		"",    // consumerTag
-		true,  // noAck
-		false, // exclusive
-		false, // noLocal
-		false, // noWait
-		nil,   // arguments
+		"", // consumerTag
+		noAck,
+		exclusive,
+		noLocal,
+		noWait,
+		nil, // arguments
 	)
 	if err != nil {
 		a.logger.Error(err)
@@ -198,27 +221,34 @@ func (a *Amqp) notifyWhenClosed(started chan bool) {
 func (a *Amqp) declareExchange(name, exchangeType string) error {
 	return a.channel.ExchangeDeclare(
 		name,
-		exchangeType, // type
-		true,         // durable
-		false,        // delete when complete
-		false,        // internal
-		false,        // noWait
-		nil,          // arguments
+		exchangeType,
+		durable,
+		deleteWhenComplete,
+		false, // internal
+		noWait,
+		nil, // arguments
 	)
 }
 
 func (a *Amqp) declareQueue(name string) error {
 	queue, err := a.channel.QueueDeclare(
 		name,
-		true,  // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // noWait
-		nil,   // arguments
+		durable,
+		deleteWhenUnused,
+		exclusive,
+		noWait,
+		nil, // arguments
 	)
 
 	a.queue = &queue
 	return err
+}
+
+func (a *Amqp) exchangeAlreadyDeclared(exchangeName string) bool {
+	exchangeLock.Lock()
+	_, ok := a.declaredExchanges[exchangeName]
+	exchangeLock.Unlock()
+	return ok
 }
 
 func convertDeliveryToInMsg(deliveries <-chan amqp.Delivery, outMsg chan InMsg) {
