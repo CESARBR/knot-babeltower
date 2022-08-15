@@ -18,6 +18,10 @@ type ThingController struct {
 	publisher       amqp.Publisher
 }
 
+const errorSendingResponse = "error sending response"
+const errorBodyParsing = "message body parsing error"
+const errorPublishingResponse = "error publishing response"
+
 // NewThingController constructs the ThingController
 func NewThingController(logger logging.Logger, thingInteractor interactors.Interactor, sender amqp.Sender, publisher amqp.Publisher) *ThingController {
 	return &ThingController{logger, thingInteractor, sender, publisher}
@@ -59,14 +63,14 @@ func (mc *ThingController) UpdateConfig(body []byte, authorizationHeader string)
 	if err != nil {
 		pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, changed, err)
 		if pubErr != nil {
-			return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
+			return fmt.Errorf("%s: %v: %w", errorPublishingResponse, err, pubErr)
 		}
 		return err
 	}
 
 	pubErr := mc.publisher.PublishUpdatedConfig(updateConfigReq.ID, updateConfigReq.Config, changed, err)
 	if pubErr != nil {
-		return fmt.Errorf("error publishing response: %v: %w", err, pubErr)
+		return fmt.Errorf("%s: %v: %w", errorPublishingResponse, err, pubErr)
 	}
 
 	return nil
@@ -79,14 +83,14 @@ func (mc *ThingController) ListDevices(authorization, replyTo, corrID string) er
 	if err != nil {
 		sendErr := mc.sender.SendListResponse(things, replyTo, corrID, err)
 		if sendErr != nil {
-			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+			return fmt.Errorf("%s: %v: %w", errorSendingResponse, err, sendErr)
 		}
 		return err
 	}
 
 	sendErr := mc.sender.SendListResponse(things, replyTo, corrID, err)
 	if sendErr != nil {
-		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+		return fmt.Errorf("%s: %v: %w", errorSendingResponse, err, sendErr)
 	}
 
 	return nil
@@ -106,14 +110,14 @@ func (mc *ThingController) AuthDevice(body []byte, authorization, replyTo, corrI
 	if err != nil {
 		sendErr := mc.sender.SendAuthResponse(authThingReq.ID, replyTo, corrID, err)
 		if sendErr != nil {
-			return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+			return fmt.Errorf("%s: %v: %w", errorSendingResponse, err, sendErr)
 		}
 		return err
 	}
 
 	sendErr := mc.sender.SendAuthResponse(authThingReq.ID, replyTo, corrID, err)
 	if sendErr != nil {
-		return fmt.Errorf("error sending response: %v: %w", err, sendErr)
+		return fmt.Errorf("%s: %v: %w", errorSendingResponse, err, sendErr)
 	}
 
 	return nil
@@ -143,7 +147,7 @@ func (mc *ThingController) UpdateData(body []byte, authorization string) error {
 	msg := network.DataUpdate{}
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
-		return fmt.Errorf("message body parsing error: %w", err)
+		return fmt.Errorf("%s: %w", errorBodyParsing, err)
 	}
 
 	return mc.thingInteractor.UpdateData(authorization, msg.ID, msg.Data)
@@ -154,7 +158,7 @@ func (mc *ThingController) PublishData(body []byte, authorization string) error 
 	msg := network.DataSent{}
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
-		return fmt.Errorf("message body parsing error: %w", err)
+		return fmt.Errorf("%s: %w", errorBodyParsing, err)
 	}
 
 	return mc.thingInteractor.PublishData(authorization, msg.ID, msg.Data)

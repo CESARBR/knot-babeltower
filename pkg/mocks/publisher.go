@@ -51,6 +51,11 @@ func (fp *FakePublisher) PublishBroadcastData(thingID, token string, data []enti
 	return args.Error(0)
 }
 
+// PublishSegmentedData provides a mock function to publish data in broadcast mode
+func (fp *FakePublisher) PublishSegmentedData(thingID, token string, data []entities.Data) error {
+	return fp.Called(thingID, token, data).Error(0)
+}
+
 // PublishSessionData provides a mock function to send a request data command
 func (fp *FakePublisher) PublishSessionData(thingID, token, sessionID string, data []entities.Data) error {
 	args := fp.Called(thingID, token, sessionID, data)

@@ -11,6 +11,8 @@ import (
 	"github.com/CESARBR/knot-babeltower/pkg/user/interactors"
 )
 
+const failedParseRequestBodyMessage = "failed to parse request body"
+
 // UserController represents the controller for user
 type UserController struct {
 	logger                  logging.Logger
@@ -67,7 +69,7 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&user)
 	if err != nil {
-		uc.logger.Error("failed to parse request body")
+		uc.logger.Error(failedParseRequestBodyMessage)
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
@@ -98,7 +100,7 @@ func (uc *UserController) CreateToken(w http.ResponseWriter, r *http.Request) {
 	var req CreateTokenRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		uc.logger.Error("failed to parse request body")
+		uc.logger.Error(failedParseRequestBodyMessage)
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
@@ -138,7 +140,7 @@ func (uc *UserController) CreateSession(w http.ResponseWriter, r *http.Request) 
 	var req network.CreateSessionRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		uc.logger.Error("failed to parse request body")
+		uc.logger.Error(failedParseRequestBodyMessage)
 		uc.writeResponse(w, http.StatusUnprocessableEntity, nil)
 		return
 	}
