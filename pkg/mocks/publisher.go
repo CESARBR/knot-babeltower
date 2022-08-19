@@ -51,7 +51,7 @@ func (fp *FakePublisher) PublishBroadcastData(thingID, token string, data []enti
 	return args.Error(0)
 }
 
-// PublishSegmentedData provides a mock function to publish data in broadcast mode
+// PublishSegmentedData provides a mock function to publish data in segmented data mode
 func (fp *FakePublisher) PublishSegmentedData(thingID, token string, data []entities.Data) error {
 	return fp.Called(thingID, token, data).Error(0)
 }

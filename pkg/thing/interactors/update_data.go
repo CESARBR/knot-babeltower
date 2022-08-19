@@ -8,10 +8,13 @@ import (
 )
 
 const (
-	intType   = 1
-	floatType = 2
-	boolType  = 3
-	rawType   = 4
+	intType    = 1
+	floatType  = 2
+	boolType   = 3
+	rawType    = 4
+	int64Type  = 5
+	uintType   = 6
+	uint64Type = 7
 )
 
 // UpdateData executes the use case operations to update data in thing
@@ -85,16 +88,32 @@ func validateSchema(data entities.Data, configList []entities.Config) bool {
 func ValidateSchemaNumber(value float64, valueType int) bool {
 	switch valueType {
 	case intType:
-		return value >= math.MinInt32 && value <= math.MaxInt32
+		return isValidInt(value)
 	case floatType:
-		return true
-	case 5: // int64
-		return value >= math.MinInt64 && value <= math.MaxInt64
-	case 6: // uint
-		return value >= 0 && value <= math.MaxUint32
-	case 7: // uint64
-		return value >= 0 && value <= math.MaxUint64
+		return isValidFloat(value)
+	case int64Type:
+		return isValidInt64(value)
+	case uintType:
+		return isValidUint(value)
+	case uint64Type:
+		return isValidUint64(value)
 	default: // Not a number
 		return false
 	}
+}
+
+func isValidInt(value float64) bool {
+	return value >= math.MinInt32 && value <= math.MaxInt32
+}
+func isValidFloat(value float64) bool {
+	return true
+}
+func isValidInt64(value float64) bool {
+	return value >= math.MinInt64 && value <= math.MaxInt64
+}
+func isValidUint(value float64) bool {
+	return value >= 0 && value <= math.MaxUint32
+}
+func isValidUint64(value float64) bool {
+	return value >= 0 && value <= math.MaxUint64
 }
