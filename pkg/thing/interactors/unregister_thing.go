@@ -4,10 +4,6 @@ package interactors
 func (i *ThingInteractor) Unregister(authorization, id string) error {
 	i.logger.Debug("executing unregister thing use case")
 
-	if authorization == "" {
-		return ErrAuthNotProvided
-	}
-
 	if id == "" {
 		return ErrIDNotProvided
 	}

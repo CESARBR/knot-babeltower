@@ -55,9 +55,6 @@ var rules = map[int]schemaType{
 //   - error: indicates if something goes wrong
 //   - bool: indicates if the operation has changed something in the current thing's configuration
 func (i *ThingInteractor) UpdateConfig(authorization, id string, configList []entities.Config) (bool, error) {
-	if authorization == "" {
-		return false, ErrAuthNotProvided
-	}
 	if id == "" {
 		return false, ErrIDNotProvided
 	}

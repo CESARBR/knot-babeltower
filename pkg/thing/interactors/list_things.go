@@ -8,9 +8,6 @@ import (
 
 // List fetchs the registered things and return them as an array
 func (i *ThingInteractor) List(authorization string) ([]*entities.Thing, error) {
-	if authorization == "" {
-		return nil, ErrAuthNotProvided
-	}
 
 	things, err := i.thingProxy.List(authorization)
 	if err != nil {

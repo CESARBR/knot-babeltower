@@ -144,7 +144,6 @@ func (mp *msgClientPublisher) PublishBroadcastData(thingID, token string, data [
 
 // PublishSegmentedData publishes user-tracked thing's data
 func (mp *msgClientPublisher) PublishSegmentedData(thingID, token string, data []entities.Data) error {
-	mp.logger.Debug("publishing user-tracked data")
 	msg := network.NewMessage(network.DataSent{ID: thingID, Data: data})
 	options := &network.MessageOptions{Authorization: token, Expiration: dataExpirationTime}
 

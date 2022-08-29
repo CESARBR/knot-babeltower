@@ -4,9 +4,6 @@ import "fmt"
 
 // Auth is responsible to implement the thing's authentication use case
 func (i *ThingInteractor) Auth(authorization, id string) error {
-	if authorization == "" {
-		return ErrAuthNotProvided
-	}
 	if id == "" {
 		return ErrIDNotProvided
 	}

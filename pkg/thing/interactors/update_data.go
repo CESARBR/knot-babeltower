@@ -84,22 +84,14 @@ func validateSchema(data entities.Data, configList []entities.Config) bool {
 	return false
 }
 
-// ValidateSchemaNumber validates the value received against its type defined in the sensor's schema
-func ValidateSchemaNumber(value float64, valueType int) bool {
-	switch valueType {
-	case intType:
-		return isValidInt(value)
-	case floatType:
-		return isValidFloat(value)
-	case int64Type:
-		return isValidInt64(value)
-	case uintType:
-		return isValidUint(value)
-	case uint64Type:
-		return isValidUint64(value)
-	default: // Not a number
-		return false
-	}
+func createValueValidatorMapping() map[int]func(value float64) bool {
+	valueValidatorMapping := make(map[int]func(value float64) bool)
+	valueValidatorMapping[intType] = isValidInt
+	valueValidatorMapping[floatType] = isValidFloat
+	valueValidatorMapping[int64Type] = isValidInt64
+	valueValidatorMapping[uintType] = isValidUint
+	valueValidatorMapping[uint64Type] = isValidUint64
+	return valueValidatorMapping
 }
 
 func isValidInt(value float64) bool {
@@ -116,4 +108,14 @@ func isValidUint(value float64) bool {
 }
 func isValidUint64(value float64) bool {
 	return value >= 0 && value <= math.MaxUint64
+}
+
+// Validates the value received against its type defined in the sensor's schema
+func ValidateSchemaNumber(value float64, valueType int) bool {
+	valueValidatorMapping := createValueValidatorMapping()
+	if function, ok := valueValidatorMapping[valueType]; ok {
+		return function(value)
+	} else {
+		return false
+	}
 }
