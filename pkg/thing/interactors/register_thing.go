@@ -11,9 +11,6 @@ const errorRegisteringThingMessage = "error registering thing"
 
 // Register runs the use case to create a new thing
 func (i *ThingInteractor) Register(authorization, id, name string) error {
-	if authorization == "" {
-		return ErrAuthNotProvided
-	}
 	if id == "" {
 		return ErrIDNotProvided
 	}

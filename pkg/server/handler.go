@@ -1,11 +1,10 @@
 package server
 
 import (
-	"errors"
-
 	"github.com/CESARBR/knot-babeltower/pkg/logging"
 	"github.com/CESARBR/knot-babeltower/pkg/network"
 	"github.com/CESARBR/knot-babeltower/pkg/thing/controllers"
+	"github.com/CESARBR/knot-babeltower/pkg/thing/interactors"
 )
 
 // API definition to enable receiving request-reply commands from the clients
@@ -97,8 +96,8 @@ func (mc *MsgHandler) onMsgReceived(msgChan chan network.InMsg) {
 		mc.logger.Infof("message received: %s", string(msg.Body))
 
 		token, ok := msg.Headers["Authorization"].(string)
-		if !ok {
-			mc.logger.Error(errors.New("authorization token not provided"))
+		if !ok || token == "" {
+			mc.logger.Error(interactors.ErrAuthNotProvided)
 			continue
 		}
 

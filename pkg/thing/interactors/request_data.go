@@ -8,9 +8,6 @@ import (
 
 // RequestData executes the use case operations to request data from the thing
 func (i *ThingInteractor) RequestData(authorization, thingID string, sensorIds []int) error {
-	if authorization == "" {
-		return ErrAuthNotProvided
-	}
 	if thingID == "" {
 		return ErrIDNotProvided
 	}
