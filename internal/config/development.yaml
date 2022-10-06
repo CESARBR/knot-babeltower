@@ -10,7 +10,7 @@ users:
   port: 8180
 
 auth:
-  hostname: auth
+  hostname: authn
   port: 8183
 
 rabbitmq:
