@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -35,14 +36,19 @@ func NewServer(port int, logger logging.Logger, userController *controllers.User
 
 // Start starts the http server
 func (s *Server) Start(started chan bool) {
+	const serverTimeoutInSeconds = 15
 	routers := s.createRouters()
-	s.logger.Infof("listening on %d", s.port)
+	s.logger.Infof("Listening on %d", s.port)
 	started <- true
-	s.srv = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: s.logRequest(routers)}
-	err := s.srv.ListenAndServe()
+	server := &http.Server{
+		Handler: routers,
+		Addr: fmt.Sprintf(":%d", s.port),
+		WriteTimeout: serverTimeoutInSeconds * time.Second,
+		ReadTimeout:  serverTimeoutInSeconds * time.Second,
+	}
+	err := server.ListenAndServe()
 	if err != nil {
-		s.logger.Error(err)
-		started <- false
+	    s.logger.Error(err)
 	}
 }
 
