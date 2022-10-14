@@ -15,6 +15,7 @@ const (
 	int64Type  = 5
 	uintType   = 6
 	uint64Type = 7
+	doubleType = 8
 )
 
 // UpdateData executes the use case operations to update data in thing
@@ -91,6 +92,7 @@ func createValueValidatorMapping() map[int]func(value float64) bool {
 	valueValidatorMapping[int64Type] = isValidInt64
 	valueValidatorMapping[uintType] = isValidUint
 	valueValidatorMapping[uint64Type] = isValidUint64
+	valueValidatorMapping[doubleType] = isValidDouble
 	return valueValidatorMapping
 }
 
@@ -108,6 +110,9 @@ func isValidUint(value float64) bool {
 }
 func isValidUint64(value float64) bool {
 	return value >= 0 && value <= math.MaxUint64
+}
+func isValidDouble(value float64) bool {
+	return true
 }
 
 // Validates the value received against its type defined in the sensor's schema

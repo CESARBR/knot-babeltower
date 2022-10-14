@@ -21,33 +21,33 @@ type interval struct {
 
 // rules reference table: https://knot-devel.cesar.org.br/doc/thing/unit-type-value.html
 var rules = map[int]schemaType{
-	0x0000: {valueType: interval{1, 7}, unit: 0},              // NONE
-	0x0001: {valueType: interval{1, 7}, unit: interval{1, 3}}, // VOLTAGE
-	0x0002: {valueType: interval{1, 7}, unit: interval{1, 2}}, // CURRENT
-	0x0003: {valueType: interval{1, 7}, unit: 1},              // RESISTENCE
-	0x0004: {valueType: interval{1, 7}, unit: interval{1, 3}}, // POWER
-	0x0005: {valueType: interval{1, 7}, unit: interval{1, 3}}, // TEMPERATURE
-	0x0006: {valueType: interval{1, 7}, unit: 1},              // RELATIVE_HUMIDITY
-	0x0007: {valueType: interval{1, 7}, unit: interval{1, 3}}, // LUMINOSITY
-	0x0008: {valueType: interval{1, 7}, unit: interval{1, 3}}, // TIME
-	0x0009: {valueType: interval{1, 7}, unit: interval{1, 4}}, // MASS
-	0x000A: {valueType: interval{1, 7}, unit: interval{1, 3}}, // PRESSURE
-	0x000B: {valueType: interval{1, 7}, unit: interval{1, 4}}, // DISTANCE
-	0x000C: {valueType: interval{1, 7}, unit: interval{1, 2}}, // ANGLE
-	0x000D: {valueType: interval{1, 7}, unit: interval{1, 4}}, // VOLUME
-	0x000E: {valueType: interval{1, 7}, unit: interval{1, 3}}, // AREA
-	0x000F: {valueType: interval{1, 7}, unit: 1},              // RAIN
-	0x0010: {valueType: interval{1, 7}, unit: 1},              // DENSITY
-	0x0011: {valueType: interval{1, 7}, unit: 1},              // LATITUDE
-	0x0012: {valueType: interval{1, 7}, unit: 1},              // LONGITUDE
-	0x0013: {valueType: interval{1, 7}, unit: interval{1, 4}}, // SPEED
-	0x0014: {valueType: interval{1, 7}, unit: interval{1, 6}}, // VOLUMEFLOW
-	0x0015: {valueType: interval{1, 7}, unit: interval{1, 6}}, // ENERGY
-	0xFFF0: {valueType: interval{1, 7}, unit: 0},              // PRESENCE
-	0xFFF1: {valueType: interval{1, 7}, unit: 0},              // SWITCH
-	0xFFF2: {valueType: interval{1, 7}, unit: 0},              // COMMAND
-	0xFF10: {valueType: interval{1, 7}, unit: interval{0, 1}}, // GENERIC
-	0xFFFF: {valueType: interval{1, 7}, unit: 0},              // INVALID
+	0x0000: {valueType: interval{1, 8}, unit: 0},              // NONE
+	0x0001: {valueType: interval{1, 8}, unit: interval{1, 3}}, // VOLTAGE
+	0x0002: {valueType: interval{1, 8}, unit: interval{1, 2}}, // CURRENT
+	0x0003: {valueType: interval{1, 8}, unit: 1},              // RESISTENCE
+	0x0004: {valueType: interval{1, 8}, unit: interval{1, 3}}, // POWER
+	0x0005: {valueType: interval{1, 8}, unit: interval{1, 3}}, // TEMPERATURE
+	0x0006: {valueType: interval{1, 8}, unit: 1},              // RELATIVE_HUMIDITY
+	0x0007: {valueType: interval{1, 8}, unit: interval{1, 3}}, // LUMINOSITY
+	0x0008: {valueType: interval{1, 8}, unit: interval{1, 3}}, // TIME
+	0x0009: {valueType: interval{1, 8}, unit: interval{1, 4}}, // MASS
+	0x000A: {valueType: interval{1, 8}, unit: interval{1, 3}}, // PRESSURE
+	0x000B: {valueType: interval{1, 8}, unit: interval{1, 4}}, // DISTANCE
+	0x000C: {valueType: interval{1, 8}, unit: interval{1, 2}}, // ANGLE
+	0x000D: {valueType: interval{1, 8}, unit: interval{1, 4}}, // VOLUME
+	0x000E: {valueType: interval{1, 8}, unit: interval{1, 3}}, // AREA
+	0x000F: {valueType: interval{1, 8}, unit: 1},              // RAIN
+	0x0010: {valueType: interval{1, 8}, unit: 1},              // DENSITY
+	0x0011: {valueType: interval{1, 8}, unit: 1},              // LATITUDE
+	0x0012: {valueType: interval{1, 8}, unit: 1},              // LONGITUDE
+	0x0013: {valueType: interval{1, 8}, unit: interval{1, 4}}, // SPEED
+	0x0014: {valueType: interval{1, 8}, unit: interval{1, 6}}, // VOLUMEFLOW
+	0x0015: {valueType: interval{1, 8}, unit: interval{1, 6}}, // ENERGY
+	0xFFF0: {valueType: interval{1, 8}, unit: 0},              // PRESENCE
+	0xFFF1: {valueType: interval{1, 8}, unit: 0},              // SWITCH
+	0xFFF2: {valueType: interval{1, 8}, unit: 0},              // COMMAND
+	0xFF10: {valueType: interval{1, 8}, unit: interval{0, 1}}, // GENERIC
+	0xFFFF: {valueType: interval{1, 8}, unit: 0},              // INVALID
 }
 
 // UpdateConfig executes the use case to update thing's configuration
