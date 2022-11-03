@@ -67,6 +67,7 @@ func validateSchema(data entities.Data, configList []entities.Config) bool {
 	for _, c := range configList {
 		if c.SensorID == data.SensorID {
 			switch data.Value.(type) {
+			case int:
 			case float64:
 				if data.Value == math.Trunc(data.Value.(float64)) { // check if number is integer
 					return ValidateSchemaNumber(data.Value.(float64), c.Schema.ValueType)
