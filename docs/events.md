@@ -1,4 +1,4 @@
-# Babeltower Events API - v2.1.0
+# Babeltower Events API - v2.1.1
 
 This document describes the events `babeltower` is able to receive and send. They are gruped based on the external clients point of view, i.e. publishing or subscribing to the topics. In each section, it is provided information about the header, payload and protocol binding details of the event.
 
@@ -19,6 +19,7 @@ This document describes the events `babeltower` is able to receive and send. The
   - [device.unregistered](#device-unregistered)
   - [device.config.updated](#device-config-updated)
   - [data.published](#data-published)
+  - [data.util](#data-util)
   - [data.[sessionId].published](#data-session-published)
   - [device.[id].data.request](#device-<id>-data-request)
   - [device.[id].data.update](#device-<id>-data-update)
@@ -282,6 +283,7 @@ Event that represents a device sending the data gathered from its sensors to the
   - `data` **Array** data items to be published, each one formed by:
     - `sensorId` **Number** sensor ID
     - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -291,11 +293,13 @@ Event that represents a device sending the data gathered from its sensors to the
     "data": [
       {
         "sensorId": 1,
-        "value": false
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       },
       {
         "sensorId": 2,
-        "value": 1000
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       }
     ]
   }
@@ -374,6 +378,7 @@ Event-command to update a thing's sensor data. After receiving this event, `babe
   - `data` **Array (Object)** updates for sensors/actuators, each one formed by:
     - `sensorId` **Number** ID of the sensor to update
     - `value` **Number|Boolean|String** data to be written
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -382,7 +387,8 @@ Event-command to update a thing's sensor data. After receiving this event, `babe
     "id": "fbe64efa6c7f717e",
     "data": [{
         "sensorId": 1,
-        "value": true
+        "value": true,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
     }]
   }
   ```
@@ -582,6 +588,7 @@ Event that represents a data published from a thing's sensor.
   - `data` **Array** data items to be published, each one formed by:
     - `sensorId` **Number** sensor ID
     - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -591,11 +598,13 @@ Event that represents a data published from a thing's sensor.
     "data": [
       {
         "sensorId": 1,
-        "value": false
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       },
       {
         "sensorId": 2,
-        "value": 1000
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       }
     ]
   }
@@ -613,6 +622,53 @@ Event that represents a data published from a thing's sensor.
 
 </details>
 
+### **data.util** <a name="data-util"></a>
+The event represents data published from a thing's sensor segmented based on the user ID associated with the thing. Trusted external clients can specify the user ID associated with the devices they want to capture. The user ID can be adapted to the needs of each project. For example, you can use a value derived from the user token or the token itself. The only requirement is that external clients specify this user ID as the routing key when subscribing to data.util so that they receive data from devices associated with this user.
+
+<details>
+  <summary>Payload</summary>
+
+  JSON in the following format:
+
+  - `id` **String** thing's ID
+  - `data` **Array** data items to be published, each one formed by:
+    - `sensorId` **Number** sensor ID
+    - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
+
+  Example:
+
+  ```json
+  {
+    "id": "fbe64efa6c7f717e",
+    "data": [
+      {
+        "sensorId": 1,
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
+      },
+      {
+        "sensorId": 2,
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
+      }
+    ]
+  }
+  ```
+</details>
+
+<details>
+  <summary>AMQP Binding</summary>
+
+  - Exchange:
+    - Type: direct
+    - Name: data.util
+    - Durable: `true`
+    - Auto-delete: `false`
+  - Routing Key: `user ID`
+
+</details>
+
 ### **data.[sessionId].published** <a name="data-session-published"></a>
 
 Event that represents a data published from a thing's sensor to a user session. You can obtain a `sessionId` by sending a request to the endpoint `POST /sessions` with a valid authorization token. The endpoint specification can be easily viewed in the browser by accessing the address `http://<address>:<port>/swagger/index.html`.
@@ -626,6 +682,7 @@ Event that represents a data published from a thing's sensor to a user session. 
   - `data` **Array** data items to be published, each one formed by:
     - `sensorId` **Number** sensor ID
     - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -635,11 +692,13 @@ Event that represents a data published from a thing's sensor to a user session. 
     "data": [
       {
         "sensorId": 1,
-        "value": false
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       },
       {
         "sensorId": 2,
-        "value": 1000
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       }
     ]
   }
@@ -677,6 +736,7 @@ Event-command to request a specific thing's sensor data after validating if the 
   - `data` **Array** data items to be published, each one formed by:
     - `sensorId` **Number** sensor ID
     - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -686,11 +746,13 @@ Event-command to request a specific thing's sensor data after validating if the 
     "data": [
       {
         "sensorId": 1,
-        "value": false
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       },
       {
         "sensorId": 2,
-        "value": 1000
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       }
     ]
   }
@@ -729,6 +791,7 @@ Event-command to update a specific thing's sensor data after validating if the `
   - `data` **Array** data items to be published, each one formed by:
     - `sensorId` **Number** sensor ID
     - `value` **Number|Boolean|String** sensor value
+    - `timestamp` **String** sensor timestamp
 
   Example:
 
@@ -738,11 +801,13 @@ Event-command to update a specific thing's sensor data after validating if the `
     "data": [
       {
         "sensorId": 1,
-        "value": false
+        "value": false,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       },
       {
         "sensorId": 2,
-        "value": 1000
+        "value": 1000,
+        "timestamp": "2022-12-06T10:00:00.0-3000"
       }
     ]
   }
