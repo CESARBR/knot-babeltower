@@ -37,7 +37,7 @@ Event-command to register a new thing on the things registry. The operation resp
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -79,7 +79,7 @@ Event-command to remove a thing from the things registry. The operation response
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -118,7 +118,7 @@ Event that represents a device sending its config to the services that are inter
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -186,7 +186,7 @@ Event-command to list the registered things. It follows the request/reply patter
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -227,7 +227,7 @@ Event-command to verify if a thing is authenticated based on its credentials. It
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -271,7 +271,7 @@ Event that represents a device sending the data gathered from its sensors to the
   <details>
     <summary>Headers</summary>
 
-    - `token` **String** user's token
+    - `Authorization` **String** user's token
 
   </details>
 
@@ -324,7 +324,7 @@ Event-command to request data from a thing's sensor. After receiving this event,
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -365,7 +365,7 @@ Event-command to update a thing's sensor data. After receiving this event, `babe
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -723,7 +723,7 @@ Event-command to request a specific thing's sensor data after validating if the 
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
@@ -778,7 +778,7 @@ Event-command to update a specific thing's sensor data after validating if the `
 <details>
   <summary>Headers</summary>
 
-  - `token` **String** user's token
+  - `Authorization` **String** user's token
 
 </details>
 
